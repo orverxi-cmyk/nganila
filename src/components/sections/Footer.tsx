@@ -3,7 +3,8 @@
 
 import React from "react";
 import Link from "next/link";
-import { Linkedin, Twitter, Facebook, Instagram, Mail, Phone, MapPin, MessageCircle, Youtube } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { Linkedin, Twitter, Facebook, Instagram, Mail, Phone, MapPin, MessageCircle, Youtube, Calendar } from "lucide-react";
 import { useDoc, useFirestore } from "@/firebase";
 import { doc } from "firebase/firestore";
 import {
@@ -15,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 
 export function Footer() {
+  const pathname = usePathname();
   const db = useFirestore();
   const { data: generalData } = useDoc(React.useMemo(() => (db ? doc(db, "settings", "general") : null), [db]));
 
@@ -310,6 +312,29 @@ export function Footer() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <div className="fixed right-0 top-1/2 -translate-y-1/2 z-50 flex flex-col items-end gap-2.5 pointer-events-none">
+        {pathname !== "/book" && (
+          <Link
+            href="/book"
+            aria-label="Book a Service"
+            className="md:hidden pointer-events-auto flex flex-col items-center gap-2 bg-black text-primary border border-primary/50 font-bold px-2 py-3 rounded-l-md shadow-2xl hover:bg-black/90 transition-all group"
+          >
+            <span className="[writing-mode:vertical-rl] rotate-180 text-xs font-bold tracking-widest uppercase">Book Service</span>
+            <Calendar className="h-4 w-4 shrink-0 -rotate-90 transition-transform group-hover:scale-110" />
+          </Link>
+        )}
+        <a
+          href="https://eepurl.com/2gm-Vewnrw"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Subscribe to Newsletter"
+          className="pointer-events-auto flex flex-col items-center gap-2 bg-primary text-black font-bold px-2 py-3.5 rounded-l-md shadow-2xl hover:bg-primary/90 transition-all group"
+        >
+          <span className="[writing-mode:vertical-rl] rotate-180 text-xs font-bold tracking-widest uppercase">Subscribe</span>
+          <Mail className="h-4 w-4 shrink-0 -rotate-90 transition-transform group-hover:scale-110" />
+        </a>
+      </div>
     </footer>
   );
 }
