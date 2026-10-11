@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
   try {
-    const { email, firstName, lastName, address } = await request.json();
+    const { email, firstName, lastName, address, phone } = await request.json();
 
     if (!email || !email.includes('@')) {
       return NextResponse.json({ error: 'Valid email address is required' }, { status: 400 });
@@ -36,10 +36,13 @@ export async function POST(request: Request) {
         country: 'RW',
       };
     }
+    if (phone && typeof phone === 'string' && phone.trim()) {
+      merge_fields.PHONE = phone.trim();
+    }
 
     const payload: Record<string, any> = {
       email_address: email.trim(),
-      status: 'subscribed',
+      status: 'pending',
     };
 
     if (Object.keys(merge_fields).length > 0) {
@@ -84,7 +87,7 @@ export async function POST(request: Request) {
       );
     }
 
-    return NextResponse.json({ message: 'Subscribed successfully!' }, { status: 200 });
+    return NextResponse.json({ message: 'Please check your email (including your spam folder) to confirm your subscription.' }, { status: 200 });
   } catch (error: any) {
     console.error('Error in newsletter subscribe route:', error);
     return NextResponse.json(

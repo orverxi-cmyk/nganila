@@ -46,6 +46,7 @@ export function Footer() {
   const [newsletterFirstName, setNewsletterFirstName] = React.useState("");
   const [newsletterLastName, setNewsletterLastName] = React.useState("");
   const [newsletterAddress, setNewsletterAddress] = React.useState("");
+  const [newsletterPhone, setNewsletterPhone] = React.useState("");
   const [isNewsletterModalOpen, setIsNewsletterModalOpen] = React.useState(false);
   const [newsletterStatus, setNewsletterStatus] = React.useState<"idle" | "loading" | "success" | "error">("idle");
   const [newsletterMessage, setNewsletterMessage] = React.useState("");
@@ -76,6 +77,7 @@ export function Footer() {
           firstName: newsletterFirstName,
           lastName: newsletterLastName,
           address: newsletterAddress,
+          phone: newsletterPhone,
         }),
       });
       const data = await res.json();
@@ -89,6 +91,7 @@ export function Footer() {
         setNewsletterFirstName("");
         setNewsletterLastName("");
         setNewsletterAddress("");
+        setNewsletterPhone("");
         setIsNewsletterModalOpen(false);
         setNewsletterStatus("idle");
         setNewsletterMessage("");
@@ -282,6 +285,17 @@ export function Footer() {
                 value={newsletterAddress}
                 onChange={(e) => setNewsletterAddress(e.target.value)}
                 placeholder="e.g. Kigali, Rwanda"
+                className="w-full bg-zinc-900 border border-zinc-800 rounded-md px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs text-zinc-400 font-medium">Phone Number</label>
+              <input
+                type="tel"
+                value={newsletterPhone}
+                onChange={(e) => setNewsletterPhone(e.target.value)}
+                placeholder="+250 788 000 000"
                 className="w-full bg-zinc-900 border border-zinc-800 rounded-md px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
               />
             </div>
