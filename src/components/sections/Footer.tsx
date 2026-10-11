@@ -151,35 +151,16 @@ export function Footer() {
             <p className="text-[14px] text-white/70">
               Subscribe to get the latest news and updates directly to your inbox.
             </p>
-            <form onSubmit={handleOpenModal} className="space-y-2">
-              <div className="flex flex-col sm:flex-row gap-2">
-                <input
-                  type="email"
-                  required
-                  placeholder="Your email address *"
-                  value={newsletterEmail}
-                  onChange={(e) => {
-                    setNewsletterEmail(e.target.value);
-                    if (newsletterStatus === "error") {
-                      setNewsletterStatus("idle");
-                      setNewsletterMessage("");
-                    }
-                  }}
-                  className="bg-white/10 border border-white/20 rounded px-3 py-2 text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-primary flex-1"
-                />
-                <button
-                  type="submit"
-                  className="bg-primary text-black font-semibold px-4 py-2 rounded text-sm hover:bg-primary/90 transition-colors shrink-0"
-                >
-                  Subscribe
-                </button>
-              </div>
-              {newsletterMessage && !isNewsletterModalOpen && (
-                <p className={`text-xs ${newsletterStatus === "success" ? "text-primary" : "text-red-400"}`}>
-                  {newsletterMessage}
-                </p>
-              )}
-            </form>
+            <div>
+              <a
+                href="https://eepurl.com/2gm-Vewnrw"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center bg-primary text-black font-semibold px-4 py-2 rounded text-sm hover:bg-primary/90 transition-colors"
+              >
+                Subscribe to Newsletter
+              </a>
+            </div>
           </div>
         </div>
         
