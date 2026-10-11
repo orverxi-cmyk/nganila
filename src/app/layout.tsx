@@ -23,6 +23,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <script
+          id="mcjs"
+          dangerouslySetInnerHTML={{
+            __html: `!function(c,h,i,m,p){m=c.createElement(h),p=c.getElementsByTagName(h)[0],m.async=1,m.src=i,p.parentNode.insertBefore(m,p)}(document,"script","https://chimpstatic.com/mcjs-connected/js/users/dc6dc57b4e6bd56ca009d9493/1ed645551747a4f02612214d1.js");`,
+          }}
+        />
+      </head>
       <body className="antialiased bg-background text-foreground">
         <FirebaseClientProvider>
           {children}
@@ -48,9 +56,6 @@ export default function RootLayout({
               }
             }
           `}
-        </Script>
-        <Script id="mcjs" strategy="afterInteractive">
-          {`!function(c,h,i,m,p){m=c.createElement(h),p=c.getElementsByTagName(h)[0],m.async=1,m.src=i,p.parentNode.insertBefore(m,p)}(document,"script","https://chimpstatic.com/mcjs-connected/js/users/dc6dc57b4e6bd56ca009d9493/1ed645551747a4f02612214d1.js");`}
         </Script>
       </body>
     </html>
