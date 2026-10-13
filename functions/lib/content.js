@@ -144,13 +144,29 @@ exports.adminSeedInitialData = (0, https_1.onCall)({ cors: true }, async (reques
     await batch.commit();
     return { success: true };
 });
+function slugify(text) {
+    if (!text)
+        return '';
+    return text
+        .toString()
+        .toLowerCase()
+        .trim()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/[\s_]+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-+|-+$/g, '');
+}
 exports.adminAddArticle = (0, https_1.onCall)({ cors: true }, async (request) => {
     await assertAdmin(request);
-    const { title, content, excerpt, imageUrl, imageWidth, imageHeight, category, author } = request.data;
+    const { title, content, excerpt, imageUrl, imageWidth, imageHeight, category, author, slug } = request.data;
     if (!title || !content)
         throw new https_1.HttpsError('invalid-argument', 'Title and content are required.');
+    const finalSlug = slug ? slugify(slug) : slugify(title);
     const newItem = {
         title,
+        slug: finalSlug,
         content,
         excerpt: excerpt || '',
         imageUrl: imageUrl || '',
@@ -177,7 +193,8 @@ exports.adminUpdateArticle = (0, https_1.onCall)({ cors: true }, async (request)
     const _a = request.data, { id } = _a, data = __rest(_a, ["id"]);
     if (!id)
         throw new https_1.HttpsError('invalid-argument', 'Missing id.');
-    const updateData = Object.assign(Object.assign({}, data), { imageWidth: Number(data.imageWidth) || 1200, imageHeight: Number(data.imageHeight) || 600, updatedAt: Date.now() });
+    const rawSlug = data.slug || data.title;
+    const updateData = Object.assign(Object.assign(Object.assign({}, data), (rawSlug ? { slug: slugify(rawSlug) } : {})), { imageWidth: Number(data.imageWidth) || 1200, imageHeight: Number(data.imageHeight) || 600, updatedAt: Date.now() });
     await db.collection('articles').doc(id).update(updateData);
     return Object.assign({ id }, updateData);
 });

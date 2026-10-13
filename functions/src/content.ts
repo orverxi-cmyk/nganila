@@ -109,13 +109,30 @@ export const adminSeedInitialData = onCall({ cors: true }, async (request: Calla
   return { success: true };
 });
 
+function slugify(text: string): string {
+  if (!text) return '';
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/[\s_]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
 export const adminAddArticle = onCall({ cors: true }, async (request: CallableRequest) => {
   await assertAdmin(request);
-  const { title, content, excerpt, imageUrl, imageWidth, imageHeight, category, author } = request.data;
+  const { title, content, excerpt, imageUrl, imageWidth, imageHeight, category, author, slug } = request.data;
   if (!title || !content) throw new HttpsError('invalid-argument', 'Title and content are required.');
   
+  const finalSlug = slug ? slugify(slug) : slugify(title);
+
   const newItem = {
     title,
+    slug: finalSlug,
     content,
     excerpt: excerpt || '',
     imageUrl: imageUrl || '',
@@ -143,8 +160,10 @@ export const adminUpdateArticle = onCall({ cors: true }, async (request: Callabl
   const { id, ...data } = request.data;
   if (!id) throw new HttpsError('invalid-argument', 'Missing id.');
   
+  const rawSlug = data.slug || data.title;
   const updateData = {
     ...data,
+    ...(rawSlug ? { slug: slugify(rawSlug) } : {}),
     imageWidth: Number(data.imageWidth) || 1200,
     imageHeight: Number(data.imageHeight) || 600,
     updatedAt: Date.now(),

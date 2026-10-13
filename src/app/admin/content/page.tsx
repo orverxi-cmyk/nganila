@@ -48,12 +48,14 @@ import {
   ChevronUp,
   ChevronDown,
   MessageCircle,
-  Youtube
+  Youtube,
+  ExternalLink
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { AdminPagination } from "@/components/admin/AdminPagination";
+import { slugify, getArticleSlug, getArticleUrl } from "@/lib/slug";
 
 function ContentManagementContent() {
   const { user, loading: authLoading } = useUser();
@@ -321,7 +323,7 @@ function ArticleManager({ articles, loading }: { articles: any, loading: boolean
   const { toast } = useToast();
   const [isEditing, setIsEditing] = React.useState<string | null>(null);
   const [formData, setFormData] = React.useState({
-    title: "", excerpt: "", content: "", imageUrl: "", imageWidth: 1200, imageHeight: 600, category: "Impact", author: "SANEX Team"
+    title: "", slug: "", excerpt: "", content: "", imageUrl: "", imageWidth: 1200, imageHeight: 600, category: "Impact", author: "SANEX Team"
   });
 
   const [page, setPage] = React.useState(1);
@@ -336,17 +338,20 @@ function ArticleManager({ articles, loading }: { articles: any, loading: boolean
     e.preventDefault();
     if (!functions) return;
     try {
+      const finalSlug = formData.slug ? slugify(formData.slug) : slugify(formData.title);
+      const payload = { ...formData, slug: finalSlug };
+
       if (isEditing) {
         const updateFunc = httpsCallable(functions, 'adminUpdateArticle');
-        await updateFunc({ id: isEditing, ...formData });
+        await updateFunc({ id: isEditing, ...payload });
         toast({ title: "Updated", description: "Article saved successfully." });
       } else {
         const addFunc = httpsCallable(functions, 'adminAddArticle');
-        await addFunc(formData);
+        await addFunc(payload);
         toast({ title: "Created", description: "Article published." });
       }
       setIsEditing(null);
-      setFormData({ title: "", excerpt: "", content: "", imageUrl: "", imageWidth: 1200, imageHeight: 600, category: "Impact", author: "SANEX Team" });
+      setFormData({ title: "", slug: "", excerpt: "", content: "", imageUrl: "", imageWidth: 1200, imageHeight: 600, category: "Impact", author: "SANEX Team" });
     } catch (err: any) {
       toast({ variant: "destructive", title: "Error", description: err.message });
     }
@@ -355,14 +360,15 @@ function ArticleManager({ articles, loading }: { articles: any, loading: boolean
   const handleEdit = (article: any) => {
     setIsEditing(article.id);
     setFormData({
-      title: article.title,
-      excerpt: article.excerpt,
-      content: article.content,
-      imageUrl: article.imageUrl,
+      title: article.title || "",
+      slug: article.slug || slugify(article.title || ""),
+      excerpt: article.excerpt || "",
+      content: article.content || "",
+      imageUrl: article.imageUrl || "",
       imageWidth: article.imageWidth || 1200,
       imageHeight: article.imageHeight || 600,
-      category: article.category,
-      author: article.author
+      category: article.category || "Impact",
+      author: article.author || "SANEX Team"
     });
   };
 
@@ -387,7 +393,34 @@ function ArticleManager({ articles, loading }: { articles: any, loading: boolean
           <form onSubmit={handleSave} className="space-y-4">
             <div className="space-y-1">
               <Label className="text-[10px] font-bold uppercase text-muted-foreground">Title</Label>
-              <Input className="h-9 text-xs" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} required />
+              <Input 
+                className="h-9 text-xs" 
+                value={formData.title} 
+                onChange={e => {
+                  const newTitle = e.target.value;
+                  setFormData(prev => ({
+                    ...prev,
+                    title: newTitle,
+                    slug: (!prev.slug || prev.slug === slugify(prev.title)) ? slugify(newTitle) : prev.slug
+                  }));
+                }} 
+                required 
+              />
+            </div>
+            <div className="space-y-1">
+              <div className="flex justify-between items-center">
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground">SEO URL Slug</Label>
+                <span className="text-[9px] text-muted-foreground">Keywords in link</span>
+              </div>
+              <Input 
+                className="h-9 text-xs font-mono" 
+                value={formData.slug} 
+                placeholder={slugify(formData.title) || "article-title-slug"}
+                onChange={e => setFormData({ ...formData, slug: slugify(e.target.value) })} 
+              />
+              <p className="text-[10px] text-muted-foreground truncate">
+                Preview: <span className="text-primary font-semibold font-mono">/articles/{formData.slug || slugify(formData.title) || "..."}</span>
+              </p>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
@@ -441,9 +474,16 @@ function ArticleManager({ articles, loading }: { articles: any, loading: boolean
                 <div className="flex-grow">
                   <h4 className="font-bold text-sm">{a.title}</h4>
                   <p className="text-[10px] text-muted-foreground line-clamp-1">{a.excerpt}</p>
-                  <div className="mt-1 flex gap-2">
+                  <div className="mt-1 flex flex-wrap items-center gap-2">
                     <Badge variant="outline" className="text-[8px] font-bold uppercase tracking-widest px-1.5 py-0">{a.category}</Badge>
                     <span className="text-[8px] text-muted-foreground">{a.imageWidth}x{a.imageHeight}</span>
+                    <Link 
+                      href={getArticleUrl(a)} 
+                      target="_blank" 
+                      className="text-[10px] text-primary hover:underline font-mono inline-flex items-center gap-1 ml-auto"
+                    >
+                      {getArticleUrl(a)} <ExternalLink className="h-2.5 w-2.5" />
+                    </Link>
                   </div>
                 </div>
                 <div className="flex flex-col gap-2">

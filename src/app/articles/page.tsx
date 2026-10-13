@@ -10,6 +10,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Loader2, FileText, ArrowRight, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getArticleUrl } from "@/lib/slug";
 
 export default function ArticlesPage() {
   const db = useFirestore();
@@ -51,48 +52,53 @@ export default function ArticlesPage() {
             </div>
           ) : articles && articles.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-              {articles.map((article: any) => (
-                <div key={article.id} className="group bg-white rounded-2xl overflow-hidden border shadow-sm hover:shadow-md transition-all flex flex-col">
-                  <div className="relative h-48 w-full bg-muted">
-                    {article.imageUrl ? (
-                      <Image 
-                        src={article.imageUrl} 
-                        alt={article.title} 
-                        fill 
-                        sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="h-full w-full bg-muted flex items-center justify-center text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                        No Image
+              {articles.map((article: any) => {
+                const articleUrl = getArticleUrl(article);
+                return (
+                  <div key={article.id} className="group bg-white rounded-2xl overflow-hidden border shadow-sm hover:shadow-md transition-all flex flex-col">
+                    <Link href={articleUrl} className="block relative h-48 w-full bg-muted overflow-hidden">
+                      {article.imageUrl ? (
+                        <Image 
+                          src={article.imageUrl} 
+                          alt={article.title} 
+                          fill 
+                          sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                          className="object-cover transition-transform duration-500 group-hover:scale-105"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="h-full w-full bg-muted flex items-center justify-center text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                          No Image
+                        </div>
+                      )}
+                    </Link>
+                    <div className="p-5 flex-grow flex flex-col">
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-primary/10 text-primary">
+                          {article.category || 'Impact'}
+                        </span>
+                        <span className="text-[9px] text-muted-foreground flex items-center gap-1 font-medium">
+                          <Calendar className="h-3 w-3" />
+                          {new Date(article.createdAt).toLocaleDateString()}
+                        </span>
                       </div>
-                    )}
-                  </div>
-                  <div className="p-5 flex-grow flex flex-col">
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-primary/10 text-primary">
-                        {article.category || 'Impact'}
-                      </span>
-                      <span className="text-[9px] text-muted-foreground flex items-center gap-1 font-medium">
-                        <Calendar className="h-3 w-3" />
-                        {new Date(article.createdAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <h2 className="text-lg font-bold font-headline mb-3 group-hover:text-primary transition-colors line-clamp-2">
-                      {article.title}
-                    </h2>
-                    <p className="text-xs text-muted-foreground mb-6 line-clamp-3 leading-relaxed">
-                      {article.excerpt}
-                    </p>
-                    <div className="mt-auto">
-                      <Button asChild variant="ghost" className="p-0 h-auto hover:bg-transparent text-primary gap-2 font-bold text-xs uppercase tracking-widest">
-                        <Link href={`/articles/${article.id}`}>Read Full Story <ArrowRight className="h-3 w-3" /></Link>
-                      </Button>
+                      <Link href={articleUrl}>
+                        <h2 className="text-lg font-bold font-headline mb-3 group-hover:text-primary transition-colors line-clamp-2">
+                          {article.title}
+                        </h2>
+                      </Link>
+                      <p className="text-xs text-muted-foreground mb-6 line-clamp-3 leading-relaxed">
+                        {article.excerpt}
+                      </p>
+                      <div className="mt-auto">
+                        <Button asChild variant="ghost" className="p-0 h-auto hover:bg-transparent text-primary gap-2 font-bold text-xs uppercase tracking-widest">
+                          <Link href={articleUrl}>Read Full Story <ArrowRight className="h-3 w-3" /></Link>
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="text-center py-10 bg-white rounded-2xl border-2 border-dashed">
