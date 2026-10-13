@@ -291,7 +291,7 @@ export default function ArticleDetailPage() {
             <div className="relative rounded-2xl overflow-hidden mb-5 shadow-xl border border-primary/10 bg-muted flex justify-center">
               <Image
                 src={article.imageUrl}
-                alt={article.title}
+                alt={article.imageAlt || article.title || "SANEX Liquid Waste Management in Rwanda"}
                 width={article.imageWidth || 1200}
                 height={article.imageHeight || 600}
                 sizes="(max-width: 1024px) 100vw, 896px"

@@ -69,8 +69,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       return {
         url: `${baseUrl}${relativeUrl}`,
         lastModified: data.updatedAt ? new Date(data.updatedAt) : (data.createdAt ? new Date(data.createdAt) : new Date()),
-        changeFrequency: 'weekly',
+        changeFrequency: 'weekly' as const,
         priority: 0.7,
+        images: data.imageUrl ? [data.imageUrl] : undefined,
       };
     });
 

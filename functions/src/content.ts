@@ -125,7 +125,7 @@ function slugify(text: string): string {
 
 export const adminAddArticle = onCall({ cors: true }, async (request: CallableRequest) => {
   await assertAdmin(request);
-  const { title, content, excerpt, imageUrl, imageWidth, imageHeight, category, author, slug } = request.data;
+  const { title, content, excerpt, imageUrl, imageAlt, imageWidth, imageHeight, category, author, slug } = request.data;
   if (!title || !content) throw new HttpsError('invalid-argument', 'Title and content are required.');
   
   const finalSlug = slug ? slugify(slug) : slugify(title);
@@ -136,6 +136,7 @@ export const adminAddArticle = onCall({ cors: true }, async (request: CallableRe
     content,
     excerpt: excerpt || '',
     imageUrl: imageUrl || '',
+    imageAlt: imageAlt || '',
     imageWidth: Number(imageWidth) || 1200,
     imageHeight: Number(imageHeight) || 600,
     category: category || 'Impact',

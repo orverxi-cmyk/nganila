@@ -323,7 +323,7 @@ function ArticleManager({ articles, loading }: { articles: any, loading: boolean
   const { toast } = useToast();
   const [isEditing, setIsEditing] = React.useState<string | null>(null);
   const [formData, setFormData] = React.useState({
-    title: "", slug: "", excerpt: "", content: "", imageUrl: "", imageWidth: 1200, imageHeight: 600, category: "Impact", author: "SANEX Team"
+    title: "", slug: "", excerpt: "", content: "", imageUrl: "", imageAlt: "", imageWidth: 1200, imageHeight: 600, category: "Impact", author: "SANEX Team"
   });
 
   const [page, setPage] = React.useState(1);
@@ -351,7 +351,7 @@ function ArticleManager({ articles, loading }: { articles: any, loading: boolean
         toast({ title: "Created", description: "Article published." });
       }
       setIsEditing(null);
-      setFormData({ title: "", slug: "", excerpt: "", content: "", imageUrl: "", imageWidth: 1200, imageHeight: 600, category: "Impact", author: "SANEX Team" });
+      setFormData({ title: "", slug: "", excerpt: "", content: "", imageUrl: "", imageAlt: "", imageWidth: 1200, imageHeight: 600, category: "Impact", author: "SANEX Team" });
     } catch (err: any) {
       toast({ variant: "destructive", title: "Error", description: err.message });
     }
@@ -365,6 +365,7 @@ function ArticleManager({ articles, loading }: { articles: any, loading: boolean
       excerpt: article.excerpt || "",
       content: article.content || "",
       imageUrl: article.imageUrl || "",
+      imageAlt: article.imageAlt || "",
       imageWidth: article.imageWidth || 1200,
       imageHeight: article.imageHeight || 600,
       category: article.category || "Impact",
@@ -442,6 +443,18 @@ function ArticleManager({ articles, loading }: { articles: any, loading: boolean
               onChange={content => setFormData({...formData, content})} 
             />
             <MediaPicker label="Featured Image" value={formData.imageUrl} onChange={url => setFormData({...formData, imageUrl: url})} />
+            <div className="space-y-1">
+              <div className="flex justify-between items-center">
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Image Alt Text (SEO)</Label>
+                <span className="text-[9px] text-muted-foreground">For Google Images ranking</span>
+              </div>
+              <Input 
+                className="h-9 text-xs" 
+                placeholder="e.g. SANEX 10000L vacuum exhauster truck in Kigali"
+                value={formData.imageAlt} 
+                onChange={e => setFormData({...formData, imageAlt: e.target.value})} 
+              />
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
                 <Label className="text-[10px] font-bold uppercase text-muted-foreground">Width (px)</Label>
