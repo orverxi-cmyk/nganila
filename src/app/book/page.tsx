@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { Suspense } from "react";
 import { Navbar } from "@/components/sections/Navbar";
 import { Footer } from "@/components/sections/Footer";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -27,9 +27,11 @@ import {
   Mail
 } from "lucide-react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
-export default function BookingPage() {
+function BookingPageContent() {
   const { toast } = useToast();
+  const searchParams = useSearchParams();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isSubmitted, setIsSubmitted] = React.useState(false);
   const [isLocating, setIsLocating] = React.useState(false);
@@ -52,6 +54,22 @@ export default function BookingPage() {
     locationUrl: "",
     description: ""
   });
+
+  React.useEffect(() => {
+    const s = searchParams?.get('service');
+    if (s) {
+      const lower = s.toLowerCase();
+      if (lower.includes('clean') || lower.includes('water')) {
+        setFormData(prev => ({ ...prev, serviceType: 'Clean Water Delivery' }));
+      } else if (lower.includes('waste') || lower.includes('collection')) {
+        setFormData(prev => ({ ...prev, serviceType: 'Liquid Waste Collection' }));
+      } else if (lower.includes('dwts') || lower.includes('install')) {
+        setFormData(prev => ({ ...prev, serviceType: 'Installation of DWTS' }));
+      } else if (lower.includes('maintenance') || lower.includes('consult')) {
+        setFormData(prev => ({ ...prev, serviceType: 'Maintenance & Consultancy' }));
+      }
+    }
+  }, [searchParams]);
 
   const handleGetLocation = () => {
     if (!navigator.geolocation) {
@@ -284,7 +302,7 @@ export default function BookingPage() {
 
                   <div className="space-y-1">
                     <Label htmlFor="service" className="text-[10px] font-bold uppercase text-muted-foreground">Selected Service *</Label>
-                    <Select onValueChange={(val) => setFormData({...formData, serviceType: val})} required>
+                    <Select value={formData.serviceType} onValueChange={(val) => setFormData({...formData, serviceType: val})} required>
                       <SelectTrigger id="service" className="h-10 text-sm">
                         <SelectValue placeholder="Choose Service Type" />
                       </SelectTrigger>
@@ -292,6 +310,7 @@ export default function BookingPage() {
                         <SelectItem value="Liquid Waste Collection">Liquid Waste Collection</SelectItem>
                         <SelectItem value="Installation of DWTS">DWTS Installation</SelectItem>
                         <SelectItem value="Maintenance & Consultancy">Maintenance & Consultancy</SelectItem>
+                        <SelectItem value="Clean Water Delivery">Clean Water Delivery</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -480,5 +499,17 @@ export default function BookingPage() {
       </main>
       <Footer />
     </div>
+  );
+}
+
+export default function BookingPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    }>
+      <BookingPageContent />
+    </Suspense>
   );
 }
