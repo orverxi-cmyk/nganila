@@ -45,5 +45,11 @@ service cloud.firestore {
     match /client_contacts/{contactId} {
       allow read, write: if isAdmin();
     }
+
+    // Contact Groups: Read by authenticated/public, write by Admin
+    match /contact_groups/{groupId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
   }
 }

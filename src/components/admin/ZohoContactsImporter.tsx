@@ -48,6 +48,7 @@ import {
   parseSpreadsheetContacts,
   parseRawTextContacts,
 } from "@/lib/contacts-parser";
+import { useContactGroups } from "@/hooks/use-contact-groups";
 
 interface ZohoContactsImporterProps {
   open: boolean;
@@ -64,6 +65,7 @@ export function ZohoContactsImporter({
 }: ZohoContactsImporterProps) {
   const db = useFirestore();
   const { toast } = useToast();
+  const { groups, getGroupName } = useContactGroups();
 
   const [activeTab, setActiveTab] = useState<"file" | "paste" | "single">("file");
   const [targetSector, setTargetSector] = useState<ContactSector>(defaultSector);
@@ -214,7 +216,7 @@ export function ZohoContactsImporter({
 
       toast({
         title: "Contacts Imported Successfully",
-        description: `Saved ${savedCount} contact(s) under "${SECTOR_CONFIG[targetSector].label}".`,
+        description: `Saved ${savedCount} contact(s) under "${getGroupName(targetSector)}".`,
       });
 
       if (onImportComplete) {
@@ -270,7 +272,7 @@ export function ZohoContactsImporter({
 
       toast({
         title: "Contact Saved",
-        description: `${email} added to ${SECTOR_CONFIG[targetSector].label}.`,
+        description: `${email} added to ${getGroupName(targetSector)}.`,
       });
 
       setSingleName("");
@@ -327,12 +329,11 @@ export function ZohoContactsImporter({
               <SelectValue placeholder="Select Sector" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="hotel">🏨 Hotels &amp; Hospitality</SelectItem>
-              <SelectItem value="health">🏥 Health Facilities</SelectItem>
-              <SelectItem value="campus">🎓 Campuses &amp; Universities</SelectItem>
-              <SelectItem value="schools">🏫 Schools &amp; Academies</SelectItem>
-              <SelectItem value="general">🏛️ General Institutions</SelectItem>
-              <SelectItem value="other">👥 Other Partners</SelectItem>
+              {groups.map((g) => (
+                <SelectItem key={g.id} value={g.id}>
+                  {g.name}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -482,7 +483,7 @@ info@campus.edu.rw, bursar@school.rw"
                   className="w-full sm:w-auto h-9 text-xs font-bold bg-primary text-black"
                 >
                   {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Check className="h-4 w-4 mr-1" />}
-                  Save Contact to {SECTOR_CONFIG[targetSector].label}
+                  Save Contact to {getGroupName(targetSector)}
                 </Button>
               </div>
             </form>
@@ -556,7 +557,7 @@ info@campus.edu.rw, bursar@school.rw"
                   </>
                 ) : (
                   <>
-                    <CheckCircle2 className="h-3.5 w-3.5" /> Save {parsedList.length} Contacts to {SECTOR_CONFIG[targetSector].label}
+                    <CheckCircle2 className="h-3.5 w-3.5" /> Save {parsedList.length} Contacts to {getGroupName(targetSector)}
                   </>
                 )}
               </Button>

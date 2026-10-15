@@ -1,6 +1,6 @@
 import * as XLSX from "xlsx";
 
-export type ContactSector = "hotel" | "health" | "campus" | "schools" | "general" | "other";
+export type ContactSector = "hotel" | "health" | "campus" | "schools" | "general" | "other" | (string & {});
 
 export interface ParsedContact {
   name: string;
@@ -12,7 +12,7 @@ export interface ParsedContact {
 }
 
 export const SECTOR_CONFIG: Record<
-  ContactSector,
+  string,
   { label: string; sectorName: string; description: string; campaignId: string }
 > = {
   hotel: {
