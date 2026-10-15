@@ -324,11 +324,13 @@ export async function sendZohoEmail(options: ZohoSendEmailOptions): Promise<Zoho
     payload.merge_info = options.mergeInfo;
   }
 
-  if (options.html) {
-    payload.htmlbody = options.html;
-  }
-  if (options.text) {
-    payload.textbody = options.text;
+  if (!isTemplateDispatch) {
+    if (options.html) {
+      payload.htmlbody = options.html;
+    }
+    if (options.text) {
+      payload.textbody = options.text;
+    }
   }
   if (options.clientReference) {
     payload.client_reference = options.clientReference.slice(0, 100);
