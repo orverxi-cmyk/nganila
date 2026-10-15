@@ -9,6 +9,13 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useUser, useFirestore, useCollection } from "@/firebase";
 import { collection } from "firebase/firestore";
 import { 
@@ -29,7 +36,11 @@ import {
   Plus,
   X,
   FileText,
-  UserCheck
+  Bookmark,
+  BookmarkCheck,
+  Code2,
+  Trash2,
+  Copy
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -55,6 +66,59 @@ interface DispatchResult {
   error?: string;
 }
 
+interface EmailTemplatePreset {
+  id: string;
+  name: string;
+  subject: string;
+  message: string;
+  ctaText?: string;
+  ctaUrl?: string;
+  isCustom?: boolean;
+}
+
+const PRESET_TEMPLATES: EmailTemplatePreset[] = [
+  {
+    id: "booking-confirmation",
+    name: "Booking Request Confirmation",
+    subject: "Service Request Received - SANEX Company Ltd",
+    message: `Dear Valued Customer,\n\nWe have received your service request for liquid waste management and eco-sanitation. Our operations team is currently reviewing your designated schedule, address, and equipment requirements.\n\nYou will receive an update once dispatch confirmation is assigned to our field operations crew.\n\nThank you for choosing SANEX Company Ltd for sustainable wastewater solutions.`,
+    ctaText: "View Our Services",
+    ctaUrl: "https://sanex.rw/services",
+  },
+  {
+    id: "service-reminder",
+    name: "Upcoming Service Reminder",
+    subject: "Upcoming Sanitation Service Reminder - SANEX Company Ltd",
+    message: `Dear Valued Customer,\n\nThis is a friendly reminder that your scheduled liquid waste emptying / wastewater inspection service is slated for the upcoming operations window.\n\nPlease ensure that site access is available and that our vacuum tanker crew can safely park and access your collection point or septic infrastructure.\n\nShould you need to adjust your timing, please call our operations desk at +250 788 385 838 immediately.`,
+    ctaText: "Contact Operations",
+    ctaUrl: "tel:+250788385838",
+  },
+  {
+    id: "maintenance-advisory",
+    name: "Facility Maintenance Advisory",
+    subject: "Facility Advisory: Preventive Maintenance & Septic Inspection",
+    message: `Dear Facility Manager,\n\nOur engineering and environmental health teams are conducting scheduled preventive maintenance and decentralized sanitation audits across facilities in Kigali.\n\nRoutine maintenance prevents blockages, eliminates odor risks, and guarantees regulatory compliance with Rwandan sanitation standards.\n\nContact our desk today to schedule your facility's comprehensive inspection.`,
+    ctaText: "Schedule Maintenance",
+    ctaUrl: "https://sanex.rw/booking",
+  },
+  {
+    id: "safe-disposal-cert",
+    name: "Disposal Certification & Invoice Notice",
+    subject: "Safe Waste Disposal Certification - SANEX Company Ltd",
+    message: `Dear Valued Partner,\n\nWe are pleased to inform you that the liquid waste collected from your premises has been safely transported and disposed of at the designated municipal wastewater treatment site in full compliance with REMA & WASAC environmental guidelines.\n\nYour disposal documentation and billing statement have been processed. Please find your reference ID and payment instructions attached.\n\nThank you for your commitment to environmental sustainability.`,
+    ctaText: "Download Receipt",
+    ctaUrl: "https://sanex.rw",
+  },
+  {
+    id: "satisfaction-survey",
+    name: "Customer Satisfaction Follow-up",
+    subject: "How was your service experience with SANEX Company Ltd?",
+    message: `Dear Customer,\n\nThank you for trusting SANEX with your liquid waste and environmental sanitation requirements.\n\nWe are committed to delivering the highest quality service in Rwanda. How did our dispatch team and field operators perform during your recent service appointment?\n\nIf you have any feedback, questions, or future scheduling requirements, simply reply to this email or contact us at info@sanex.rw.`,
+    ctaText: "Leave Feedback",
+    ctaUrl: "https://sanex.rw/contact",
+  },
+];
+
 const EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
 
 export function ZohoEmailHub() {
@@ -65,6 +129,31 @@ export function ZohoEmailHub() {
   const [activeTab, setActiveTab] = useState<"broadcast" | "test" | "health">("broadcast");
   const [isCheckingConfig, setIsCheckingConfig] = useState(true);
   const [config, setConfig] = useState<ConfigStatus | null>(null);
+
+  // Mode: Standard Composer vs Zoho Cloud Template Key
+  const [isZohoKeyMode, setIsZohoKeyMode] = useState(false);
+  const [templateKey, setTemplateKey] = useState("");
+  const [templateAlias, setTemplateAlias] = useState("");
+  const [mergeVars, setMergeVars] = useState<{ key: string; value: string }[]>([
+    { key: "customer_name", value: "" },
+    { key: "service_type", value: "" },
+  ]);
+
+  // Templates Management
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>("custom");
+  const [savedTemplates, setSavedTemplates] = useState<EmailTemplatePreset[]>([]);
+
+  // Load custom templates from localStorage
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("sanex_admin_email_templates");
+      if (stored) {
+        setSavedTemplates(JSON.parse(stored));
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
 
   // Broadcast / Compose Form State
   const [toInput, setToInput] = useState("");
@@ -85,6 +174,96 @@ export function ZohoEmailHub() {
   const [testSubject, setTestSubject] = useState("");
   const [isSendingTest, setIsSendingTest] = useState(false);
   const [testResult, setTestResult] = useState<DispatchResult | null>(null);
+
+  // Combine built-in presets and user-saved custom templates
+  const allTemplates = useMemo(() => {
+    return [...PRESET_TEMPLATES, ...savedTemplates];
+  }, [savedTemplates]);
+
+  // Handle template selection
+  const handleSelectTemplate = (templateId: string) => {
+    setSelectedTemplateId(templateId);
+    if (templateId === "custom") return;
+
+    const found = allTemplates.find((t) => t.id === templateId);
+    if (found) {
+      setSubject(found.subject);
+      setMessage(found.message);
+      setCtaText(found.ctaText || "");
+      setCtaUrl(found.ctaUrl || "");
+      toast({
+        title: "Template Loaded",
+        description: `Applied "${found.name}". You can customize the content as needed.`,
+      });
+    }
+  };
+
+  // Save current message as a reusable custom template
+  const handleSaveCurrentAsTemplate = () => {
+    if (!subject.trim() || !message.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Subject and Message Required",
+        description: "Please enter a subject line and message before saving as a template.",
+      });
+      return;
+    }
+
+    const templateName = window.prompt("Enter a name for this reusable email template:", subject.slice(0, 30));
+    if (!templateName || !templateName.trim()) return;
+
+    const newTemplate: EmailTemplatePreset = {
+      id: `custom-${Date.now()}`,
+      name: templateName.trim(),
+      subject: subject.trim(),
+      message: message.trim(),
+      ctaText: ctaText.trim() || undefined,
+      ctaUrl: ctaUrl.trim() || undefined,
+      isCustom: true,
+    };
+
+    const updated = [...savedTemplates, newTemplate];
+    setSavedTemplates(updated);
+    try {
+      localStorage.setItem("sanex_admin_email_templates", JSON.stringify(updated));
+    } catch {
+      // ignore
+    }
+
+    setSelectedTemplateId(newTemplate.id);
+    toast({
+      title: "Template Saved",
+      description: `"${templateName.trim()}" is now saved and available in your template selector.`,
+    });
+  };
+
+  const handleDeleteCustomTemplate = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const updated = savedTemplates.filter((t) => t.id !== id);
+    setSavedTemplates(updated);
+    try {
+      localStorage.setItem("sanex_admin_email_templates", JSON.stringify(updated));
+    } catch {
+      // ignore
+    }
+    if (selectedTemplateId === id) setSelectedTemplateId("custom");
+    toast({ title: "Template Removed", description: "The custom template has been deleted." });
+  };
+
+  // Merge Info helpers
+  const handleAddMergeVar = () => {
+    setMergeVars([...mergeVars, { key: "", value: "" }]);
+  };
+
+  const handleUpdateMergeVar = (index: number, field: "key" | "value", val: string) => {
+    const next = [...mergeVars];
+    next[index][field] = val;
+    setMergeVars(next);
+  };
+
+  const handleRemoveMergeVar = (index: number) => {
+    setMergeVars(mergeVars.filter((_, i) => i !== index));
+  };
 
   // Query bookings for client audience quick-selection
   const bookingsQuery = useMemo(() => {
@@ -236,47 +415,81 @@ export function ZohoEmailHub() {
       return;
     }
 
-    if (!subject.trim()) {
-      toast({
-        variant: "destructive",
-        title: "Subject Required",
-        description: "Please enter an email subject line.",
-      });
-      return;
-    }
+    // Validation for Zoho Cloud Template mode vs standard mode
+    if (isZohoKeyMode) {
+      if (!templateKey.trim() && !templateAlias.trim()) {
+        toast({
+          variant: "destructive",
+          title: "Template Key Required",
+          description: "Please provide a Template Key or Template Alias from your Zoho CPaaS console.",
+        });
+        return;
+      }
+    } else {
+      if (!subject.trim()) {
+        toast({
+          variant: "destructive",
+          title: "Subject Required",
+          description: "Please enter an email subject line.",
+        });
+        return;
+      }
 
-    if (!message.trim()) {
-      toast({
-        variant: "destructive",
-        title: "Message Body Required",
-        description: "Please enter the email body content.",
-      });
-      return;
+      if (!message.trim()) {
+        toast({
+          variant: "destructive",
+          title: "Message Body Required",
+          description: "Please enter the email body content.",
+        });
+        return;
+      }
     }
 
     setIsSending(true);
     setBroadcastResult(null);
 
+    // Build mergeInfo object if in Zoho Key mode
+    const mergeInfoObj: Record<string, any> = {};
+    if (isZohoKeyMode) {
+      mergeVars.forEach((mv) => {
+        if (mv.key.trim()) {
+          mergeInfoObj[mv.key.trim()] = mv.value.trim();
+        }
+      });
+    }
+
     const startTime = Date.now();
     try {
       const token = user ? await user.getIdToken() : "";
+      const payload: any = {
+        to: parsedRecipients.valid,
+        cc: ccInput.trim() ? ccInput.trim().split(/[\s,;\n\r]+/).filter(Boolean) : undefined,
+        bcc: bccInput.trim() ? bccInput.trim().split(/[\s,;\n\r]+/).filter(Boolean) : undefined,
+        clientReference: `admin-broadcast-${Date.now()}`,
+      };
+
+      if (isZohoKeyMode) {
+        payload.templateKey = templateKey.trim() || undefined;
+        payload.templateAlias = templateAlias.trim() || undefined;
+        payload.subject = subject.trim() || undefined;
+        if (Object.keys(mergeInfoObj).length > 0) {
+          payload.mergeInfo = mergeInfoObj;
+        }
+      } else {
+        payload.subject = subject.trim();
+        payload.message = message.trim();
+        payload.useBrandedTemplate = useBrandedTemplate;
+        payload.ctaText = ctaText.trim() || undefined;
+        payload.ctaUrl = ctaUrl.trim() || undefined;
+      }
+
       const res = await fetch("/api/email/send", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({
-          to: parsedRecipients.valid,
-          cc: ccInput.trim() ? ccInput.trim().split(/[\s,;\n\r]+/).filter(Boolean) : undefined,
-          bcc: bccInput.trim() ? bccInput.trim().split(/[\s,;\n\r]+/).filter(Boolean) : undefined,
-          subject: subject.trim(),
-          message: message.trim(),
-          useBrandedTemplate,
-          ctaText: ctaText.trim() || undefined,
-          ctaUrl: ctaUrl.trim() || undefined,
-          clientReference: `admin-broadcast-${Date.now()}`,
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
@@ -382,7 +595,7 @@ export function ZohoEmailHub() {
             </div>
             <div>
               <CardTitle className="text-base font-bold flex items-center gap-2">
-                SANEX Email Center & Broadcast Console
+                SANEX Email Center &amp; Templates Console
                 {isCheckingConfig ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin text-slate-400" />
                 ) : config?.configured ? (
@@ -396,7 +609,7 @@ export function ZohoEmailHub() {
                 )}
               </CardTitle>
               <CardDescription className="text-xs text-slate-300">
-                Send official communications, broadcast announcements, and transaction notifications via verified domain (@sanex.rw)
+                Official transactional communications, client broadcasts, and template dispatching via verified domain (@sanex.rw)
               </CardDescription>
             </div>
           </div>
@@ -419,18 +632,18 @@ export function ZohoEmailHub() {
         <Tabs value={activeTab} onValueChange={(v: any) => setActiveTab(v)}>
           <TabsList className="grid grid-cols-3 bg-slate-100 p-1 rounded-xl">
             <TabsTrigger value="broadcast" className="text-xs font-bold gap-1.5 data-[state=active]:bg-white data-[state=active]:shadow-sm">
-              <Send className="h-3.5 w-3.5 text-primary" /> Compose & Broadcast
+              <Send className="h-3.5 w-3.5 text-primary" /> Compose &amp; Broadcast
             </TabsTrigger>
             <TabsTrigger value="test" className="text-xs font-bold gap-1.5 data-[state=active]:bg-white data-[state=active]:shadow-sm">
               <ShieldCheck className="h-3.5 w-3.5 text-slate-700" /> Diagnostic Test
             </TabsTrigger>
             <TabsTrigger value="health" className="text-xs font-bold gap-1.5 data-[state=active]:bg-white data-[state=active]:shadow-sm">
-              <Info className="h-3.5 w-3.5 text-slate-700" /> Domain & Server Health
+              <Info className="h-3.5 w-3.5 text-slate-700" /> Domain &amp; Server Health
             </TabsTrigger>
           </TabsList>
 
           {/* =============================================================== */}
-          {/* TAB 1: COMPOSE & BROADCAST (ACTUAL EMAILS & MULTI-RECIPIENTS)   */}
+          {/* TAB 1: COMPOSE & BROADCAST WITH TEMPLATES                       */}
           {/* =============================================================== */}
           <TabsContent value="broadcast" className="space-y-5 pt-3">
             <form onSubmit={handleSendBroadcast} className="space-y-5">
@@ -580,100 +793,290 @@ export function ZohoEmailHub() {
                 )}
               </div>
 
-              {/* Subject Line & Template Toggle */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="md:col-span-2 space-y-1.5">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                    Subject Line *
-                  </Label>
-                  <Input
-                    type="text"
-                    required
-                    value={subject}
-                    onChange={(e) => setSubject(e.target.value)}
-                    placeholder="e.g. Scheduled Service Reminder: SANEX Liquid Waste Management"
-                    className="h-9 text-xs"
-                    disabled={isSending}
-                  />
-                </div>
-
-                <div className="space-y-1.5 border rounded-lg p-2.5 bg-slate-50 flex items-center justify-between">
-                  <div>
-                    <div className="text-xs font-bold text-foreground">SANEX Branded Layout</div>
-                    <div className="text-[10px] text-muted-foreground">Header, logo &amp; footer wrapper</div>
+              {/* Template Mode Selection Header */}
+              <div className="border rounded-xl p-4 bg-slate-50 space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-primary" />
+                    <div>
+                      <div className="text-xs font-bold text-foreground">Email Template System</div>
+                      <div className="text-[11px] text-muted-foreground">
+                        {isZohoKeyMode
+                          ? "Using template defined in your Zoho CPaaS / ZeptoMail Admin Console"
+                          : "Choose a pre-built SANEX template or compose a custom email"}
+                      </div>
+                    </div>
                   </div>
-                  <Switch
-                    checked={useBrandedTemplate}
-                    onCheckedChange={setUseBrandedTemplate}
-                    disabled={isSending}
-                  />
+
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsZohoKeyMode(!isZohoKeyMode)}
+                      className={`h-7 text-[11px] font-bold gap-1.5 ${
+                        isZohoKeyMode ? "bg-slate-900 text-white border-slate-900" : "bg-white"
+                      }`}
+                    >
+                      <Code2 className="h-3 w-3" />
+                      {isZohoKeyMode ? "Switch to Standard Composer" : "Use Zoho Cloud Template Key"}
+                    </Button>
+                  </div>
                 </div>
+
+                {/* Zoho Cloud Template Key Mode */}
+                {isZohoKeyMode ? (
+                  <div className="space-y-3 pt-2 border-t">
+                    <div className="p-3 rounded-lg bg-blue-50 border border-blue-200 text-blue-900 text-xs space-y-1">
+                      <div className="font-bold flex items-center gap-1.5">
+                        <Info className="h-4 w-4 text-blue-600" /> How to find your Template Key in Zoho Admin:
+                      </div>
+                      <p className="text-[11px] text-blue-800 leading-relaxed">
+                        1. Sign in to your Zoho CPaaS / ZeptoMail console (<a href="https://cpaas.zoho.com" target="_blank" rel="noopener noreferrer" className="underline font-bold">cpaas.zoho.com</a>).<br />
+                        2. Open Mail Agent <code className="font-bold bg-blue-100 px-1 rounded">7c6dc6fcbb934ccb</code> and click the <strong>Templates</strong> tab.<br />
+                        3. Open your template and copy the <strong>Template Key</strong> (e.g. <code>2d6f.7d30e4720195ecf6.m1...</code>).<br />
+                        4. Paste the key below. Any Mustache tags in your template (e.g. <code>&#123;&#123;customer_name&#125;&#125;</code>) will be populated using the dynamic variables below!
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <Label className="text-xs font-bold text-foreground">Zoho Template Key *</Label>
+                        <Input
+                          value={templateKey}
+                          onChange={(e) => setTemplateKey(e.target.value)}
+                          placeholder="e.g. 2d6f.7d30e4720195ecf6.m1.6dbc81d1"
+                          className="h-9 font-mono text-xs bg-white"
+                          disabled={isSending}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs font-bold text-foreground">Or Template Alias (Optional)</Label>
+                        <Input
+                          value={templateAlias}
+                          onChange={(e) => setTemplateAlias(e.target.value)}
+                          placeholder="e.g. booking_confirmed_v1"
+                          className="h-9 font-mono text-xs bg-white"
+                          disabled={isSending}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <Label className="text-xs font-bold text-foreground">Subject Line Override (Optional)</Label>
+                      <Input
+                        value={subject}
+                        onChange={(e) => setSubject(e.target.value)}
+                        placeholder="Leave blank to use the subject configured in Zoho"
+                        className="h-9 text-xs bg-white"
+                        disabled={isSending}
+                      />
+                    </div>
+
+                    {/* Dynamic Merge Variables (Merge Info) */}
+                    <div className="space-y-2 pt-2 border-t">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                          Dynamic Merge Variables (Mustache Tags)
+                        </Label>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={handleAddMergeVar}
+                          className="h-6 text-[10px] font-bold gap-1"
+                        >
+                          <Plus className="h-3 w-3" /> Add Variable
+                        </Button>
+                      </div>
+
+                      <div className="space-y-2">
+                        {mergeVars.map((mv, idx) => (
+                          <div key={idx} className="flex items-center gap-2">
+                            <Input
+                              value={mv.key}
+                              onChange={(e) => handleUpdateMergeVar(idx, "key", e.target.value)}
+                              placeholder="Tag (e.g. customer_name)"
+                              className="h-8 font-mono text-xs bg-white w-1/3"
+                              disabled={isSending}
+                            />
+                            <Input
+                              value={mv.value}
+                              onChange={(e) => handleUpdateMergeVar(idx, "value", e.target.value)}
+                              placeholder="Value to substitute"
+                              className="h-8 text-xs bg-white flex-1"
+                              disabled={isSending}
+                            />
+                            {mergeVars.length > 1 && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleRemoveMergeVar(idx)}
+                                className="h-8 w-8 p-0 text-muted-foreground hover:text-red-600"
+                              >
+                                <X className="h-3.5 w-3.5" />
+                              </Button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  /* Standard Mode with Website Template Selector */
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t">
+                    <div className="flex items-center gap-2 flex-1">
+                      <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider shrink-0">
+                        Template:
+                      </Label>
+                      <Select value={selectedTemplateId} onValueChange={handleSelectTemplate}>
+                        <SelectTrigger className="h-8 text-xs bg-white w-full sm:w-72">
+                          <SelectValue placeholder="Choose a template..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="custom" className="text-xs font-semibold">
+                            (Custom Blank Email)
+                          </SelectItem>
+                          <div className="px-2 py-1 text-[10px] font-bold text-muted-foreground uppercase tracking-wider border-t mt-1">
+                            Official SANEX Presets
+                          </div>
+                          {PRESET_TEMPLATES.map((tmpl) => (
+                            <SelectItem key={tmpl.id} value={tmpl.id} className="text-xs">
+                              {tmpl.name}
+                            </SelectItem>
+                          ))}
+                          {savedTemplates.length > 0 && (
+                            <>
+                              <div className="px-2 py-1 text-[10px] font-bold text-muted-foreground uppercase tracking-wider border-t mt-1">
+                                Saved Custom Templates
+                              </div>
+                              {savedTemplates.map((tmpl) => (
+                                <SelectItem key={tmpl.id} value={tmpl.id} className="text-xs">
+                                  {tmpl.name}
+                                </SelectItem>
+                              ))}
+                            </>
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleSaveCurrentAsTemplate}
+                        className="h-8 text-[11px] font-bold gap-1 text-slate-700 hover:text-black"
+                      >
+                        <Bookmark className="h-3.5 w-3.5 text-primary" /> Save Current as Template
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {/* Message Body */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                    Message Content *
-                  </Label>
-                  <span className="text-[11px] text-muted-foreground">
-                    Separate paragraphs with a blank line. Links are automatically styled.
-                  </span>
-                </div>
-                <Textarea
-                  required
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  placeholder={`Dear Valued Customer,\n\nWe are writing to update you on our upcoming eco-sanitation service schedule for your facility...\n\nPlease let us know if you require any specific assistance from our operations team.\n\nThank you,\nSANEX Company Ltd Operations Team`}
-                  rows={6}
-                  className="text-xs leading-relaxed font-sans resize-y"
-                  disabled={isSending}
-                />
-              </div>
+              {/* Standard Subject & Message Inputs (when not in Zoho Key mode) */}
+              {!isZohoKeyMode && (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="md:col-span-2 space-y-1.5">
+                      <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                        Subject Line *
+                      </Label>
+                      <Input
+                        type="text"
+                        required
+                        value={subject}
+                        onChange={(e) => setSubject(e.target.value)}
+                        placeholder="e.g. Scheduled Service Reminder: SANEX Liquid Waste Management"
+                        className="h-9 text-xs"
+                        disabled={isSending}
+                      />
+                    </div>
 
-              {/* Optional Call to Action Button */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 border rounded-xl p-3 bg-slate-50/50">
-                <div className="space-y-1">
-                  <Label className="text-[10px] uppercase font-bold text-muted-foreground">
-                    Optional Action Button Text
-                  </Label>
-                  <Input
-                    type="text"
-                    value={ctaText}
-                    onChange={(e) => setCtaText(e.target.value)}
-                    placeholder="e.g. View Service Portal or Confirm Schedule"
-                    className="h-8 text-xs bg-white"
-                    disabled={isSending}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-[10px] uppercase font-bold text-muted-foreground">
-                    Action Button URL
-                  </Label>
-                  <Input
-                    type="url"
-                    value={ctaUrl}
-                    onChange={(e) => setCtaUrl(e.target.value)}
-                    placeholder="https://sanex.rw/services"
-                    className="h-8 text-xs bg-white"
-                    disabled={isSending}
-                  />
-                </div>
-              </div>
+                    <div className="space-y-1.5 border rounded-lg p-2.5 bg-slate-50 flex items-center justify-between">
+                      <div>
+                        <div className="text-xs font-bold text-foreground">SANEX Branded Layout</div>
+                        <div className="text-[10px] text-muted-foreground">Header, logo &amp; footer wrapper</div>
+                      </div>
+                      <Switch
+                        checked={useBrandedTemplate}
+                        onCheckedChange={setUseBrandedTemplate}
+                        disabled={isSending}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Message Body */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                        Message Content *
+                      </Label>
+                      <span className="text-[11px] text-muted-foreground">
+                        Separate paragraphs with a blank line. Links are automatically styled.
+                      </span>
+                    </div>
+                    <Textarea
+                      required
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      placeholder={`Dear Valued Customer,\n\nWe are writing to update you on our upcoming eco-sanitation service schedule for your facility...\n\nPlease let us know if you require any specific assistance from our operations team.\n\nThank you,\nSANEX Company Ltd Operations Team`}
+                      rows={6}
+                      className="text-xs leading-relaxed font-sans resize-y"
+                      disabled={isSending}
+                    />
+                  </div>
+
+                  {/* Optional Call to Action Button */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 border rounded-xl p-3 bg-slate-50/50">
+                    <div className="space-y-1">
+                      <Label className="text-[10px] uppercase font-bold text-muted-foreground">
+                        Optional Action Button Text
+                      </Label>
+                      <Input
+                        type="text"
+                        value={ctaText}
+                        onChange={(e) => setCtaText(e.target.value)}
+                        placeholder="e.g. View Service Portal or Confirm Schedule"
+                        className="h-8 text-xs bg-white"
+                        disabled={isSending}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[10px] uppercase font-bold text-muted-foreground">
+                        Action Button URL
+                      </Label>
+                      <Input
+                        type="url"
+                        value={ctaUrl}
+                        onChange={(e) => setCtaUrl(e.target.value)}
+                        placeholder="https://sanex.rw/services"
+                        className="h-8 text-xs bg-white"
+                        disabled={isSending}
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
 
               {/* Action Buttons & Preview Trigger */}
               <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 border-t">
                 <div className="flex items-center gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowPreview(!showPreview)}
-                    className="h-9 text-xs font-bold gap-1.5"
-                  >
-                    {showPreview ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5 text-primary" />}
-                    {showPreview ? "Hide Preview" : "Preview Email Layout"}
-                  </Button>
+                  {!isZohoKeyMode && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowPreview(!showPreview)}
+                      className="h-9 text-xs font-bold gap-1.5"
+                    >
+                      {showPreview ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5 text-primary" />}
+                      {showPreview ? "Hide Preview" : "Preview Email Layout"}
+                    </Button>
+                  )}
                   <span className="text-[11px] text-muted-foreground hidden sm:inline">
                     Dispatched from verified sender &lt;{config?.senderEmail || "info@sanex.rw"}&gt;
                   </span>
@@ -693,13 +1096,14 @@ export function ZohoEmailHub() {
                     <>
                       <Send className="h-3.5 w-3.5" />
                       Send to {parsedRecipients.valid.length} Recipient{parsedRecipients.valid.length === 1 ? "" : "s"}
+                      {isZohoKeyMode ? " via Zoho Template" : ""}
                     </>
                   )}
                 </Button>
               </div>
 
               {/* Live Preview Box */}
-              {showPreview && (
+              {showPreview && !isZohoKeyMode && (
                 <div className="border rounded-xl p-4 bg-slate-100 space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">

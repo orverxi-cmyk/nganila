@@ -31,9 +31,12 @@ export interface ZohoInlineImage {
 
 export interface ZohoSendEmailOptions {
   to: string | string[] | ZohoEmailAddress | ZohoEmailAddress[];
-  subject: string;
+  subject?: string;
   html?: string;
   text?: string;
+  templateKey?: string;
+  templateAlias?: string;
+  mergeInfo?: Record<string, any>;
   fromEmail?: string;
   fromName?: string;
   cc?: string | string[] | ZohoEmailAddress | ZohoEmailAddress[];
@@ -266,8 +269,10 @@ export async function sendZohoEmail(options: ZohoSendEmailOptions): Promise<Zoho
     }
   }
 
-  // Validate subject
-  if (!options.subject || !options.subject.trim()) {
+  const isTemplateDispatch = Boolean(options.templateKey || options.templateAlias);
+
+  // Validate subject (mandatory unless template dispatch where Zoho template has predefined subject)
+  if (!isTemplateDispatch && (!options.subject || !options.subject.trim())) {
     return {
       success: false,
       status: 'failed',
@@ -276,8 +281,8 @@ export async function sendZohoEmail(options: ZohoSendEmailOptions): Promise<Zoho
     };
   }
 
-  // Validate body presence
-  if (!options.html && !options.text) {
+  // Validate body presence (mandatory unless template dispatch)
+  if (!isTemplateDispatch && !options.html && !options.text) {
     return {
       success: false,
       status: 'failed',
@@ -305,8 +310,19 @@ export async function sendZohoEmail(options: ZohoSendEmailOptions): Promise<Zoho
       ...(senderName ? { name: senderName } : {}),
     },
     to: recipients,
-    subject: options.subject.trim(),
   };
+
+  if (options.subject && options.subject.trim()) {
+    payload.subject = options.subject.trim();
+  }
+  if (options.templateKey) {
+    payload.template_key = options.templateKey.trim();
+  } else if (options.templateAlias) {
+    payload.template_alias = options.templateAlias.trim();
+  }
+  if (options.mergeInfo && Object.keys(options.mergeInfo).length > 0) {
+    payload.merge_info = options.mergeInfo;
+  }
 
   if (options.html) {
     payload.htmlbody = options.html;
@@ -358,11 +374,16 @@ export async function sendZohoEmail(options: ZohoSendEmailOptions): Promise<Zoho
 
   const maskedRecipients = recipients.map(r => maskEmail(r.email_address.address)).join(', ');
   const logPrefix = `[ZohoCPaaS][Ref:${options.clientReference || 'N/A'}]`;
+  const subjectDisplay = options.subject?.slice(0, 40) || options.templateKey || 'Template Dispatch';
 
-  console.log(`${logPrefix} Initiating dispatch to ${maskedRecipients} (Subject: "${options.subject.slice(0, 40)}...")`);
+  console.log(`${logPrefix} Initiating dispatch to ${maskedRecipients} (Target: "${subjectDisplay}...")`);
+
+  const targetUrl = isTemplateDispatch
+    ? config.apiUrl.replace(/\/email\/?$/, '/email/template')
+    : config.apiUrl;
 
   try {
-    const response = await fetch(config.apiUrl, {
+    const response = await fetch(targetUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -17,10 +17,13 @@ interface SendRequestBody {
   to: string | string[];
   cc?: string | string[];
   bcc?: string | string[];
-  subject: string;
+  subject?: string;
   message?: string;
   html?: string;
   text?: string;
+  templateKey?: string;
+  templateAlias?: string;
+  mergeInfo?: Record<string, any>;
   useBrandedTemplate?: boolean;
   ctaText?: string;
   ctaUrl?: string;
@@ -79,11 +82,16 @@ export async function POST(request: Request) {
     message,
     html: rawHtml,
     text: rawText,
+    templateKey,
+    templateAlias,
+    mergeInfo,
     useBrandedTemplate = true,
     ctaText,
     ctaUrl,
     clientReference,
   } = body;
+
+  const isTemplateDispatch = Boolean(templateKey || templateAlias);
 
   // Validate recipients
   if (!to) {
@@ -136,8 +144,8 @@ export async function POST(request: Request) {
     );
   }
 
-  // Validate subject
-  if (!subject || typeof subject !== 'string' || !subject.trim()) {
+  // Validate subject (required unless template key is supplied)
+  if (!isTemplateDispatch && (!subject || typeof subject !== 'string' || !subject.trim())) {
     return NextResponse.json(
       { success: false, error: 'Subject line is required.' },
       { status: 400 }
@@ -151,13 +159,13 @@ export async function POST(request: Request) {
   if (message && message.trim()) {
     if (useBrandedTemplate) {
       finalHtml = renderCustomBroadcastHtml({
-        title: subject.trim(),
+        title: (subject || '').trim(),
         message: message.trim(),
         ctaText: ctaText?.trim() || undefined,
         ctaUrl: ctaUrl?.trim() || undefined,
       });
       finalText = renderCustomBroadcastText({
-        title: subject.trim(),
+        title: (subject || '').trim(),
         message: message.trim(),
         ctaText: ctaText?.trim() || undefined,
         ctaUrl: ctaUrl?.trim() || undefined,
@@ -170,9 +178,9 @@ export async function POST(request: Request) {
     }
   }
 
-  if (!finalHtml && !finalText) {
+  if (!isTemplateDispatch && !finalHtml && !finalText) {
     return NextResponse.json(
-      { success: false, error: 'Email content ("message", "html", or "text") is required.' },
+      { success: false, error: 'Email content ("message", "html", "text", or "templateKey") is required.' },
       { status: 400 }
     );
   }
@@ -194,9 +202,12 @@ export async function POST(request: Request) {
     to: cleanedRecipients,
     cc: ccParsed.valid.length > 0 ? ccParsed.valid : undefined,
     bcc: bccParsed.valid.length > 0 ? bccParsed.valid : undefined,
-    subject: subject.trim(),
+    subject: subject?.trim(),
     html: finalHtml,
     text: finalText,
+    templateKey: templateKey?.trim(),
+    templateAlias: templateAlias?.trim(),
+    mergeInfo,
     clientReference: clientReference || `broadcast-${Date.now()}`,
     fromEmail: config.fromEmail, // Locked to verified sender identity info@sanex.rw
     fromName: config.fromName,
