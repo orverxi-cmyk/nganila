@@ -5,7 +5,7 @@ import { Navbar } from "@/components/sections/Navbar";
 import { Footer } from "@/components/sections/Footer";
 import { useUser, useDoc, useFirestore } from "@/firebase";
 import { doc } from "firebase/firestore";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,10 +13,6 @@ import {
   ChevronLeft,
   Mail,
   ShieldAlert,
-  Send,
-  Users,
-  CheckCircle,
-  ExternalLink,
 } from "lucide-react";
 import Link from "next/link";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
@@ -115,45 +111,6 @@ export default function AdminEmailCenterPage() {
               <Badge variant="outline" className="bg-white border-slate-300 font-mono text-[11px] py-1 px-2.5">
                 Sender: info@sanex.rw
               </Badge>
-            </div>
-          </div>
-
-          {/* Quick Capability Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 rounded-xl border bg-white shadow-sm flex items-start gap-3">
-              <div className="h-9 w-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                <Users className="h-5 w-5" />
-              </div>
-              <div>
-                <div className="font-bold text-xs text-foreground">Multi-Recipient Broadcast</div>
-                <div className="text-[11px] text-muted-foreground mt-0.5">
-                  Send to multiple client addresses simultaneously with automated bulk delivery.
-                </div>
-              </div>
-            </div>
-
-            <div className="p-4 rounded-xl border bg-white shadow-sm flex items-start gap-3">
-              <div className="h-9 w-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                <CheckCircle className="h-5 w-5" />
-              </div>
-              <div>
-                <div className="font-bold text-xs text-foreground">Booking Audience Groups</div>
-                <div className="text-[11px] text-muted-foreground mt-0.5">
-                  1-click audience loading from real customer bookings: All, Confirmed, Pending, or Completed.
-                </div>
-              </div>
-            </div>
-
-            <div className="p-4 rounded-xl border bg-white shadow-sm flex items-start gap-3">
-              <div className="h-9 w-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                <Send className="h-5 w-5" />
-              </div>
-              <div>
-                <div className="font-bold text-xs text-foreground">Branded Template &amp; Preview</div>
-                <div className="text-[11px] text-muted-foreground mt-0.5">
-                  Official SANEX responsive header, logo, styling, footer, and live preview before sending.
-                </div>
-              </div>
             </div>
           </div>
 
