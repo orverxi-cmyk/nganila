@@ -19,6 +19,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { exportToExcel } from "@/lib/exportExcel";
+import { SectorAddressBook } from "@/components/admin/SectorAddressBook";
 
 const REGULAR_CLIENT_THRESHOLD = 5;
 type LifecycleTier = "potential" | "client" | "regular";
@@ -230,6 +231,17 @@ export default function ClientLifecyclePage() {
   const { data: rawBookings, loading: bookingsLoading } = useCollection(bookingsQuery);
   const [searchTerm, setSearchTerm] = React.useState("");
   const [tierFilter, setTierFilter] = React.useState<"all" | LifecycleTier>("all");
+  const [activeView, setActiveView] = React.useState<"addressbook" | "lifecycle">("addressbook");
+
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("view") === "lifecycle" || params.get("tab") === "lifecycle") {
+        setActiveView("lifecycle");
+      }
+    }
+  }, []);
+
   const allProfiles = React.useMemo(() => buildClientProfiles(rawBookings || []), [rawBookings]);
   const filteredProfiles = React.useMemo(() => {
     return allProfiles.filter((p) => {
@@ -298,30 +310,63 @@ export default function ClientLifecyclePage() {
       <div className="flex-grow flex flex-col lg:flex-row">
         <AdminSidebar />
         <main className="flex-grow p-4 md:p-8 space-y-6 overflow-x-hidden">
-          <Button asChild variant="ghost" className="mb-2 -ml-2">
-            <Link href="/admin"><ChevronLeft className="mr-2 h-4 w-4" /> Back to Dashboard</Link>
-          </Button>
-          <div className="flex flex-wrap justify-between items-end gap-3">
-            <div>
-              <h1 className="text-3xl font-bold font-headline flex items-center gap-3">
-                <Users className="h-8 w-8 text-[#8DB833]" /> Client Lifecycle
-              </h1>
-              <p className="text-muted-foreground text-xs mt-1">
-                Track contacts from first enquiry to loyal regular client. Regular = {REGULAR_CLIENT_THRESHOLD}+ completed orders.
-              </p>
-            </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <Button variant="outline" size="sm" className="gap-2 h-9 text-xs font-bold border-[#8DB833] text-[#4a6b1a] hover:bg-[#8DB833]/10"
-                onClick={handleExport} disabled={filteredProfiles.length === 0}>
-                <FileDown className="h-3.5 w-3.5" />
-                Export Excel
-                {filteredProfiles.length > 0 && (
-                  <span className="ml-1 bg-[#8DB833] text-black rounded-full px-1.5 py-0.5 text-[9px] font-black leading-none">{filteredProfiles.length}</span>
-                )}
-              </Button>
-              <Badge variant="outline" className="text-sm px-4 py-1.5">{filteredProfiles.length} of {totalContacts} Contacts</Badge>
-            </div>
+          <div className="flex items-center justify-between">
+            <Button asChild variant="ghost" className="mb-2 -ml-2">
+              <Link href="/admin"><ChevronLeft className="mr-2 h-4 w-4" /> Back to Dashboard</Link>
+            </Button>
           </div>
+
+          {/* Top View Selector Tabs */}
+          <div className="flex items-center gap-2 border-b pb-3">
+            <button
+              type="button"
+              onClick={() => setActiveView("addressbook")}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+                activeView === "addressbook"
+                  ? "bg-slate-900 text-white shadow-sm"
+                  : "bg-white text-slate-700 hover:bg-slate-100 border"
+              }`}
+            >
+              <Users className="h-4 w-4 text-primary" /> Sector Address Book &amp; Zoho Contacts
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveView("lifecycle")}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+                activeView === "lifecycle"
+                  ? "bg-slate-900 text-white shadow-sm"
+                  : "bg-white text-slate-700 hover:bg-slate-100 border"
+              }`}
+            >
+              <Star className="h-4 w-4 text-primary" /> Booking Client Lifecycle ({totalContacts})
+            </button>
+          </div>
+
+          {activeView === "addressbook" ? (
+            <SectorAddressBook />
+          ) : (
+            <>
+              <div className="flex flex-wrap justify-between items-end gap-3">
+                <div>
+                  <h1 className="text-3xl font-bold font-headline flex items-center gap-3">
+                    <Users className="h-8 w-8 text-[#8DB833]" /> Client Lifecycle
+                  </h1>
+                  <p className="text-muted-foreground text-xs mt-1">
+                    Track contacts from first enquiry to loyal regular client. Regular = {REGULAR_CLIENT_THRESHOLD}+ completed orders.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Button variant="outline" size="sm" className="gap-2 h-9 text-xs font-bold border-[#8DB833] text-[#4a6b1a] hover:bg-[#8DB833]/10"
+                    onClick={handleExport} disabled={filteredProfiles.length === 0}>
+                    <FileDown className="h-3.5 w-3.5" />
+                    Export Excel
+                    {filteredProfiles.length > 0 && (
+                      <span className="ml-1 bg-[#8DB833] text-black rounded-full px-1.5 py-0.5 text-[9px] font-black leading-none">{filteredProfiles.length}</span>
+                    )}
+                  </Button>
+                  <Badge variant="outline" className="text-sm px-4 py-1.5">{filteredProfiles.length} of {totalContacts} Contacts</Badge>
+                </div>
+              </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <FunnelStat icon={UserPlus} label="Potential Leads" description="Submitted a request with no completed order yet"
@@ -416,6 +461,8 @@ export default function ClientLifecyclePage() {
               </div>
             )}
           </div>
+          </>
+          )}
         </main>
       </div>
       <Footer />

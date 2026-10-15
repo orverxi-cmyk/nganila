@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test tests/zoho-cpaas.test.ts",
+    "test": "tsx --test tests/**/*.test.ts",
     "build:functions": "cd functions && npm install && npm run build",
 
     "deploy:functions": "npm run build:functions && npx firebase-tools deploy --only functions"

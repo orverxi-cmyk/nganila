@@ -29,9 +29,11 @@ import {
   Building2, 
   PenTool, 
   Check, 
-  SendHorizontal
+  SendHorizontal,
+  Upload
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { ZohoContactsImporter } from "./ZohoContactsImporter";
 
 export interface CampaignTemplate {
   id: string;
@@ -133,6 +135,7 @@ export function ZohoEmailHub() {
     count: number;
     title: string;
   } | null>(null);
+  const [isImporterOpen, setIsImporterOpen] = useState(false);
 
   // When campaign selection changes, update subject line
   const handleSelectCampaign = (campaignId: string) => {
@@ -147,6 +150,36 @@ export function ZohoEmailHub() {
       }
     }
   };
+
+  // Query saved contacts from address book (client_contacts)
+  const contactsQuery = useMemo(() => {
+    if (!db || !user) return null;
+    return collection(db, "client_contacts");
+  }, [db, user]);
+  const { data: rawContacts } = useCollection(contactsQuery);
+
+  // Group contacts by sector for 1-click targeting
+  const sectorContacts = useMemo(() => {
+    const map: Record<string, string[]> = {
+      all: [],
+      hotel: [],
+      health: [],
+      campus: [],
+      schools: [],
+      general: [],
+      other: [],
+    };
+    (rawContacts || []).forEach((c: any) => {
+      const email = (c.email || "").trim().toLowerCase();
+      if (email && EMAIL_REGEX.test(email)) {
+        map.all.push(email);
+        const s = c.sector || "general";
+        if (map[s]) map[s].push(email);
+        else map.general.push(email);
+      }
+    });
+    return map;
+  }, [rawContacts]);
 
   // Query bookings for client audience quick-selection
   const bookingsQuery = useMemo(() => {
@@ -577,58 +610,156 @@ export function ZohoEmailHub() {
                   </p>
                 </div>
 
-                {/* Quick Add Client Groups */}
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="text-[10px] font-bold uppercase text-muted-foreground mr-1">Quick Select:</span>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    className="h-6 text-[10px] px-2 font-bold"
-                    onClick={() => handleAddAudience(clientAudiences.all, "All Clients")}
-                  >
-                    All Clients ({clientAudiences.all.length})
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    className="h-6 text-[10px] px-2 font-bold text-green-700 border-green-200"
-                    onClick={() => handleAddAudience(clientAudiences.confirmed, "Confirmed")}
-                  >
-                    Confirmed ({clientAudiences.confirmed.length})
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    className="h-6 text-[10px] px-2 font-bold text-amber-700 border-amber-200"
-                    onClick={() => handleAddAudience(clientAudiences.pending, "Pending")}
-                  >
-                    Pending ({clientAudiences.pending.length})
-                  </Button>
-                  {user?.email && (
+                {/* Quick Add Audiences (Sector Address Book & Bookings) */}
+                <div className="flex flex-col gap-2">
+                  {/* Row 1: Sector Address Book */}
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[10px] font-bold uppercase text-muted-foreground mr-1">Saved Contacts:</span>
+                    
                     <Button
                       type="button"
                       size="sm"
                       variant="outline"
-                      className="h-6 text-[10px] px-2 font-bold"
-                      onClick={() => handleAddAudience([user.email!], "Self")}
+                      className={`h-6 text-[10px] px-2 font-bold gap-1 transition-all ${
+                        selectedCampaignId === "hotel"
+                          ? "bg-primary text-black border-primary ring-1 ring-primary"
+                          : "bg-white text-slate-700"
+                      }`}
+                      onClick={() => handleAddAudience(sectorContacts.hotel, "Hotels & Lodges")}
                     >
-                      Myself
+                      <Hotel className="h-3 w-3" /> Hotels ({sectorContacts.hotel.length})
                     </Button>
-                  )}
-                  {parsedRecipients.valid.length > 0 && (
+
                     <Button
                       type="button"
                       size="sm"
-                      variant="ghost"
-                      className="h-6 text-[10px] px-1.5 text-muted-foreground hover:text-red-600"
-                      onClick={() => setToInput("")}
+                      variant="outline"
+                      className={`h-6 text-[10px] px-2 font-bold gap-1 transition-all ${
+                        selectedCampaignId === "health"
+                          ? "bg-primary text-black border-primary ring-1 ring-primary"
+                          : "bg-white text-slate-700"
+                      }`}
+                      onClick={() => handleAddAudience(sectorContacts.health, "Health Facilities")}
                     >
-                      Clear
+                      <Hospital className="h-3 w-3" /> Health ({sectorContacts.health.length})
                     </Button>
-                  )}
+
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className={`h-6 text-[10px] px-2 font-bold gap-1 transition-all ${
+                        selectedCampaignId === "campus"
+                          ? "bg-primary text-black border-primary ring-1 ring-primary"
+                          : "bg-white text-slate-700"
+                      }`}
+                      onClick={() => handleAddAudience(sectorContacts.campus, "Campuses")}
+                    >
+                      <GraduationCap className="h-3 w-3" /> Campuses ({sectorContacts.campus.length})
+                    </Button>
+
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className={`h-6 text-[10px] px-2 font-bold gap-1 transition-all ${
+                        selectedCampaignId === "schools"
+                          ? "bg-primary text-black border-primary ring-1 ring-primary"
+                          : "bg-white text-slate-700"
+                      }`}
+                      onClick={() => handleAddAudience(sectorContacts.schools, "Schools")}
+                    >
+                      <School className="h-3 w-3" /> Schools ({sectorContacts.schools.length})
+                    </Button>
+
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className={`h-6 text-[10px] px-2 font-bold gap-1 transition-all ${
+                        selectedCampaignId === "general"
+                          ? "bg-primary text-black border-primary ring-1 ring-primary"
+                          : "bg-white text-slate-700"
+                      }`}
+                      onClick={() => handleAddAudience(sectorContacts.general, "General")}
+                    >
+                      <Building2 className="h-3 w-3" /> General ({sectorContacts.general.length})
+                    </Button>
+
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="h-6 text-[10px] px-2 font-bold bg-white text-slate-700"
+                      onClick={() => handleAddAudience(sectorContacts.all, "All Address Book")}
+                    >
+                      All Saved ({sectorContacts.all.length})
+                    </Button>
+
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setIsImporterOpen(true)}
+                      className="h-6 text-[10px] px-2 font-bold border-primary/50 text-slate-900 bg-primary/10 hover:bg-primary/20 gap-1 ml-auto"
+                    >
+                      <Upload className="h-3 w-3 text-primary" /> Import Zoho Contacts
+                    </Button>
+                  </div>
+
+                  {/* Row 2: Website Bookings Audiences */}
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[10px] font-bold uppercase text-muted-foreground mr-1">From Bookings:</span>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="h-5 text-[9px] px-2 font-bold"
+                      onClick={() => handleAddAudience(clientAudiences.all, "All Bookings")}
+                    >
+                      All ({clientAudiences.all.length})
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="h-5 text-[9px] px-2 font-bold text-green-700 border-green-200"
+                      onClick={() => handleAddAudience(clientAudiences.confirmed, "Confirmed")}
+                    >
+                      Confirmed ({clientAudiences.confirmed.length})
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="h-5 text-[9px] px-2 font-bold text-amber-700 border-amber-200"
+                      onClick={() => handleAddAudience(clientAudiences.pending, "Pending")}
+                    >
+                      Pending ({clientAudiences.pending.length})
+                    </Button>
+                    {user?.email && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className="h-5 text-[9px] px-2 font-bold"
+                        onClick={() => handleAddAudience([user.email!], "Self")}
+                      >
+                        Myself
+                      </Button>
+                    )}
+                    {parsedRecipients.valid.length > 0 && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        className="h-5 text-[9px] px-1.5 text-muted-foreground hover:text-red-600 ml-auto"
+                        onClick={() => setToInput("")}
+                      >
+                        Clear
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -796,6 +927,13 @@ export function ZohoEmailHub() {
           </form>
         </CardContent>
       </Card>
+
+      {/* Zoho Contacts Importer Modal */}
+      <ZohoContactsImporter
+        open={isImporterOpen}
+        onOpenChange={setIsImporterOpen}
+        defaultSector={selectedCampaignId as any}
+      />
     </div>
   );
 }

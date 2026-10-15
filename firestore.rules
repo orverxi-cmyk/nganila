@@ -36,5 +36,10 @@ service cloud.firestore {
     match /bookings/{bookingId} {
       allow read, write: if isAdmin();
     }
+
+    // Client Contacts / Sector Address Book: Admin read and write
+    match /client_contacts/{contactId} {
+      allow read, write: if isAdmin();
+    }
   }
 }
