@@ -225,7 +225,7 @@ export const adminUpdateSiteSection = onCall({ cors: true }, async (request: Cal
   return { success: true };
 });
 
-export const createBooking = onRequest({ cors: true }, async (req, res) => {
+export const createBooking = onRequest({ cors: true, secrets: ['ZOHO_CPAAS_SEND_MAIL_TOKEN'] }, async (req, res) => {
   setCorsHeaders(req, res);
   if (req.method === 'OPTIONS') {
     res.status(204).send('');
@@ -254,6 +254,12 @@ export const createBooking = onRequest({ cors: true }, async (req, res) => {
     };
     
     const ref = await db.collection('bookings').add(booking);
+
+    // Send confirmation receipt email from info@sanex.rw via Zoho CPaaS
+    sendStatusNotificationEmail(booking, 'pending', ref.id).catch((emailErr) => {
+      console.warn('[createBooking] Could not send confirmation receipt:', emailErr.message);
+    });
+
     res.status(200).json({ id: ref.id });
   } catch (error: any) {
     console.error('Error:', error);
@@ -267,11 +273,18 @@ async function sendStatusNotificationEmail(booking: any, newStatus: string, book
   const BRAND_COLOR = "#8DB833";
   const BRAND_NAME = "SANEX Company Ltd";
   const COMPANY_PHONE = "+250 788 385 838";
-  const COMPANY_EMAIL = process.env.COMPANY_EMAIL || "sanexcompany@gmail.com";
-  const DEFAULT_FROM = process.env.EMAIL_FROM || `"${BRAND_NAME}" <${COMPANY_EMAIL}>`;
+  const SENDER_EMAIL = process.env.ZOHO_CPAAS_FROM_EMAIL || "info@sanex.rw";
+  const COMPANY_EMAIL = process.env.COMPANY_EMAIL || "info@sanex.rw";
+  const DEFAULT_FROM = process.env.EMAIL_FROM || `"${BRAND_NAME}" <${SENDER_EMAIL}>`;
 
-  const subject = `Service Request Update: ${booking.serviceType || 'Liquid Waste Management'} is now ${newStatus.toUpperCase()} - ${BRAND_NAME}`;
-  const text = `Hello ${booking.customerName || 'Customer'},\n\nYour service request (${booking.serviceType || 'Liquid Waste Management'}) status has been updated to: ${newStatus.toUpperCase()}.\n\nFor questions, contact SANEX at ${COMPANY_PHONE} or ${COMPANY_EMAIL}.\n\nThank you,\n${BRAND_NAME}`;
+  const isPending = (newStatus || '').toLowerCase() === 'pending';
+  const subject = isPending
+    ? `Service Request Received: #${bookingId} - ${BRAND_NAME}`
+    : `Service Request Update: ${booking.serviceType || 'Liquid Waste Management'} is now ${newStatus.toUpperCase()} - ${BRAND_NAME}`;
+
+  const text = isPending
+    ? `Hello ${booking.customerName || 'Customer'},\n\nWe have received your service request for ${booking.serviceType || 'Liquid Waste Management'} (Reference ID: #${bookingId}).\n\nOur operations desk will review your details and coordinate dispatch shortly.\n\nThank you,\n${BRAND_NAME}\nPhone: ${COMPANY_PHONE}`
+    : `Hello ${booking.customerName || 'Customer'},\n\nYour service request (${booking.serviceType || 'Liquid Waste Management'}) status has been updated to: ${newStatus.toUpperCase()}.\n\nFor questions, contact SANEX at ${COMPANY_PHONE} or ${COMPANY_EMAIL}.\n\nThank you,\n${BRAND_NAME}`;
 
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
@@ -281,7 +294,7 @@ async function sendStatusNotificationEmail(booking: any, newStatus: string, book
       </div>
       <div style="padding: 20px 0;">
         <p style="font-size: 16px; color: #0f172a;">Hello <strong>${booking.customerName || 'Valued Customer'}</strong>,</p>
-        <p style="color: #334155;">The status of your service request has been updated to: <span style="background-color: ${BRAND_COLOR}; color: #000; font-weight: bold; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; font-size: 12px;">${newStatus}</span></p>
+        <p style="color: #334155;">${isPending ? 'We have received your service request and our dispatch team is reviewing your schedule.' : `The status of your service request has been updated to: <span style="background-color: ${BRAND_COLOR}; color: #000; font-weight: bold; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; font-size: 12px;">${newStatus}</span>`}</p>
         <div style="background-color: #f8fafc; padding: 15px; border-radius: 8px; margin: 20px 0;">
           <p style="margin: 0 0 8px 0; font-size: 14px;"><strong>Reference ID:</strong> #${bookingId}</p>
           <p style="margin: 0 0 8px 0; font-size: 14px;"><strong>Service:</strong> ${booking.serviceType || 'Liquid Waste Management'}</p>
@@ -293,7 +306,7 @@ async function sendStatusNotificationEmail(booking: any, newStatus: string, book
     </div>
   `;
 
-  // 1. Try Zoho CPaaS API if configured
+  // 1. Try Zoho CPaaS API if configured (From: info@sanex.rw)
   const zohoToken = process.env.ZOHO_CPAAS_SEND_MAIL_TOKEN || process.env.ZOHO_CPAAS_API_KEY;
   if (zohoToken) {
     try {
@@ -301,7 +314,7 @@ async function sendStatusNotificationEmail(booking: any, newStatus: string, book
       const authHeader = zohoToken.trim().toLowerCase().startsWith('zoho-enczapikey ')
         ? zohoToken.trim()
         : `Zoho-enczapikey ${zohoToken.trim()}`;
-      const senderEmail = process.env.ZOHO_CPAAS_FROM_EMAIL || COMPANY_EMAIL;
+      const senderEmail = process.env.ZOHO_CPAAS_FROM_EMAIL || SENDER_EMAIL;
       const senderName = process.env.ZOHO_CPAAS_FROM_NAME || BRAND_NAME;
 
       const zRes = await fetch(zohoUrl, {
@@ -321,7 +334,7 @@ async function sendStatusNotificationEmail(booking: any, newStatus: string, book
       });
 
       if (zRes.ok) {
-        console.log(`[sendStatusNotificationEmail] Email accepted by Zoho CPaaS for ${booking.email}`);
+        console.log(`[sendStatusNotificationEmail] Email accepted by Zoho CPaaS for ${booking.email} from ${senderEmail}`);
         return;
       }
       const errText = await zRes.text();
