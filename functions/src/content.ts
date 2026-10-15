@@ -369,7 +369,7 @@ async function sendStatusNotificationEmail(booking: any, newStatus: string, book
   console.log(`[sendStatusNotificationEmail] Notification logged for ${booking.email} (${newStatus})`);
 }
 
-export const adminUpdateBookingStatus = onCall({ cors: true }, async (request: CallableRequest) => {
+export const adminUpdateBookingStatus = onCall({ cors: true, secrets: ['ZOHO_CPAAS_SEND_MAIL_TOKEN'] }, async (request: CallableRequest) => {
   await assertAdmin(request);
   const { bookingId, status } = request.data;
   if (!bookingId || !status) throw new HttpsError('invalid-argument', 'Missing bookingId or status.');

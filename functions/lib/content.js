@@ -381,7 +381,7 @@ async function sendStatusNotificationEmail(booking, newStatus, bookingId) {
     }
     console.log(`[sendStatusNotificationEmail] Notification logged for ${booking.email} (${newStatus})`);
 }
-exports.adminUpdateBookingStatus = (0, https_1.onCall)({ cors: true }, async (request) => {
+exports.adminUpdateBookingStatus = (0, https_1.onCall)({ cors: true, secrets: ['ZOHO_CPAAS_SEND_MAIL_TOKEN'] }, async (request) => {
     await assertAdmin(request);
     const { bookingId, status } = request.data;
     if (!bookingId || !status)
