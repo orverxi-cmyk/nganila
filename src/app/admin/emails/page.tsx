@@ -106,12 +106,6 @@ export default function AdminEmailCenterPage() {
                 <strong className="text-foreground font-mono">@sanex.rw</strong>.
               </p>
             </div>
-
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="bg-white border-slate-300 font-mono text-[11px] py-1 px-2.5">
-                Sender: info@sanex.rw
-              </Badge>
-            </div>
           </div>
 
           {/* Primary Interactive Email Hub Component */}
