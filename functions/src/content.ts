@@ -293,6 +293,45 @@ async function sendStatusNotificationEmail(booking: any, newStatus: string, book
     </div>
   `;
 
+  // 1. Try Zoho CPaaS API if configured
+  const zohoToken = process.env.ZOHO_CPAAS_SEND_MAIL_TOKEN || process.env.ZOHO_CPAAS_API_KEY;
+  if (zohoToken) {
+    try {
+      const zohoUrl = process.env.ZOHO_CPAAS_API_URL || 'https://cpaas.zoho.com/v1.1/email';
+      const authHeader = zohoToken.trim().toLowerCase().startsWith('zoho-enczapikey ')
+        ? zohoToken.trim()
+        : `Zoho-enczapikey ${zohoToken.trim()}`;
+      const senderEmail = process.env.ZOHO_CPAAS_FROM_EMAIL || COMPANY_EMAIL;
+      const senderName = process.env.ZOHO_CPAAS_FROM_NAME || BRAND_NAME;
+
+      const zRes = await fetch(zohoUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': authHeader,
+        },
+        body: JSON.stringify({
+          from: { address: senderEmail, name: senderName },
+          to: [{ email_address: { address: booking.email, name: booking.customerName || 'Valued Customer' } }],
+          subject,
+          htmlbody: html,
+          textbody: text,
+          client_reference: `status-${bookingId}-${newStatus}`,
+        }),
+      });
+
+      if (zRes.ok) {
+        console.log(`[sendStatusNotificationEmail] Email accepted by Zoho CPaaS for ${booking.email}`);
+        return;
+      }
+      const errText = await zRes.text();
+      console.warn(`[sendStatusNotificationEmail] Zoho CPaaS returned error ${zRes.status}: ${errText}`);
+    } catch (zohoErr: any) {
+      console.warn(`[sendStatusNotificationEmail] Zoho CPaaS dispatch exception: ${zohoErr.message}`);
+    }
+  }
+
+  // 2. Fallback to SMTP
   const host = process.env.SMTP_HOST;
   const port = parseInt(process.env.SMTP_PORT || '587', 10);
   const user = process.env.SMTP_USER || process.env.EMAIL_USER;

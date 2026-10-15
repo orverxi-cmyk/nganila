@@ -65,6 +65,7 @@ import {
 } from "@/components/admin/ChannelAnalyticsDashboard";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { AdminPagination } from "@/components/admin/AdminPagination";
+import { ZohoEmailDiagnostics } from "@/components/admin/ZohoEmailDiagnostics";
 
 export default function AdminDashboard() {
   const { user, loading: authLoading } = useUser();
@@ -965,8 +966,12 @@ export default function AdminDashboard() {
                 </Card>
               </div>
 
+              {/* Zoho CPaaS Transactional Email Infrastructure & Diagnostics */}
+              <ZohoEmailDiagnostics />
+
               {/* Recent Requests Snapshot on Operation Center */}
               <Card className="border bg-white shadow-sm overflow-hidden">
+
                 <CardHeader className="flex flex-row items-center justify-between pb-3 border-b">
                   <div>
                     <CardTitle className="text-base font-bold">Recent Service Inquiries</CardTitle>

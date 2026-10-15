@@ -26,15 +26,19 @@ headers:
 
 env:
   - variable: SMTP_HOST
-    value: smtp.gmail.com
+    value: smtp.zeptomail.com
   - variable: SMTP_PORT
     value: "587"
   - variable: SMTP_USER
-    value: sanexcompany@gmail.com
+    value: emailapikey
+  - variable: SMTP_PASS
+    secret: ZOHO_CPAAS_SEND_MAIL_TOKEN
+    availability:
+      - RUNTIME
   - variable: EMAIL_FROM
-    value: '"SANEX Company Ltd" <sanexcompany@gmail.com>'
+    value: '"SANEX Company Ltd" <info@sanex.rw>'
   - variable: COMPANY_EMAIL
-    value: sanexcompany@gmail.com
+    value: info@sanex.rw
   - variable: MASTER_ADMIN_EMAIL
     value: orverxi@gmail.com
   - variable: SMTP_CLIENT_ID
@@ -55,6 +59,20 @@ env:
     value: "53b5c0a743"
   - variable: MAILCHIMP_API_SERVER
     value: "us22"
+  - variable: ZOHO_CPAAS_API_URL
+    value: https://cpaas.zoho.com/v1.1/email
+  - variable: ZOHO_CPAAS_FROM_EMAIL
+    value: info@sanex.rw
+  - variable: ZOHO_CPAAS_FROM_NAME
+    value: "SANEX Company Ltd"
+  - variable: ZOHO_CPAAS_AGENT_ALIAS
+    value: "7c6dc6fcbb934ccb"
+  - variable: ZOHO_CPAAS_SEND_MAIL_TOKEN
+    secret: ZOHO_CPAAS_SEND_MAIL_TOKEN
+    availability:
+      - RUNTIME
+
+
 
 
 
