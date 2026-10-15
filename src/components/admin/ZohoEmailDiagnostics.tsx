@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -402,35 +402,8 @@ export function ZohoEmailHub() {
 
   return (
     <div className="space-y-6">
-      {/* Executive Card Container */}
+      {/* Email Form Container */}
       <Card className="border bg-white shadow-sm overflow-hidden">
-        <CardHeader className="bg-slate-900 text-white p-6 border-b border-primary/20">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-primary/20 text-primary flex items-center justify-center shrink-0">
-                <Mail className="h-5 w-5" />
-              </div>
-              <div>
-                <CardTitle className="text-lg font-bold flex items-center gap-2">
-                  Client Email Communications
-                  <Badge className="bg-primary text-black font-extrabold text-[10px] tracking-wide">
-                    info@sanex.rw
-                  </Badge>
-                </CardTitle>
-                <CardDescription className="text-xs text-slate-300">
-                  Send targeted sector outreach campaigns or direct messages to customers across Rwanda
-                </CardDescription>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="border-slate-700 text-slate-300 text-xs py-1 px-3 bg-slate-800/50">
-                Verified Domain: sanex.rw
-              </Badge>
-            </div>
-          </div>
-        </CardHeader>
-
         <CardContent className="p-6 space-y-6">
           <form onSubmit={handleSend} className="space-y-5">
             {/* Campaign / Template Selection Dropdown */}
