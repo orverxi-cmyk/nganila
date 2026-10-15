@@ -6,7 +6,6 @@ import { Footer } from "@/components/sections/Footer";
 import { useUser, useDoc, useFirestore } from "@/firebase";
 import { doc } from "firebase/firestore";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Loader2,
@@ -94,17 +93,11 @@ export default function AdminEmailCenterPage() {
                   <ChevronLeft className="h-3.5 w-3.5" /> Operations
                 </Link>
                 <span className="text-muted-foreground/40 text-xs">/</span>
-                <Badge className="bg-primary/20 text-black border-primary/30 font-bold uppercase text-[9px] tracking-wider">
-                  Outbound Communications
-                </Badge>
+                <span className="text-xs text-muted-foreground font-semibold">Send Email</span>
               </div>
               <h1 className="text-2xl lg:text-3xl font-extrabold font-headline tracking-tight text-foreground flex items-center gap-2.5">
-                <Mail className="h-7 w-7 text-primary" /> Email Communications Center
+                <Mail className="h-7 w-7 text-primary" /> Send Email
               </h1>
-              <p className="text-xs text-muted-foreground mt-1">
-                Compose, preview, and dispatch individual messages or multi-recipient broadcasts through verified domain{" "}
-                <strong className="text-foreground font-mono">@sanex.rw</strong>.
-              </p>
             </div>
           </div>
 
