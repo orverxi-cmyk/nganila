@@ -945,18 +945,18 @@ export default function AdminDashboard() {
                   </CardContent>
                 </Card>
 
-                {/* 4. Email Center */}
+                {/* 4. Send Email */}
                 <Card className="group hover:shadow-lg transition-all border bg-white">
                   <CardHeader className="pb-3">
                     <div className="h-11 w-11 rounded-xl bg-primary/10 text-black flex items-center justify-center mb-3">
                       <Mail className="h-5 w-5" />
                     </div>
-                    <CardTitle className="text-[15px] font-bold">Email Center</CardTitle>
+                    <CardTitle className="text-[15px] font-bold">Send Email</CardTitle>
                     <CardDescription className="text-[12px] font-normal">Outreach &amp; client campaigns.</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <Button asChild variant="outline" className="w-full h-9 font-bold uppercase tracking-widest text-[10px] group-hover:bg-primary group-hover:text-black transition-colors">
-                      <Link href="/admin/emails">Open Emails <ArrowRight className="ml-1.5 h-3.5 w-3.5" /></Link>
+                      <Link href="/admin/emails">Send Email <ArrowRight className="ml-1.5 h-3.5 w-3.5" /></Link>
                     </Button>
                   </CardContent>
                 </Card>

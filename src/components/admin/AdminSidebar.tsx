@@ -161,7 +161,7 @@ export function AdminSidebar({ activeTab, onSelectTab, pendingRequestsCount }: A
             {isClientsActive && <ChevronRight className="h-4 w-4 shrink-0" />}
           </Link>
 
-          {/* Email Center */}
+          {/* Send Email */}
           <Link
             href="/admin/emails"
             className={cn(
@@ -174,7 +174,7 @@ export function AdminSidebar({ activeTab, onSelectTab, pendingRequestsCount }: A
             <div className="flex items-center gap-3">
               <Mail className="h-4 w-4 shrink-0 text-black" />
               <div>
-                <div className="font-bold">Email Center</div>
+                <div className="font-bold">Send Email</div>
                 <div className={cn("text-[10px] font-normal", isEmailsActive ? "text-black/80" : "text-muted-foreground")}>
                   Broadcasts &amp; Outbound
                 </div>
