@@ -2,10 +2,14 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper to check admin status via token custom claims or user document
+    // Helper to check admin status via token custom claims, master admin emails, or user document
     function isAdmin() {
       return request.auth != null && (
         request.auth.token.admin == true ||
+        (request.auth.token.email != null && (
+          request.auth.token.email.lower() == 'sanexcompany@gmail.com' ||
+          request.auth.token.email.lower() == 'orverxi@gmail.com'
+        )) ||
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
       );

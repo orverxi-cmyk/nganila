@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { useFirestore, useCollection } from "@/firebase";
+import { useFirestore, useCollection, useUser } from "@/firebase";
 import { collection, doc, deleteDoc } from "firebase/firestore";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -34,6 +34,7 @@ import { exportToExcel } from "@/lib/exportExcel";
 
 export function SectorAddressBook() {
   const db = useFirestore();
+  const { user } = useUser();
   const { toast } = useToast();
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -42,11 +43,11 @@ export function SectorAddressBook() {
   const [importerDefaultSector, setImporterDefaultSector] = useState<ContactSector>("hotel");
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  // Firestore contacts query
+  // Firestore contacts query (only run when authenticated)
   const contactsQuery = useMemo(() => {
-    if (!db) return null;
+    if (!db || !user) return null;
     return collection(db, "client_contacts");
-  }, [db]);
+  }, [db, user]);
 
   const { data: rawContacts, loading } = useCollection(contactsQuery);
 
