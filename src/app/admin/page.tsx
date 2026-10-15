@@ -65,7 +65,6 @@ import {
 } from "@/components/admin/ChannelAnalyticsDashboard";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { AdminPagination } from "@/components/admin/AdminPagination";
-import { ZohoEmailHub } from "@/components/admin/ZohoEmailDiagnostics";
 
 export default function AdminDashboard() {
   const { user, loading: authLoading } = useUser();
@@ -896,48 +895,32 @@ export default function AdminDashboard() {
                 </Card>
               </div>
 
-              {/* Operational Modules 4-Card Grid - Former Quick Shortcuts Listed First */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {/* 1. Content Management (First) */}
+              {/* Operational Modules Executive Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+                {/* 1. Content Management */}
                 <Card className="group hover:shadow-lg transition-all border bg-white">
                   <CardHeader className="pb-3">
                     <div className="h-11 w-11 rounded-xl bg-primary/10 text-black flex items-center justify-center mb-3">
                       <ImageIcon className="h-5 w-5" />
                     </div>
-                    <CardTitle className="text-[15px] font-bold">Content Management</CardTitle>
-                    <CardDescription className="text-[12px] font-normal">Update Branding, Gallery, Services, and Articles.</CardDescription>
+                    <CardTitle className="text-[15px] font-bold">Content</CardTitle>
+                    <CardDescription className="text-[12px] font-normal">Branding, services, and articles.</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <Button asChild variant="outline" className="w-full h-9 font-bold uppercase tracking-widest text-[10px] group-hover:bg-primary group-hover:text-black transition-colors">
-                      <Link href="/admin/content">Content Management <ArrowRight className="ml-1.5 h-3.5 w-3.5" /></Link>
+                      <Link href="/admin/content">Manage Content <ArrowRight className="ml-1.5 h-3.5 w-3.5" /></Link>
                     </Button>
                   </CardContent>
                 </Card>
 
-                {/* 2. Users (Second) */}
-                <Card className="group hover:shadow-lg transition-all border bg-white">
-                  <CardHeader className="pb-3">
-                    <div className="h-11 w-11 rounded-xl bg-primary/10 text-black flex items-center justify-center mb-3">
-                      <Users className="h-5 w-5" />
-                    </div>
-                    <CardTitle className="text-[15px] font-bold">Users</CardTitle>
-                    <CardDescription className="text-[12px] font-normal">Provision operators and manage system roles.</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Button asChild variant="outline" className="w-full h-9 font-bold uppercase tracking-widest text-[10px] group-hover:bg-primary group-hover:text-black transition-colors">
-                      <Link href="/admin/users">Manage Users <ArrowRight className="ml-1.5 h-3.5 w-3.5" /></Link>
-                    </Button>
-                  </CardContent>
-                </Card>
-
-                {/* 3. Bookings (Third) */}
+                {/* 2. Bookings */}
                 <Card className="group hover:shadow-lg transition-all border bg-white">
                   <CardHeader className="pb-3">
                     <div className="h-11 w-11 rounded-xl bg-primary/10 text-black flex items-center justify-center mb-3">
                       <ClipboardList className="h-5 w-5" />
                     </div>
                     <CardTitle className="text-[15px] font-bold">Bookings</CardTitle>
-                    <CardDescription className="text-[12px] font-normal">Full bookings hub & client pipeline workflow.</CardDescription>
+                    <CardDescription className="text-[12px] font-normal">Requests &amp; service pipeline.</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <Button asChild variant="outline" className="w-full h-9 font-bold uppercase tracking-widest text-[10px] group-hover:bg-primary group-hover:text-black transition-colors">
@@ -946,7 +929,39 @@ export default function AdminDashboard() {
                   </CardContent>
                 </Card>
 
-                {/* 4. Platform Performance (Fourth) */}
+                {/* 3. Clients */}
+                <Card className="group hover:shadow-lg transition-all border bg-white">
+                  <CardHeader className="pb-3">
+                    <div className="h-11 w-11 rounded-xl bg-primary/10 text-black flex items-center justify-center mb-3">
+                      <Users className="h-5 w-5" />
+                    </div>
+                    <CardTitle className="text-[15px] font-bold">Clients</CardTitle>
+                    <CardDescription className="text-[12px] font-normal">Customer lifecycle &amp; history.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button asChild variant="outline" className="w-full h-9 font-bold uppercase tracking-widest text-[10px] group-hover:bg-primary group-hover:text-black transition-colors">
+                      <Link href="/admin/clients">View Clients <ArrowRight className="ml-1.5 h-3.5 w-3.5" /></Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                {/* 4. Email Center */}
+                <Card className="group hover:shadow-lg transition-all border bg-white">
+                  <CardHeader className="pb-3">
+                    <div className="h-11 w-11 rounded-xl bg-primary/10 text-black flex items-center justify-center mb-3">
+                      <Mail className="h-5 w-5" />
+                    </div>
+                    <CardTitle className="text-[15px] font-bold">Email Center</CardTitle>
+                    <CardDescription className="text-[12px] font-normal">Outreach &amp; client campaigns.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button asChild variant="outline" className="w-full h-9 font-bold uppercase tracking-widest text-[10px] group-hover:bg-primary group-hover:text-black transition-colors">
+                      <Link href="/admin/emails">Open Emails <ArrowRight className="ml-1.5 h-3.5 w-3.5" /></Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                {/* 5. Platform Performance */}
                 <Card 
                   onClick={() => setActiveMenu('platforms')}
                   className="group hover:shadow-lg transition-all border bg-white cursor-pointer"
@@ -955,19 +970,16 @@ export default function AdminDashboard() {
                     <div className="h-11 w-11 rounded-xl bg-primary/10 text-black flex items-center justify-center mb-3">
                       <TrendingUp className="h-5 w-5" />
                     </div>
-                    <CardTitle className="text-[15px] font-bold">Platform Performance</CardTitle>
-                    <CardDescription className="text-[12px] font-normal">Marketing intelligence on lead channels & conversion.</CardDescription>
+                    <CardTitle className="text-[15px] font-bold">Analytics</CardTitle>
+                    <CardDescription className="text-[12px] font-normal">Lead channels &amp; conversion.</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <Button variant="outline" className="w-full h-9 font-bold uppercase tracking-widest text-[10px] group-hover:bg-primary group-hover:text-black transition-colors">
-                      Platform Stats <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                      View Stats <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
                     </Button>
                   </CardContent>
                 </Card>
               </div>
-
-              {/* Zoho CPaaS Transactional Email Hub & Broadcast Console */}
-              <ZohoEmailHub />
 
               {/* Recent Requests Snapshot on Operation Center */}
               <Card className="border bg-white shadow-sm overflow-hidden">

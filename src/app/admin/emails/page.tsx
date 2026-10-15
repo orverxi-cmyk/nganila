@@ -64,7 +64,7 @@ export default function AdminEmailCenterPage() {
             <div>
               <h2 className="text-lg font-bold text-foreground">Access Restricted</h2>
               <p className="text-xs text-muted-foreground mt-1">
-                You must possess administrative privileges to dispatch emails through the official SANEX Zoho CPaaS infrastructure.
+                You must possess administrative privileges to dispatch emails on behalf of SANEX Company.
               </p>
             </div>
             <Button asChild className="w-full bg-primary text-black font-bold h-9 text-xs">
@@ -127,7 +127,7 @@ export default function AdminEmailCenterPage() {
               <div>
                 <div className="font-bold text-xs text-foreground">Multi-Recipient Broadcast</div>
                 <div className="text-[11px] text-muted-foreground mt-0.5">
-                  Send to multiple addresses simultaneously. Auto-chunks into batches of 50 per Zoho CPaaS standard.
+                  Send to multiple client addresses simultaneously with automated bulk delivery.
                 </div>
               </div>
             </div>
