@@ -8,6 +8,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useUser, useFirestore, useCollection } from "@/firebase";
 import { collection } from "firebase/firestore";
 import { 
@@ -425,190 +432,135 @@ export function ZohoEmailHub() {
         </CardHeader>
 
         <CardContent className="p-6 space-y-6">
-          <form onSubmit={handleSend} className="space-y-6">
-            {/* Step 1: Campaign & Template Selection */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-bold text-foreground">Step 1: Select Email Campaign</h3>
-                  <p className="text-xs text-muted-foreground">
-                    Choose one of your prepared sector campaigns, or compose a custom email
-                  </p>
-                </div>
-              </div>
-
-              {/* Visual Campaign Cards Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {CAMPAIGN_TEMPLATES.map((camp) => {
-                  const Icon = camp.icon;
-                  const isSelected = selectedCampaignId === camp.id;
-                  return (
-                    <button
-                      key={camp.id}
-                      type="button"
-                      onClick={() => handleSelectCampaign(camp.id)}
-                      className={`text-left p-4 rounded-xl border transition-all relative flex flex-col justify-between ${
-                        isSelected
-                          ? "border-primary bg-primary/5 shadow-sm ring-1 ring-primary"
-                          : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/60"
-                      }`}
-                    >
-                      <div className="space-y-1.5">
-                        <div className="flex items-center justify-between">
-                          <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${
-                            isSelected ? "bg-primary text-black" : "bg-slate-100 text-slate-700"
-                          }`}>
-                            <Icon className="h-4 w-4" />
-                          </div>
-                          {isSelected && (
-                            <span className="h-5 w-5 rounded-full bg-primary text-black flex items-center justify-center">
-                              <Check className="h-3 w-3 stroke-[3]" />
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="font-bold text-xs text-foreground mt-2">{camp.title}</div>
-                        <div className="text-[11px] text-muted-foreground leading-snug">{camp.description}</div>
+          <form onSubmit={handleSend} className="space-y-5">
+            {/* Campaign / Template Selection Dropdown */}
+            <div className="space-y-1.5">
+              <Label htmlFor="campaign-select" className="text-xs font-bold text-foreground">
+                Email Template / Campaign
+              </Label>
+              <Select value={selectedCampaignId} onValueChange={handleSelectCampaign}>
+                <SelectTrigger id="campaign-select" className="h-10 text-xs bg-white">
+                  <SelectValue placeholder="Select email template..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {CAMPAIGN_TEMPLATES.map((camp) => (
+                    <SelectItem key={camp.id} value={camp.id} className="text-xs">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold">{camp.title}</span>
+                        <span className="text-[11px] text-muted-foreground">({camp.sector})</span>
                       </div>
-
-                      <div className="pt-2 mt-2 border-t border-slate-100 text-[10px] text-slate-500 font-medium">
-                        {camp.sector}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Active Campaign Info Banner */}
-              {!selectedCampaign.isCustom && (
-                <div className="p-3.5 rounded-xl border bg-slate-50 text-xs space-y-1">
-                  <div className="font-bold text-slate-900 flex items-center gap-1.5">
-                    <CheckCircle2 className="h-4 w-4 text-[#8DB833]" />
-                    Ready to send: {selectedCampaign.title}
-                  </div>
-                  <p className="text-[11px] text-slate-600">
-                    This email uses the official SANEX HTML layout designed specifically for {selectedCampaign.sector}.
-                  </p>
-                </div>
-              )}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
-            {/* Step 2: Subject & Message Customization */}
-            <div className="space-y-3 pt-2 border-t">
-              <h3 className="text-sm font-bold text-foreground">
-                Step 2: Message Details
-              </h3>
+            {/* Email Subject Line */}
+            <div className="space-y-1.5">
+              <Label htmlFor="email-subject" className="text-xs font-bold text-foreground">
+                Email Subject Line *
+              </Label>
+              <Input
+                id="email-subject"
+                type="text"
+                required
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                placeholder="Enter email subject line..."
+                className="h-10 text-xs bg-white"
+                disabled={isSending}
+              />
+            </div>
 
+            {/* Recipient Organization Name (for campaigns) */}
+            {!selectedCampaign.isCustom && (
               <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-foreground">Email Subject Line *</Label>
+                <Label htmlFor="recipient-org" className="text-xs font-bold text-muted-foreground">
+                  Organization or Contact Name (Optional)
+                </Label>
                 <Input
+                  id="recipient-org"
                   type="text"
-                  required
-                  value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
-                  placeholder="Enter email subject line..."
-                  className="h-10 text-xs"
+                  value={recipientOrgName}
+                  onChange={(e) => setRecipientOrgName(e.target.value)}
+                  placeholder="e.g. Kigali Serena Hotel, King Faisal Hospital, etc."
+                  className="h-9 text-xs bg-white"
                   disabled={isSending}
                 />
               </div>
+            )}
 
-              {/* Recipient Organization Name (for campaigns) */}
-              {!selectedCampaign.isCustom && (
+            {/* Custom Message Fields (only visible when 'Custom Message' is chosen) */}
+            {selectedCampaign.isCustom && (
+              <div className="space-y-3 pt-1">
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-bold text-muted-foreground">
-                    Optional Organization or Contact Name
+                  <Label htmlFor="custom-message" className="text-xs font-bold text-foreground">
+                    Email Content *
                   </Label>
-                  <Input
-                    type="text"
-                    value={recipientOrgName}
-                    onChange={(e) => setRecipientOrgName(e.target.value)}
-                    placeholder="e.g. Kigali Serena Hotel, King Faisal Hospital, etc."
-                    className="h-9 text-xs"
+                  <Textarea
+                    id="custom-message"
+                    required
+                    value={customMessage}
+                    onChange={(e) => setCustomMessage(e.target.value)}
+                    placeholder="Type your message here..."
+                    rows={6}
+                    className="text-xs leading-relaxed bg-white"
                     disabled={isSending}
                   />
-                  <p className="text-[10px] text-muted-foreground">
-                    Personalizes the greeting in the template if applicable.
-                  </p>
                 </div>
-              )}
 
-              {/* Custom Message Fields (only visible when 'Custom Message' is chosen) */}
-              {selectedCampaign.isCustom && (
-                <div className="space-y-4 pt-1">
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-xs font-bold text-foreground">Email Content *</Label>
-                      <span className="text-[11px] text-muted-foreground">
-                        Separate paragraphs with blank lines
-                      </span>
+                <div className="flex items-center justify-between p-3 rounded-lg border bg-slate-50">
+                  <div>
+                    <div className="text-xs font-bold text-foreground">Apply SANEX Official Design</div>
+                    <div className="text-[10px] text-muted-foreground">
+                      Wraps email with SANEX header banner, contact info, and footer
                     </div>
-                    <Textarea
-                      required
-                      value={customMessage}
-                      onChange={(e) => setCustomMessage(e.target.value)}
-                      placeholder="Type your message here..."
-                      rows={6}
-                      className="text-xs leading-relaxed"
+                  </div>
+                  <Switch
+                    checked={useBrandedDesign}
+                    onCheckedChange={setUseBrandedDesign}
+                    disabled={isSending}
+                  />
+                </div>
+
+                {/* Optional Action Button */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 border rounded-xl p-3 bg-slate-50/50">
+                  <div className="space-y-1">
+                    <Label className="text-[10px] uppercase font-bold text-muted-foreground">
+                      Action Button Label (Optional)
+                    </Label>
+                    <Input
+                      type="text"
+                      value={ctaText}
+                      onChange={(e) => setCtaText(e.target.value)}
+                      placeholder="e.g. View Service Portal or Schedule Call"
+                      className="h-8 text-xs bg-white"
                       disabled={isSending}
                     />
                   </div>
-
-                  <div className="flex items-center justify-between p-3 rounded-lg border bg-slate-50">
-                    <div>
-                      <div className="text-xs font-bold text-foreground">Apply SANEX Official Design</div>
-                      <div className="text-[10px] text-muted-foreground">
-                        Wraps email with SANEX header banner, phone +250 788 385 838, and registered address footer
-                      </div>
-                    </div>
-                    <Switch
-                      checked={useBrandedDesign}
-                      onCheckedChange={setUseBrandedDesign}
+                  <div className="space-y-1">
+                    <Label className="text-[10px] uppercase font-bold text-muted-foreground">
+                      Action Button URL
+                    </Label>
+                    <Input
+                      type="url"
+                      value={ctaUrl}
+                      onChange={(e) => setCtaUrl(e.target.value)}
+                      placeholder="https://sanex.rw/services"
+                      className="h-8 text-xs bg-white"
                       disabled={isSending}
                     />
                   </div>
-
-                  {/* Optional Action Button */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 border rounded-xl p-3 bg-slate-50/50">
-                    <div className="space-y-1">
-                      <Label className="text-[10px] uppercase font-bold text-muted-foreground">
-                        Optional Action Button Label
-                      </Label>
-                      <Input
-                        type="text"
-                        value={ctaText}
-                        onChange={(e) => setCtaText(e.target.value)}
-                        placeholder="e.g. View Service Portal or Schedule Call"
-                        className="h-8 text-xs bg-white"
-                        disabled={isSending}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-[10px] uppercase font-bold text-muted-foreground">
-                        Action Button URL
-                      </Label>
-                      <Input
-                        type="url"
-                        value={ctaUrl}
-                        onChange={(e) => setCtaUrl(e.target.value)}
-                        placeholder="https://sanex.rw/services"
-                        className="h-8 text-xs bg-white"
-                        disabled={isSending}
-                      />
-                    </div>
-                  </div>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
-            {/* Step 3: Recipients (Send To) */}
+            {/* Recipients Section */}
             <div className="space-y-3 pt-2 border-t">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div>
-                  <h3 className="text-sm font-bold text-foreground">Step 3: Select Recipients</h3>
-                  <p className="text-xs text-muted-foreground">
-                    Enter email addresses separated by commas or new lines, or choose a client group
-                  </p>
-                </div>
+                <Label className="text-xs font-bold text-foreground">
+                  Recipients *
+                </Label>
 
                 {/* Quick Add Audiences (Sector Address Book & Bookings) */}
                 <div className="flex flex-col gap-2">
@@ -842,7 +794,7 @@ export function ZohoEmailHub() {
               )}
             </div>
 
-            {/* Step 4: Dispatch Action */}
+            {/* Actions */}
             <div className="pt-4 border-t flex flex-col sm:flex-row items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 {selectedCampaign.isCustom && (
