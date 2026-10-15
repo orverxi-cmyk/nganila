@@ -98,8 +98,43 @@ export function formatZohoAuthHeader(token: string): string {
 }
 
 /**
+ * Parses and separates valid vs invalid email addresses from a string or array of strings.
+ * Supports comma, semicolon, space, or newline delimited addresses.
+ */
+export function parseEmailList(input?: string | string[]): { valid: string[]; invalid: string[] } {
+  if (!input) return { valid: [], invalid: [] };
+
+  const rawItems = Array.isArray(input) ? input : [input];
+  const valid: string[] = [];
+  const invalid: string[] = [];
+  const seen = new Set<string>();
+
+  for (const item of rawItems) {
+    if (typeof item !== 'string') continue;
+    // Split by comma, semicolon, newline, or whitespace
+    const tokens = item.split(/[\s,;\n\r]+/);
+    for (const token of tokens) {
+      const trimmed = token.trim();
+      if (!trimmed) continue;
+      if (isValidEmail(trimmed)) {
+        const lower = trimmed.toLowerCase();
+        if (!seen.has(lower)) {
+          seen.add(lower);
+          valid.push(trimmed);
+        }
+      } else {
+        invalid.push(trimmed);
+      }
+    }
+  }
+
+  return { valid, invalid };
+}
+
+/**
  * Normalizes email input to Zoho's recipient array format:
  * [ { email_address: { address: '...', name: '...' } } ]
+ * Transparently parses comma/semicolon/newline separated string inputs and removes duplicates.
  */
 export function normalizeRecipients(
   input?: string | string[] | ZohoEmailAddress | ZohoEmailAddress[]
@@ -108,20 +143,35 @@ export function normalizeRecipients(
 
   const items = Array.isArray(input) ? input : [input];
   const results: ZohoRecipientItem[] = [];
+  const seen = new Set<string>();
 
   for (const item of items) {
     if (typeof item === 'string') {
-      const trimmed = item.trim();
-      if (trimmed) {
-        results.push({ email_address: { address: trimmed } });
+      const splitTokens = item.split(/[\s,;\n\r]+/);
+      for (const token of splitTokens) {
+        const trimmed = token.trim();
+        if (trimmed) {
+          const lower = trimmed.toLowerCase();
+          if (!seen.has(lower)) {
+            seen.add(lower);
+            results.push({ email_address: { address: trimmed } });
+          }
+        }
       }
     } else if (item && typeof item === 'object' && item.address) {
-      results.push({
-        email_address: {
-          address: item.address.trim(),
-          ...(item.name ? { name: item.name.trim() } : {}),
-        },
-      });
+      const trimmed = item.address.trim();
+      if (trimmed) {
+        const lower = trimmed.toLowerCase();
+        if (!seen.has(lower)) {
+          seen.add(lower);
+          results.push({
+            email_address: {
+              address: trimmed,
+              ...(item.name ? { name: item.name.trim() } : {}),
+            },
+          });
+        }
+      }
     }
   }
 
@@ -389,6 +439,78 @@ export async function sendZohoEmail(options: ZohoSendEmailOptions): Promise<Zoho
       clientReference: options.clientReference,
     };
   }
+}
+
+/**
+ * Sends transactional email to single or multiple recipients.
+ * Transparently chunks into batches of 50 if the recipient list exceeds Zoho CPaaS per-request limits.
+ */
+export async function sendZohoEmailBatch(
+  options: ZohoSendEmailOptions
+): Promise<ZohoEmailResult & { batchCount?: number; requestIds?: string[] }> {
+  const recipients = normalizeRecipients(options.to);
+  if (recipients.length === 0) {
+    return {
+      success: false,
+      status: 'failed',
+      message: 'No valid recipient email address provided.',
+      error: 'INVALID_RECIPIENTS',
+    };
+  }
+
+  // If 50 or fewer recipients, execute in a single dispatch
+  if (recipients.length <= 50) {
+    const singleResult = await sendZohoEmail(options);
+    return {
+      ...singleResult,
+      batchCount: 1,
+      requestIds: singleResult.requestId ? [singleResult.requestId] : [],
+    };
+  }
+
+  // Chunk recipients in batches of 50
+  const CHUNK_SIZE = 50;
+  const chunks: ZohoRecipientItem[][] = [];
+  for (let i = 0; i < recipients.length; i += CHUNK_SIZE) {
+    chunks.push(recipients.slice(i, i + CHUNK_SIZE));
+  }
+
+  const requestIds: string[] = [];
+  const errors: string[] = [];
+  let successfulRecipients = 0;
+
+  for (let index = 0; index < chunks.length; index++) {
+    const chunk = chunks[index];
+    const chunkOptions: ZohoSendEmailOptions = {
+      ...options,
+      to: chunk.map((c) => c.email_address),
+      clientReference: options.clientReference
+        ? `${options.clientReference}-b${index + 1}`
+        : undefined,
+    };
+
+    const res = await sendZohoEmail(chunkOptions);
+    if (res.success) {
+      if (res.requestId) requestIds.push(res.requestId);
+      successfulRecipients += chunk.length;
+    } else {
+      errors.push(`Batch ${index + 1}: ${res.message || res.error}`);
+    }
+  }
+
+  const allSuccess = errors.length === 0;
+  return {
+    success: allSuccess || requestIds.length > 0,
+    status: allSuccess ? 'accepted' : requestIds.length > 0 ? 'accepted' : 'failed',
+    message: allSuccess
+      ? `Email queued by Zoho CPaaS for all ${recipients.length} recipients across ${chunks.length} batch(es).`
+      : `Partially sent (${successfulRecipients}/${recipients.length} recipients queued). Warnings: ${errors.join('; ')}`,
+    requestId: requestIds.join(', '),
+    requestIds,
+    batchCount: chunks.length,
+    recipientCount: recipients.length,
+    error: errors.length > 0 ? errors.join('; ') : undefined,
+  };
 }
 
 // ============================================================================
@@ -688,4 +810,112 @@ export function renderTestEmailHtml(params: {
 </body>
 </html>
   `.trim();
+}
+
+export interface CustomBroadcastTemplateData {
+  title?: string;
+  message: string;
+  ctaText?: string;
+  ctaUrl?: string;
+  recipientName?: string;
+}
+
+/**
+ * Renders an official SANEX Company Ltd branded HTML template for custom admin messages,
+ * client announcements, and broadcast communications.
+ */
+export function renderCustomBroadcastHtml(data: CustomBroadcastTemplateData): string {
+  const { title, message, ctaText, ctaUrl, recipientName } = data;
+
+  // Format paragraphs safely
+  const paragraphs = (message || '')
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean)
+    .map(
+      (p) =>
+        `<p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.6; color: #334155;">${p.replace(/\n/g, '<br/>')}</p>`
+    )
+    .join('');
+
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${title || BRAND_NAME}</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f4f5f7; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b; line-height: 1.6;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f5f7; padding: 32px 16px;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;">
+          <tr>
+            <td style="background-color: #0f172a; padding: 28px 32px; text-align: left; border-bottom: 4px solid ${BRAND_COLOR};">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td>
+                    <h1 style="margin: 0; font-size: 20px; font-weight: 800; color: ${BRAND_COLOR}; letter-spacing: 0.5px; text-transform: uppercase;">
+                      SANEX <span style="color: #ffffff; font-weight: 400;">Company Ltd</span>
+                    </h1>
+                    <p style="margin: 4px 0 0 0; font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">
+                      Sustainable Liquid Waste Management · Rwanda
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 32px;">
+              ${title ? `<h2 style="margin: 0 0 16px 0; font-size: 20px; color: #0f172a; font-weight: 700;">${title}</h2>` : ''}
+              ${recipientName ? `<p style="margin: 0 0 14px 0; font-size: 15px; color: #0f172a; font-weight: 600;">Dear ${recipientName},</p>` : ''}
+              ${paragraphs || `<p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.6; color: #334155;">${message}</p>`}
+              ${
+                ctaText && ctaUrl
+                  ? `
+              <div style="margin: 28px 0; text-align: center;">
+                <a href="${ctaUrl}" target="_blank" style="display: inline-block; background-color: ${BRAND_COLOR}; color: #000000; font-size: 14px; font-weight: 800; text-decoration: none; padding: 12px 28px; border-radius: 8px; text-transform: uppercase; letter-spacing: 0.5px;">
+                  ${ctaText}
+                </a>
+              </div>`
+                  : ''
+              }
+              <div style="border-top: 1px solid #e2e8f0; padding-top: 20px; margin-top: 28px; font-size: 13px; color: #64748b;">
+                <p style="margin: 0;">For questions or operational support, contact SANEX at
+                  <a href="tel:${COMPANY_PHONE.replace(/\s+/g, '')}" style="color: #0f172a; font-weight: 700; text-decoration: none;">${COMPANY_PHONE}</a> or
+                  <a href="mailto:info@sanex.rw" style="color: #0f172a; font-weight: 700; text-decoration: none;">info@sanex.rw</a>.
+                </p>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="background-color: #f1f5f9; padding: 24px 32px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b;">
+              <p style="margin: 0 0 6px 0; font-weight: 700; color: #0f172a;">${BRAND_NAME}</p>
+              <p style="margin: 0 0 6px 0;">Leading Liquid Waste Management, Decentralized Wastewater Treatment & Eco-Sanitation.</p>
+              <p style="margin: 0; color: #94a3b8; font-size: 11px;">Kigali, Rwanda · Phone: ${COMPANY_PHONE} · Email: info@sanex.rw</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `.trim();
+}
+
+/**
+ * Plain text fallback for custom broadcast messages.
+ */
+export function renderCustomBroadcastText(data: CustomBroadcastTemplateData): string {
+  const { title, message, ctaText, ctaUrl, recipientName } = data;
+  let text = '';
+  if (recipientName) text += `Dear ${recipientName},\n\n`;
+  if (title) text += `${title.toUpperCase()}\n\n`;
+  text += `${message}\n\n`;
+  if (ctaText && ctaUrl) text += `${ctaText}: ${ctaUrl}\n\n`;
+  text += `---\n${BRAND_NAME}\nPhone: ${COMPANY_PHONE}\nEmail: info@sanex.rw\nKigali, Rwanda`;
+  return text;
 }

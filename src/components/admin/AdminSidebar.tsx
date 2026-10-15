@@ -15,7 +15,8 @@ import {
   Shield, 
   ChevronRight,
   ExternalLink,
-  UserCheck
+  UserCheck,
+  Mail
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -52,6 +53,7 @@ export function AdminSidebar({ activeTab, onSelectTab, pendingRequestsCount }: A
   const isUsersActive = pathname.startsWith("/admin/users");
   const isBookingsActive = pathname.startsWith("/admin/bookings");
   const isClientsActive = pathname.startsWith("/admin/clients");
+  const isEmailsActive = pathname.startsWith("/admin/emails");
   const isAnalyticsActive = pathname.startsWith("/admin/analytics") || (pathname === "/admin" && (activeTab === "platforms" || currentTab === "platforms"));
   const isRequestsActive = pathname === "/admin" && (activeTab === "requests" || currentTab === "requests");
   const isOperationsActive = pathname === "/admin" && !currentTab && (activeTab === "operations" || !activeTab);
@@ -157,6 +159,28 @@ export function AdminSidebar({ activeTab, onSelectTab, pendingRequestsCount }: A
               </div>
             </div>
             {isClientsActive && <ChevronRight className="h-4 w-4 shrink-0" />}
+          </Link>
+
+          {/* Email Center */}
+          <Link
+            href="/admin/emails"
+            className={cn(
+              "w-full flex items-center justify-between p-3 rounded-xl font-bold text-xs transition-all text-left",
+              isEmailsActive
+                ? "bg-primary text-black shadow-sm"
+                : "hover:bg-muted text-foreground"
+            )}
+          >
+            <div className="flex items-center gap-3">
+              <Mail className="h-4 w-4 shrink-0 text-black" />
+              <div>
+                <div className="font-bold">Email Center</div>
+                <div className={cn("text-[10px] font-normal", isEmailsActive ? "text-black/80" : "text-muted-foreground")}>
+                  Broadcasts &amp; Outbound
+                </div>
+              </div>
+            </div>
+            {isEmailsActive && <ChevronRight className="h-4 w-4 shrink-0" />}
           </Link>
 
           {/* Divider between primary modules and operational tabs */}

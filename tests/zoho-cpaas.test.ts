@@ -5,11 +5,15 @@ import {
   maskEmail,
   formatZohoAuthHeader,
   normalizeRecipients,
+  parseEmailList,
   sendZohoEmail,
+  sendZohoEmailBatch,
   renderStatusEmailHtml,
   renderStatusEmailText,
   renderBookingConfirmationHtml,
   renderTestEmailHtml,
+  renderCustomBroadcastHtml,
+  renderCustomBroadcastText,
 } from '../src/lib/zoho-cpaas';
 import { checkRateLimit } from '../src/lib/api-auth';
 
@@ -67,6 +71,21 @@ describe('Zoho CPaaS Email Validation and Formatting', () => {
     assert.deepEqual(r3, [
       { email_address: { address: 'vip@sanex.rw', name: 'VIP Client' } },
     ]);
+
+    // Comma-separated string with spaces and duplicates
+    const r4 = normalizeRecipients('a@sanex.rw, b@sanex.rw, a@sanex.rw');
+    assert.deepEqual(r4, [
+      { email_address: { address: 'a@sanex.rw' } },
+      { email_address: { address: 'b@sanex.rw' } },
+    ]);
+  });
+
+  it('parses email lists and separates valid from invalid entries accurately', () => {
+    const input = 'client1@example.com, invalid-email; client2@sanex.rw\nuser@domain.co  bad@domain';
+    const { valid, invalid } = parseEmailList(input);
+
+    assert.deepEqual(valid, ['client1@example.com', 'client2@sanex.rw', 'user@domain.co']);
+    assert.deepEqual(invalid, ['invalid-email', 'bad@domain']);
   });
 });
 
@@ -323,5 +342,85 @@ describe('Email Templates Rendering', () => {
     assert.match(html, /admin@sanex\.rw/);
     assert.match(html, /Master Admin/);
     assert.match(html, /Zoho CPaaS Integration Test/);
+  });
+
+  it('renders custom branded broadcast HTML and plain text', () => {
+    const html = renderCustomBroadcastHtml({
+      title: 'Facility Maintenance Advisory',
+      message: 'Please be advised that quarterly sanitation services are scheduled.\n\nThank you for your cooperation.',
+      ctaText: 'View Schedule',
+      ctaUrl: 'https://sanex.rw/schedule',
+      recipientName: 'Valued Client',
+    });
+
+    assert.match(html, /Facility Maintenance Advisory/);
+    assert.match(html, /Valued Client/);
+    assert.match(html, /View Schedule/);
+    assert.match(html, /https:\/\/sanex\.rw\/schedule/);
+    assert.match(html, /SANEX/);
+
+    const text = renderCustomBroadcastText({
+      title: 'Facility Maintenance Advisory',
+      message: 'Please be advised that quarterly sanitation services are scheduled.',
+      ctaText: 'View Schedule',
+      ctaUrl: 'https://sanex.rw/schedule',
+      recipientName: 'Valued Client',
+    });
+
+    assert.match(text, /FACILITY MAINTENANCE ADVISORY/);
+    assert.match(text, /Valued Client/);
+    assert.match(text, /View Schedule: https:\/\/sanex\.rw\/schedule/);
+  });
+});
+
+describe('Zoho CPaaS Batch Dispatcher', () => {
+  const originalEnv = process.env;
+  const originalFetch = global.fetch;
+
+  beforeEach(() => {
+    process.env = { ...originalEnv };
+  });
+
+  afterEach(() => {
+    process.env = originalEnv;
+    global.fetch = originalFetch;
+  });
+
+  it('transparently chunks recipient lists > 50 into batches of 50', async () => {
+    process.env.ZOHO_CPAAS_SEND_MAIL_TOKEN = 'test-token-batch';
+    process.env.ZOHO_CPAAS_FROM_EMAIL = 'info@sanex.rw';
+
+    // Generate 75 unique recipients
+    const recipients = Array.from({ length: 75 }, (_, i) => `client${i + 1}@example.com`);
+
+    let callCount = 0;
+    const batchSizes: number[] = [];
+
+    global.fetch = async (_url: any, init: any): Promise<Response> => {
+      callCount++;
+      const body = JSON.parse(init.body);
+      batchSizes.push(body.to.length);
+
+      return new Response(
+        JSON.stringify({
+          data: [{ code: 'EM_104', message: 'OK' }],
+          request_id: `req-batch-${callCount}`,
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      );
+    };
+
+    const res = await sendZohoEmailBatch({
+      to: recipients,
+      subject: 'Quarterly Sanitation Update',
+      text: 'Notification content',
+    });
+
+    assert.equal(res.success, true);
+    assert.equal(callCount, 2); // 75 recipients = batch 1 (50) + batch 2 (25)
+    assert.deepEqual(batchSizes, [50, 25]);
+    assert.equal(res.batchCount, 2);
+    assert.equal(res.recipientCount, 75);
+    assert.deepEqual(res.requestIds, ['req-batch-1', 'req-batch-2']);
   });
 });

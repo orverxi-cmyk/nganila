@@ -65,7 +65,7 @@ import {
 } from "@/components/admin/ChannelAnalyticsDashboard";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { AdminPagination } from "@/components/admin/AdminPagination";
-import { ZohoEmailDiagnostics } from "@/components/admin/ZohoEmailDiagnostics";
+import { ZohoEmailHub } from "@/components/admin/ZohoEmailDiagnostics";
 
 export default function AdminDashboard() {
   const { user, loading: authLoading } = useUser();
@@ -966,8 +966,8 @@ export default function AdminDashboard() {
                 </Card>
               </div>
 
-              {/* Zoho CPaaS Transactional Email Infrastructure & Diagnostics */}
-              <ZohoEmailDiagnostics />
+              {/* Zoho CPaaS Transactional Email Hub & Broadcast Console */}
+              <ZohoEmailHub />
 
               {/* Recent Requests Snapshot on Operation Center */}
               <Card className="border bg-white shadow-sm overflow-hidden">

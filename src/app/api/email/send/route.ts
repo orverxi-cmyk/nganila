@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
 import {
-  sendZohoEmail,
+  sendZohoEmailBatch,
   getZohoConfig,
-  isValidEmail,
+  parseEmailList,
+  renderCustomBroadcastHtml,
+  renderCustomBroadcastText,
   maskEmail,
 } from '@/lib/zoho-cpaas';
 import {
@@ -13,9 +15,15 @@ import {
 
 interface SendRequestBody {
   to: string | string[];
+  cc?: string | string[];
+  bcc?: string | string[];
   subject: string;
+  message?: string;
   html?: string;
   text?: string;
+  useBrandedTemplate?: boolean;
+  ctaText?: string;
+  ctaUrl?: string;
   clientReference?: string;
 }
 
@@ -63,7 +71,19 @@ export async function POST(request: Request) {
     );
   }
 
-  const { to, subject, html, text, clientReference } = body;
+  const {
+    to,
+    cc,
+    bcc,
+    subject,
+    message,
+    html: rawHtml,
+    text: rawText,
+    useBrandedTemplate = true,
+    ctaText,
+    ctaUrl,
+    clientReference,
+  } = body;
 
   // Validate recipients
   if (!to) {
@@ -73,22 +93,45 @@ export async function POST(request: Request) {
     );
   }
 
-  const rawRecipients = Array.isArray(to) ? to : [to];
-  const cleanedRecipients: string[] = [];
+  const { valid: cleanedRecipients, invalid: invalidRecipients } = parseEmailList(to);
 
-  for (const r of rawRecipients) {
-    if (typeof r !== 'string' || !isValidEmail(r.trim())) {
-      return NextResponse.json(
-        { success: false, error: `Invalid recipient email address format: "${maskEmail(String(r))}"` },
-        { status: 400 }
-      );
-    }
-    cleanedRecipients.push(r.trim().toLowerCase());
+  if (invalidRecipients.length > 0) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: `Invalid email address format detected: ${invalidRecipients.map(maskEmail).join(', ')}`,
+      },
+      { status: 400 }
+    );
   }
 
-  if (cleanedRecipients.length > 50) {
+  if (cleanedRecipients.length === 0) {
     return NextResponse.json(
-      { success: false, error: 'Maximum 50 recipients per request allowed.' },
+      { success: false, error: 'At least one valid recipient email address is required.' },
+      { status: 400 }
+    );
+  }
+
+  if (cleanedRecipients.length > 500) {
+    return NextResponse.json(
+      { success: false, error: 'Maximum 500 recipients per broadcast request allowed.' },
+      { status: 400 }
+    );
+  }
+
+  // Parse CC and BCC if provided
+  const ccParsed = cc ? parseEmailList(cc) : { valid: [], invalid: [] };
+  const bccParsed = bcc ? parseEmailList(bcc) : { valid: [], invalid: [] };
+
+  if (ccParsed.invalid.length > 0) {
+    return NextResponse.json(
+      { success: false, error: `Invalid CC email format: ${ccParsed.invalid.map(maskEmail).join(', ')}` },
+      { status: 400 }
+    );
+  }
+  if (bccParsed.invalid.length > 0) {
+    return NextResponse.json(
+      { success: false, error: `Invalid BCC email format: ${bccParsed.invalid.map(maskEmail).join(', ')}` },
       { status: 400 }
     );
   }
@@ -101,15 +144,40 @@ export async function POST(request: Request) {
     );
   }
 
-  // Validate content
-  if (!html && !text) {
+  // Resolve HTML and Text contents
+  let finalHtml = rawHtml;
+  let finalText = rawText;
+
+  if (message && message.trim()) {
+    if (useBrandedTemplate) {
+      finalHtml = renderCustomBroadcastHtml({
+        title: subject.trim(),
+        message: message.trim(),
+        ctaText: ctaText?.trim() || undefined,
+        ctaUrl: ctaUrl?.trim() || undefined,
+      });
+      finalText = renderCustomBroadcastText({
+        title: subject.trim(),
+        message: message.trim(),
+        ctaText: ctaText?.trim() || undefined,
+        ctaUrl: ctaUrl?.trim() || undefined,
+      });
+    } else {
+      finalHtml = `<div style="font-family: sans-serif; line-height: 1.6; color: #1e293b;">${message
+        .trim()
+        .replace(/\n/g, '<br/>')}</div>`;
+      finalText = message.trim();
+    }
+  }
+
+  if (!finalHtml && !finalText) {
     return NextResponse.json(
-      { success: false, error: 'Email content ("html" or "text") is required.' },
+      { success: false, error: 'Email content ("message", "html", or "text") is required.' },
       { status: 400 }
     );
   }
 
-  // 4. Enforce verified sender identity (never allow client-specified arbitrary sender)
+  // 4. Enforce verified sender identity (strictly @sanex.rw)
   const config = getZohoConfig();
   if (!config.isConfigured) {
     return NextResponse.json(
@@ -121,14 +189,16 @@ export async function POST(request: Request) {
     );
   }
 
-  // 5. Send through Zoho CPaaS
-  const result = await sendZohoEmail({
+  // 5. Send through Zoho CPaaS (supporting transparent 50-recipient chunking)
+  const result = await sendZohoEmailBatch({
     to: cleanedRecipients,
+    cc: ccParsed.valid.length > 0 ? ccParsed.valid : undefined,
+    bcc: bccParsed.valid.length > 0 ? bccParsed.valid : undefined,
     subject: subject.trim(),
-    html,
-    text,
-    clientReference: clientReference || `send-${Date.now()}`,
-    fromEmail: config.fromEmail, // Locked to verified sender identity
+    html: finalHtml,
+    text: finalText,
+    clientReference: clientReference || `broadcast-${Date.now()}`,
+    fromEmail: config.fromEmail, // Locked to verified sender identity info@sanex.rw
     fromName: config.fromName,
   });
 
@@ -136,9 +206,11 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       status: 'accepted',
-      message: 'Email accepted by Zoho CPaaS for delivery queue.',
+      message: result.message || 'Email accepted by Zoho CPaaS for delivery queue.',
       requestId: result.requestId,
+      requestIds: result.requestIds || (result.requestId ? [result.requestId] : []),
       recipientCount: cleanedRecipients.length,
+      batchCount: result.batchCount || 1,
       clientReference: result.clientReference,
     });
   }
