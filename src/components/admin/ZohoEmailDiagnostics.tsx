@@ -1424,22 +1424,24 @@ export function ZohoEmailHub() {
 
                   <div className="flex-1 overflow-y-auto p-4 sm:p-8 flex justify-center items-start">
                     <div
-                      className={`w-full bg-white rounded-xl shadow-md border p-6 sm:p-8 space-y-4 text-xs leading-relaxed text-slate-800 transition-all duration-300 ${
+                      className={`w-full bg-white rounded-xl shadow-md border p-4 sm:p-6 space-y-4 text-xs leading-relaxed text-slate-800 transition-all duration-300 ${
                         previewDevice === "mobile"
                           ? "max-w-[375px] ring-2 ring-slate-400"
-                          : "max-w-[600px]"
+                          : "max-w-[620px]"
                       }`}
                     >
                       {subject && <h2 className="text-base sm:text-lg font-bold text-slate-900 border-b pb-3">{subject}</h2>}
                       {editorMode === "html" ? (
-                        <div
-                          className="break-words"
-                          dangerouslySetInnerHTML={{
-                            __html:
+                        <div className="w-full overflow-hidden rounded-md border border-slate-100">
+                          <iframe
+                            srcDoc={
                               customMessage ||
-                              "<p style='color:#94a3b8;'>Paste HTML/CSS code to preview...</p>",
-                          }}
-                        />
+                              "<!DOCTYPE html><html><body style='font-family:sans-serif; text-align:center; padding:40px 20px; color:#94a3b8;'><p>Paste HTML/CSS code or design email in Email Studio...</p></body></html>"
+                            }
+                            title="Custom Email Preview"
+                            className="w-full min-h-[580px] bg-white border-0"
+                          />
+                        </div>
                       ) : (
                         <div className="whitespace-pre-wrap">
                           {customMessage || "Type message content to preview..."}

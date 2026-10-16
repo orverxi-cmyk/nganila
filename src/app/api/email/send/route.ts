@@ -156,7 +156,7 @@ export async function POST(request: Request) {
   let finalHtml = rawHtml;
   let finalText = rawText;
 
-  if (message && message.trim()) {
+  if (!finalHtml && message && message.trim()) {
     if (useBrandedTemplate) {
       finalHtml = renderCustomBroadcastHtml({
         title: (subject || '').trim(),
@@ -198,6 +198,26 @@ export async function POST(request: Request) {
   }
 
   // 5. Send through Zoho CPaaS (supporting transparent 50-recipient chunking)
+  const inlineImages: { name: string; mime_type: string; content: string; cid: string }[] = [];
+  if (finalHtml && finalHtml.includes('data:image/')) {
+    let imgIdx = 0;
+    finalHtml = finalHtml.replace(
+      /src=["']data:(image\/[a-zA-Z0-9+.-]+);base64,([^"']+)["']/g,
+      (_match, mimeType, base64Data) => {
+        imgIdx++;
+        const ext = mimeType.split('/')[1] || 'jpeg';
+        const cid = `img_${imgIdx}`;
+        inlineImages.push({
+          name: `image_${imgIdx}.${ext}`,
+          mime_type: mimeType,
+          content: base64Data.trim(),
+          cid,
+        });
+        return `src="cid:${cid}"`;
+      }
+    );
+  }
+
   const result = await sendZohoEmailBatch({
     to: cleanedRecipients,
     cc: ccParsed.valid.length > 0 ? ccParsed.valid : undefined,
@@ -208,6 +228,7 @@ export async function POST(request: Request) {
     templateKey: templateKey?.trim(),
     templateAlias: templateAlias?.trim(),
     mergeInfo,
+    inlineImages: inlineImages.length > 0 ? inlineImages : undefined,
     clientReference: clientReference || `broadcast-${Date.now()}`,
     fromEmail: config.fromEmail, // Locked to verified sender identity info@sanex.rw
     fromName: config.fromName,

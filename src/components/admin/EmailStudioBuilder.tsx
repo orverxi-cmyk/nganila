@@ -161,8 +161,9 @@ const INITIAL_SANEX_BLOCKS: EmailBlock[] = [
   },
 ];
 
-export function compileBlocksToHtml(blocks: EmailBlock[]): string {
-  const renderedBlocks = blocks
+export function compileBlocksToHtml(blocks: EmailBlock[] = INITIAL_SANEX_BLOCKS): string {
+  const safeBlocks = Array.isArray(blocks) && blocks.length > 0 ? blocks : INITIAL_SANEX_BLOCKS;
+  const renderedBlocks = safeBlocks
     .map((block) => {
       switch (block.type) {
         case "topbar":
@@ -233,13 +234,14 @@ export function compileBlocksToHtml(blocks: EmailBlock[]): string {
           const rightW = block.col2Width || 52;
           return `
             <tr>
-              <td style="background-color:#ffffff; padding:24px 20px; border-bottom:1px solid #f1f5f9;">
-                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;">
+              <td class="sanex-col-cell" style="background-color:#ffffff; padding:24px 20px; border-bottom:1px solid #f1f5f9;">
+                <!-- DESKTOP 2-COLUMN VIEW (hidden on mobile <= 600px) -->
+                <table class="sanex-desktop-col" border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;">
                   <tr>
                     <td width="${leftW}%" valign="top" style="padding-right:16px;">
                       ${
                         block.col1Image
-                          ? `<img src="${block.col1Image}" alt="Sanex Facility" width="${block.col1ImageWidth || 260}" style="width:100%; max-width:${block.col1ImageWidth || 260}px; height:auto; border-radius:6px; display:block;" />`
+                          ? `<img src="${block.col1Image}" alt="${block.col2Heading || "Sanex Service"}" width="${block.col1ImageWidth || 260}" style="width:100%; max-width:${block.col1ImageWidth || 260}px; height:auto; border-radius:6px; display:block;" />`
                           : ""
                       }
                       ${block.col1Heading ? `<h3 style="color:#1e293b; font-size:15px; font-weight:800; margin:8px 0 6px 0;">${block.col1Heading}</h3>` : ""}
@@ -262,6 +264,54 @@ export function compileBlocksToHtml(blocks: EmailBlock[]): string {
                     </td>
                   </tr>
                 </table>
+
+                <!-- MOBILE VERTICALLY STACKED VIEW (hidden on desktop, active on mobile <= 600px) -->
+                <!-- Exact Requested Order: 1. Title first, 2. Image, 3. Text, 4. Read More -->
+                <!--[if !mso]><!-->
+                <div class="sanex-mobile-col" style="display:none; max-height:0; overflow:hidden; mso-hide:all;">
+                  ${
+                    block.col2Heading
+                      ? `<h2 style="color:#8DB833; font-size:17px; font-weight:800; line-height:1.35; margin:0 0 12px 0;">
+                          ${block.col2Heading}
+                        </h2>`
+                      : ""
+                  }
+                  ${
+                    block.col1Image
+                      ? `<div style="margin:0 0 14px 0; width:100%;">
+                          <img src="${block.col1Image}" alt="${block.col2Heading || "Sanex Service"}" style="width:100%; max-width:100%; height:auto; border-radius:8px; display:block;" />
+                        </div>`
+                      : ""
+                  }
+                  ${
+                    block.col1Heading
+                      ? `<h3 style="color:#1e293b; font-size:14px; font-weight:800; margin:0 0 8px 0;">
+                          ${block.col1Heading}
+                        </h3>`
+                      : ""
+                  }
+                  ${
+                    block.col2Text
+                      ? `<p style="color:#475569; font-size:13px; line-height:1.6; margin:0 0 14px 0;">
+                          ${block.col2Text}
+                        </p>`
+                      : block.col1Text
+                      ? `<p style="color:#475569; font-size:13px; line-height:1.6; margin:0 0 14px 0;">
+                          ${block.col1Text}
+                        </p>`
+                      : ""
+                  }
+                  ${
+                    block.col2ButtonText
+                      ? `<div style="margin-top:6px;">
+                          <a href="${block.col2ButtonUrl || "#"}" target="_blank" style="display:inline-block; background-color:${block.col2ButtonColor || "#000000"}; color:${block.col2ButtonTextColor || "#8DB833"}; font-size:13px; font-weight:800; text-decoration:none; padding:10px 24px; border-radius:6px; text-align:center;">
+                            ${block.col2ButtonText}
+                          </a>
+                        </div>`
+                      : ""
+                  }
+                </div>
+                <!--<![endif]-->
               </td>
             </tr>
           `;
@@ -363,6 +413,39 @@ export function compileBlocksToHtml(blocks: EmailBlock[]): string {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SANEX Campaign</title>
+  <style type="text/css">
+    @media only screen and (max-width: 600px) {
+      .sanex-desktop-col {
+        display: none !important;
+        max-height: 0 !important;
+        overflow: hidden !important;
+        mso-hide: all !important;
+      }
+      .sanex-mobile-col {
+        display: block !important;
+        max-height: none !important;
+        overflow: visible !important;
+        font-size: inherit !important;
+      }
+      .sanex-col-cell {
+        padding: 20px 16px !important;
+      }
+    }
+    .mobile-forced .sanex-desktop-col {
+      display: none !important;
+      max-height: 0 !important;
+      overflow: hidden !important;
+    }
+    .mobile-forced .sanex-mobile-col {
+      display: block !important;
+      max-height: none !important;
+      overflow: visible !important;
+      font-size: inherit !important;
+    }
+    .mobile-forced .sanex-col-cell {
+      padding: 20px 16px !important;
+    }
+  </style>
 </head>
 <body style="margin:0; padding:0; background-color:#f4f5f7; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
   <center style="width:100%; background-color:#f4f5f7; padding:24px 0;">
@@ -442,6 +525,7 @@ export function EmailStudioBuilder({
 
   const [activeTab, setActiveTab] = useState<"blocks" | "sections" | "styles" | "optimize">("blocks");
   const [previewDevice, setPreviewDevice] = useState<"desktop" | "mobile">("desktop");
+  const [modalPreviewDevice, setModalPreviewDevice] = useState<"desktop" | "mobile">("desktop");
   const [activeBlockId, setActiveBlockId] = useState<string | null>("col2-1");
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);
@@ -833,7 +917,10 @@ export function EmailStudioBuilder({
             type="button"
             variant="outline"
             size="sm"
-            onClick={() => setShowPreviewModal(true)}
+            onClick={() => {
+              setModalPreviewDevice(previewDevice);
+              setShowPreviewModal(true);
+            }}
             className="h-8 text-xs font-bold gap-1.5 border-slate-300 text-slate-700 hover:bg-slate-50"
           >
             <Eye className="h-3.5 w-3.5 text-slate-800" /> Preview
@@ -1188,55 +1275,66 @@ export function EmailStudioBuilder({
                               <span>{block.buttonText}</span>
                               <Link2 className="h-3 w-3 opacity-80 text-teal-300" />
                             </button>
-                            <span
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openLinkEditor(block.id, "buttonUrl", "buttonText");
-                              }}
-                              className="text-[10px] text-teal-300 underline cursor-pointer hover:text-teal-200 flex items-center gap-1 opacity-80 hover:opacity-100 transition-opacity"
-                            >
-                              🔗 {block.buttonUrl || "Add link destination..."}
-                            </span>
                           </div>
                         )}
                       </div>
                     )}
 
                     {block.type === "columns_2" && (
-                      <div className="p-5 bg-white relative flex flex-col sm:flex-row items-stretch gap-4">
-                        <div
-                          style={{ width: `${block.col1Width || 48}%` }}
-                          className="relative flex flex-col items-center justify-center min-w-[120px]"
-                        >
+                      previewDevice === "mobile" ? (
+                        /* MOBILE STACKED VIEW (Exact Requested Order: 1. Title, 2. Image, 3. Text, 4. Read More) */
+                        <div className="p-4 sm:p-5 bg-white relative flex flex-col space-y-3.5">
+                          {/* 1. TITLE FIRST */}
+                          <div className="w-full">
+                            <span className="text-[9px] font-bold uppercase tracking-wider text-teal-600 block mb-1">
+                              1. Section Title
+                            </span>
+                            <AutoResizingTextarea
+                              rows={1}
+                              value={block.col2Heading || ""}
+                              onChange={(e) =>
+                                updateBlockField(block.id, "col2Heading", e.target.value)
+                              }
+                              className="w-full text-base font-extrabold text-[#8DB833] leading-snug bg-transparent border-none focus:outline-none focus:ring-1 focus:ring-teal-400 rounded"
+                              placeholder="Section Title / Heading..."
+                            />
+                          </div>
+
+                          {/* 2. IMAGE SECOND */}
                           {block.col1Image && (
-                            <div className="relative group/img inline-block">
-                              <img
-                                src={block.col1Image}
-                                alt="Section photo"
-                                style={{ width: block.col1ImageWidth || 260 }}
-                                className="rounded-md object-cover max-w-full shadow-2xs"
-                              />
+                            <div className="w-full">
+                              <span className="text-[9px] font-bold uppercase tracking-wider text-teal-600 block mb-1">
+                                2. Section Photo
+                              </span>
+                              <div className="relative group/img w-full flex flex-col items-center">
+                                <img
+                                  src={block.col1Image}
+                                  alt="Section photo"
+                                  style={{ width: "100%", maxWidth: block.col1ImageWidth || 340 }}
+                                  className="rounded-lg object-cover w-full shadow-2xs"
+                                />
 
-                              <button
-                                type="button"
-                                onClick={() => triggerImageUpload(block.id, "col1Image")}
-                                className="absolute bottom-2 left-2 bg-slate-900/80 hover:bg-slate-900 text-white text-[10px] font-bold px-2 py-1 rounded flex items-center gap-1 shadow-xs opacity-0 group-hover/img:opacity-100 transition-opacity"
-                              >
-                                <Upload className="h-3 w-3" /> Replace / Upload
-                              </button>
+                                <button
+                                  type="button"
+                                  onClick={() => triggerImageUpload(block.id, "col1Image")}
+                                  className="absolute bottom-2 left-2 bg-slate-900/80 hover:bg-slate-900 text-white text-[10px] font-bold px-2 py-1 rounded flex items-center gap-1 shadow-xs opacity-0 group-hover/img:opacity-100 transition-opacity"
+                                >
+                                  <Upload className="h-3 w-3" /> Replace / Upload
+                                </button>
 
-                              <div
-                                onMouseDown={(e) =>
-                                  startImageResize(
-                                    e,
-                                    block.id,
-                                    block.col1ImageWidth || 260,
-                                    "col1ImageWidth"
-                                  )
-                                }
-                                className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-white border-2 border-[#8DB833] rounded-xs cursor-nwse-resize shadow-xs opacity-0 group-hover/img:opacity-100 transition-opacity"
-                                title="Drag to resize photo width"
-                              />
+                                <div
+                                  onMouseDown={(e) =>
+                                    startImageResize(
+                                      e,
+                                      block.id,
+                                      block.col1ImageWidth || 260,
+                                      "col1ImageWidth"
+                                    )
+                                  }
+                                  className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-white border-2 border-[#8DB833] rounded-xs cursor-nwse-resize shadow-xs opacity-0 group-hover/img:opacity-100 transition-opacity"
+                                  title="Drag to resize photo width"
+                                />
+                              </div>
                             </div>
                           )}
 
@@ -1247,86 +1345,179 @@ export function EmailStudioBuilder({
                               onChange={(e) =>
                                 updateBlockField(block.id, "col1Heading", e.target.value)
                               }
-                              className="w-full text-xs font-bold text-slate-800 bg-transparent border-none focus:ring-1 focus:ring-teal-400 rounded mt-2"
+                              className="w-full text-xs font-bold text-slate-800 bg-transparent border-none focus:ring-1 focus:ring-teal-400 rounded"
+                              placeholder="Optional subhead..."
                             />
                           )}
-                        </div>
 
-                        <div
-                          onMouseDown={(e) => startColResize(e, block.id, block.col1Width || 48)}
-                          className={`w-2 hover:w-2 bg-transparent hover:bg-teal-400 cursor-col-resize self-stretch flex items-center justify-center transition-colors group/col relative z-20 ${
-                            resizingColBlockId === block.id ? "bg-teal-500 w-2" : ""
-                          }`}
-                          title="Drag left/right to resize columns"
-                        >
-                          <div className="w-0.5 h-8 bg-slate-300 group-hover/col:bg-white rounded-full pointer-events-none" />
-                        </div>
+                          {/* 3. TEXT THIRD */}
+                          <div className="w-full">
+                            <span className="text-[9px] font-bold uppercase tracking-wider text-teal-600 block mb-1">
+                              3. Description Text
+                            </span>
+                            <AutoResizingTextarea
+                              rows={2}
+                              value={block.col2Text || ""}
+                              onChange={(e) => updateBlockField(block.id, "col2Text", e.target.value)}
+                              className="w-full text-xs text-slate-600 leading-relaxed bg-transparent border-none focus:outline-none focus:ring-1 focus:ring-teal-400 rounded"
+                              placeholder="Column description..."
+                            />
+                            {block.col1Text && (
+                              <AutoResizingTextarea
+                                rows={2}
+                                value={block.col1Text}
+                                onChange={(e) => updateBlockField(block.id, "col1Text", e.target.value)}
+                                className="w-full text-xs text-slate-500 leading-relaxed bg-transparent border-none focus:outline-none focus:ring-1 focus:ring-teal-400 rounded mt-1"
+                                placeholder="Additional column notes..."
+                              />
+                            )}
+                          </div>
 
-                        <div
-                          style={{ width: `${block.col2Width || 52}%` }}
-                          className="flex flex-col justify-center space-y-2.5 flex-1 min-w-[140px]"
-                        >
-                          <AutoResizingTextarea
-                            rows={1}
-                            value={block.col2Heading || ""}
-                            onChange={(e) =>
-                              updateBlockField(block.id, "col2Heading", e.target.value)
-                            }
-                            className="w-full text-sm font-extrabold text-[#8DB833] leading-snug bg-transparent border-none focus:outline-none focus:ring-1 focus:ring-teal-400 rounded"
-                            placeholder="Column Heading..."
-                          />
-
-                          <AutoResizingTextarea
-                            rows={2}
-                            value={block.col2Text || ""}
-                            onChange={(e) => updateBlockField(block.id, "col2Text", e.target.value)}
-                            className="w-full text-xs text-slate-600 leading-relaxed bg-transparent border-none focus:outline-none focus:ring-1 focus:ring-teal-400 rounded"
-                            placeholder="Column description..."
-                          />
-
+                          {/* 4. READ MORE / CTA BUTTON FOURTH */}
                           {block.col2ButtonText && (
-                            <div className="pt-1 flex flex-col items-start gap-1 group/btn relative">
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  openLinkEditor(
-                                    block.id,
-                                    "col2ButtonUrl",
-                                    "col2ButtonText",
-                                    "col2ButtonColor",
-                                    "col2ButtonTextColor"
-                                  );
-                                }}
-                                style={{
-                                  backgroundColor: block.col2ButtonColor || "#000000",
-                                  color: block.col2ButtonTextColor || "#8DB833",
-                                }}
-                                className="inline-flex items-center gap-1.5 px-5 py-2 rounded-md font-extrabold text-xs shadow-xs hover:opacity-90 transition-opacity cursor-pointer"
-                                title="Click to edit destination web link"
-                              >
-                                <span>{block.col2ButtonText}</span>
-                                <Link2 className="h-3 w-3 opacity-80" />
-                              </button>
-                              <span
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  openLinkEditor(
-                                    block.id,
-                                    "col2ButtonUrl",
-                                    "col2ButtonText",
-                                    "col2ButtonColor",
-                                    "col2ButtonTextColor"
-                                  );
-                                }}
-                                className="text-[10px] text-teal-600 underline cursor-pointer hover:text-teal-700 flex items-center gap-1 opacity-80 hover:opacity-100 transition-opacity"
-                              >
-                                🔗 {block.col2ButtonUrl || "Add link destination..."}
+                            <div className="w-full pt-1">
+                              <span className="text-[9px] font-bold uppercase tracking-wider text-teal-600 block mb-1">
+                                4. Call to Action Button
                               </span>
+                              <div className="flex flex-col items-start gap-1 group/btn relative">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    openLinkEditor(
+                                      block.id,
+                                      "col2ButtonUrl",
+                                      "col2ButtonText",
+                                      "col2ButtonColor",
+                                      "col2ButtonTextColor"
+                                    );
+                                  }}
+                                  style={{
+                                    backgroundColor: block.col2ButtonColor || "#000000",
+                                    color: block.col2ButtonTextColor || "#8DB833",
+                                  }}
+                                  className="inline-flex items-center gap-1.5 px-5 py-2 rounded-md font-extrabold text-xs shadow-xs hover:opacity-90 transition-opacity cursor-pointer"
+                                  title="Click to edit destination web link"
+                                >
+                                  <span>{block.col2ButtonText}</span>
+                                  <Link2 className="h-3 w-3 opacity-80" />
+                                </button>
+                              </div>
                             </div>
                           )}
                         </div>
-                      </div>
+                      ) : (
+                        /* DESKTOP 2-COLUMN VIEW */
+                        <div className="p-5 bg-white relative flex flex-col sm:flex-row items-stretch gap-4">
+                          <div
+                            style={{ width: `${block.col1Width || 48}%` }}
+                            className="relative flex flex-col items-center justify-center min-w-[120px]"
+                          >
+                            {block.col1Image && (
+                              <div className="relative group/img inline-block">
+                                <img
+                                  src={block.col1Image}
+                                  alt="Section photo"
+                                  style={{ width: block.col1ImageWidth || 260 }}
+                                  className="rounded-md object-cover max-w-full shadow-2xs"
+                                />
+
+                                <button
+                                  type="button"
+                                  onClick={() => triggerImageUpload(block.id, "col1Image")}
+                                  className="absolute bottom-2 left-2 bg-slate-900/80 hover:bg-slate-900 text-white text-[10px] font-bold px-2 py-1 rounded flex items-center gap-1 shadow-xs opacity-0 group-hover/img:opacity-100 transition-opacity"
+                                >
+                                  <Upload className="h-3 w-3" /> Replace / Upload
+                                </button>
+
+                                <div
+                                  onMouseDown={(e) =>
+                                    startImageResize(
+                                      e,
+                                      block.id,
+                                      block.col1ImageWidth || 260,
+                                      "col1ImageWidth"
+                                    )
+                                  }
+                                  className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-white border-2 border-[#8DB833] rounded-xs cursor-nwse-resize shadow-xs opacity-0 group-hover/img:opacity-100 transition-opacity"
+                                  title="Drag to resize photo width"
+                                />
+                              </div>
+                            )}
+
+                            {block.col1Heading && (
+                              <input
+                                type="text"
+                                value={block.col1Heading}
+                                onChange={(e) =>
+                                  updateBlockField(block.id, "col1Heading", e.target.value)
+                                }
+                                className="w-full text-xs font-bold text-slate-800 bg-transparent border-none focus:ring-1 focus:ring-teal-400 rounded mt-2"
+                              />
+                            )}
+                          </div>
+
+                          <div
+                            onMouseDown={(e) => startColResize(e, block.id, block.col1Width || 48)}
+                            className={`w-2 hover:w-2 bg-transparent hover:bg-teal-400 cursor-col-resize self-stretch flex items-center justify-center transition-colors group/col relative z-20 ${
+                              resizingColBlockId === block.id ? "bg-teal-500 w-2" : ""
+                            }`}
+                            title="Drag left/right to resize columns"
+                          >
+                            <div className="w-0.5 h-8 bg-slate-300 group-hover/col:bg-white rounded-full pointer-events-none" />
+                          </div>
+
+                          <div
+                            style={{ width: `${block.col2Width || 52}%` }}
+                            className="flex flex-col justify-center space-y-2.5 flex-1 min-w-[140px]"
+                          >
+                            <AutoResizingTextarea
+                              rows={1}
+                              value={block.col2Heading || ""}
+                              onChange={(e) =>
+                                updateBlockField(block.id, "col2Heading", e.target.value)
+                              }
+                              className="w-full text-sm font-extrabold text-[#8DB833] leading-snug bg-transparent border-none focus:outline-none focus:ring-1 focus:ring-teal-400 rounded"
+                              placeholder="Column Heading..."
+                            />
+
+                            <AutoResizingTextarea
+                              rows={2}
+                              value={block.col2Text || ""}
+                              onChange={(e) => updateBlockField(block.id, "col2Text", e.target.value)}
+                              className="w-full text-xs text-slate-600 leading-relaxed bg-transparent border-none focus:outline-none focus:ring-1 focus:ring-teal-400 rounded"
+                              placeholder="Column description..."
+                            />
+
+                            {block.col2ButtonText && (
+                              <div className="pt-1 flex flex-col items-start gap-1 group/btn relative">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    openLinkEditor(
+                                      block.id,
+                                      "col2ButtonUrl",
+                                      "col2ButtonText",
+                                      "col2ButtonColor",
+                                      "col2ButtonTextColor"
+                                    );
+                                  }}
+                                  style={{
+                                    backgroundColor: block.col2ButtonColor || "#000000",
+                                    color: block.col2ButtonTextColor || "#8DB833",
+                                  }}
+                                  className="inline-flex items-center gap-1.5 px-5 py-2 rounded-md font-extrabold text-xs shadow-xs hover:opacity-90 transition-opacity cursor-pointer"
+                                  title="Click to edit destination web link"
+                                >
+                                  <span>{block.col2ButtonText}</span>
+                                  <Link2 className="h-3 w-3 opacity-80" />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )
                     )}
 
                     {block.type === "heading" && (
@@ -1414,21 +1605,6 @@ export function EmailStudioBuilder({
                           <span>{block.buttonText || "Call to Action"}</span>
                           <Link2 className="h-3.5 w-3.5 opacity-80" />
                         </button>
-                        <span
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openLinkEditor(
-                              block.id,
-                              "buttonUrl",
-                              "buttonText",
-                              "buttonColor",
-                              "buttonTextColor"
-                            );
-                          }}
-                          className="text-[10px] text-teal-600 underline cursor-pointer hover:text-teal-700 flex items-center gap-1 opacity-80 hover:opacity-100 transition-opacity"
-                        >
-                          🔗 {block.buttonUrl || "Add link destination..."}
-                        </span>
                       </div>
                     )}
 
@@ -1576,20 +1752,49 @@ export function EmailStudioBuilder({
       {/* FULL EMAIL PREVIEW MODAL */}
       <Dialog open={showPreviewModal} onOpenChange={setShowPreviewModal}>
         <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col p-0 overflow-hidden bg-slate-100">
-          <DialogHeader className="p-4 border-b bg-white flex flex-row items-center justify-between">
+          <DialogHeader className="p-4 border-b bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <DialogTitle className="text-sm font-bold flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-[#8DB833]" /> Live Responsive Email Preview
             </DialogTitle>
-            <span className="text-xs text-muted-foreground">
+
+            {/* Desktop / Mobile view switcher */}
+            <div className="flex items-center border border-slate-200 rounded-lg overflow-hidden bg-slate-50 p-0.5">
+              <button
+                type="button"
+                onClick={() => setModalPreviewDevice("desktop")}
+                className={`px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 rounded transition-all ${
+                  modalPreviewDevice === "desktop"
+                    ? "bg-slate-900 text-white shadow-xs"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                <Monitor className="h-3.5 w-3.5" /> Desktop (600px)
+              </button>
+              <button
+                type="button"
+                onClick={() => setModalPreviewDevice("mobile")}
+                className={`px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 rounded transition-all ${
+                  modalPreviewDevice === "mobile"
+                    ? "bg-slate-900 text-white shadow-xs"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                <Smartphone className="h-3.5 w-3.5" /> Mobile (375px)
+              </button>
+            </div>
+
+            <span className="text-xs text-muted-foreground hidden sm:block">
               Ready for Zoho CPaaS Email Dispatch
             </span>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto p-6 flex justify-center">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 flex justify-center">
             <iframe
               srcDoc={compiledHtml}
               title="Email Preview"
-              className="w-full max-w-[620px] min-h-[580px] bg-white rounded-lg shadow-md border"
+              className={`w-full min-h-[580px] bg-white rounded-lg shadow-md border transition-all duration-300 ${
+                modalPreviewDevice === "mobile" ? "max-w-[375px]" : "max-w-[620px]"
+              }`}
             />
           </div>
         </DialogContent>
