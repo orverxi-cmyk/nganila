@@ -49,6 +49,9 @@ import {
   ExternalLink,
   Cloud,
   RefreshCw,
+  Play,
+  Film,
+  Youtube,
 } from "lucide-react";
 
 export type BlockType =
@@ -182,6 +185,91 @@ export function getSocialPlatformMeta(platform: string) {
   };
 }
 
+export function parseVideoUrl(url?: string): {
+  source: "youtube" | "vimeo" | "website" | "mp4" | "custom";
+  videoId?: string;
+  thumbnailUrl: string;
+  watchUrl: string;
+} {
+  if (!url || typeof url !== "string") {
+    return {
+      source: "custom",
+      thumbnailUrl:
+        "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80",
+      watchUrl: "https://sanex.rw",
+    };
+  }
+
+  const clean = url.trim();
+
+  // YouTube detection
+  if (clean.includes("youtube.com") || clean.includes("youtu.be")) {
+    let videoId = "";
+    if (clean.includes("youtube.com/watch")) {
+      const match = clean.match(/[?&]v=([^&#]+)/);
+      if (match) videoId = match[1];
+    } else if (clean.includes("youtu.be/")) {
+      const parts = clean.split("youtu.be/")[1]?.split(/[?&#]/);
+      if (parts && parts[0]) videoId = parts[0];
+    } else if (clean.includes("youtube.com/embed/")) {
+      const parts = clean.split("youtube.com/embed/")[1]?.split(/[?&#]/);
+      if (parts && parts[0]) videoId = parts[0];
+    } else if (clean.includes("youtube.com/shorts/")) {
+      const parts = clean.split("youtube.com/shorts/")[1]?.split(/[?&#]/);
+      if (parts && parts[0]) videoId = parts[0];
+    }
+
+    if (videoId) {
+      return {
+        source: "youtube",
+        videoId,
+        thumbnailUrl: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
+        watchUrl: `https://www.youtube.com/watch?v=${videoId}`,
+      };
+    }
+  }
+
+  // Vimeo
+  if (clean.includes("vimeo.com")) {
+    const match = clean.match(/vimeo\.com\/(\d+)/);
+    return {
+      source: "vimeo",
+      videoId: match ? match[1] : undefined,
+      thumbnailUrl:
+        "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80",
+      watchUrl: clean,
+    };
+  }
+
+  // Direct MP4 / Video file
+  if (/\.(mp4|webm|ogg|mov)($|\?)/i.test(clean)) {
+    return {
+      source: "mp4",
+      thumbnailUrl:
+        "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80",
+      watchUrl: clean,
+    };
+  }
+
+  // SANEX Website link
+  if (clean.includes("sanex.rw") || clean.startsWith("/")) {
+    const watchUrl = clean.startsWith("http") ? clean : `https://sanex.rw${clean}`;
+    return {
+      source: "website",
+      thumbnailUrl:
+        "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80",
+      watchUrl,
+    };
+  }
+
+  return {
+    source: "custom",
+    thumbnailUrl:
+      "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80",
+    watchUrl: clean,
+  };
+}
+
 export function getEffectiveSocialLinks(block: EmailBlock): SocialLinkItem[] {
   if (Array.isArray(block.socialLinks) && block.socialLinks.length > 0) {
     return block.socialLinks;
@@ -225,6 +313,14 @@ export interface EmailBlock {
   socialStyle?: "circle" | "rounded" | "pill";
   socialIconBg?: string;
   socialIconColor?: string;
+  // Video Block Properties
+  videoUrl?: string;
+  videoSource?: "youtube" | "vimeo" | "website" | "mp4" | "custom";
+  videoThumbnail?: string;
+  videoTitle?: string;
+  videoCaption?: string;
+  videoButtonText?: string;
+  videoPlayButtonColor?: string;
 }
 
 interface EmailStudioBuilderProps {
@@ -570,6 +666,62 @@ export function compileBlocksToHtml(blocks: EmailBlock[] = INITIAL_SANEX_BLOCKS)
           `;
         }
 
+        case "video": {
+          const parsed = parseVideoUrl(block.videoUrl);
+          const watchUrl = block.videoUrl || parsed.watchUrl || "https://sanex.rw";
+          const thumbnailUrl =
+            block.videoThumbnail ||
+            parsed.thumbnailUrl ||
+            "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80";
+          const title = block.videoTitle || "SANEX in Action";
+          const caption = block.videoCaption || "";
+          const btnText = block.videoButtonText || "Watch Video";
+          const playColor = block.videoPlayButtonColor || "#8DB833";
+          const align = block.align || "center";
+          const bgColor = block.bgColor || "#ffffff";
+
+          return `
+            <tr>
+              <td align="${align}" style="background-color:${bgColor}; padding:20px 24px;">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width:552px; margin:0 auto; background-color:#ffffff; border-radius:10px; overflow:hidden; border:1px solid #e2e8f0; border-collapse:collapse;">
+                  <!-- THUMBNAIL WITH PLAY BADGE LINK -->
+                  <tr>
+                    <td align="center" style="background-color:#0b1120; line-height:0; position:relative;">
+                      <a href="${watchUrl}" target="_blank" rel="noopener noreferrer" style="display:block; text-decoration:none;">
+                        <img src="${thumbnailUrl}" alt="${title}" width="552" style="width:100%; max-width:552px; height:auto; display:block; border:0;" />
+                      </a>
+                    </td>
+                  </tr>
+                  <!-- TITLE, CAPTION & CTA BAR -->
+                  <tr>
+                    <td style="padding:16px 20px; background-color:#ffffff; border-top:3px solid ${playColor};">
+                      <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                        <tr>
+                          <td valign="middle" align="left">
+                            <h3 style="color:#0f172a; font-size:15px; font-weight:800; margin:0 0 4px 0; line-height:1.35; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+                              ${title}
+                            </h3>
+                            ${
+                              caption
+                                ? `<p style="color:#64748b; font-size:12px; line-height:1.5; margin:0; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">${caption}</p>`
+                                : ""
+                            }
+                          </td>
+                          <td width="130" align="right" valign="middle" style="padding-left:12px;">
+                            <a href="${watchUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-block; background-color:${playColor}; color:#000000; font-size:12px; font-weight:800; text-decoration:none; padding:9px 18px; border-radius:6px; white-space:nowrap; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+                              ▶ ${btnText}
+                            </a>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          `;
+        }
+
         case "code":
           return `
             <tr>
@@ -757,8 +909,25 @@ export function EmailStudioBuilder({
     });
   };
 
+  // Video Configuration Modal State
+  const [videoEditModal, setVideoEditModal] = useState<{
+    isOpen: boolean;
+    blockId: string;
+  } | null>(null);
+
+  const openVideoEditor = (blockId: string) => {
+    setActiveBlockId(blockId);
+    setVideoEditModal({
+      isOpen: true,
+      blockId,
+    });
+  };
+
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const pendingUploadTargetRef = useRef<{ blockId: string; field: "col1Image" | "imageUrl" } | null>(null);
+  const pendingUploadTargetRef = useRef<{
+    blockId: string;
+    field: "col1Image" | "imageUrl" | "videoThumbnail";
+  } | null>(null);
 
   const commitBlocks = (newBlocks: EmailBlock[]) => {
     setBlocks(newBlocks);
@@ -860,6 +1029,23 @@ export function EmailStudioBuilder({
           col2Text: "Describe this service offering.",
         };
         break;
+      case "video":
+        newBlock = {
+          id: newId,
+          type: "video",
+          videoUrl: "https://sanex.rw/#video",
+          videoSource: "website",
+          videoThumbnail:
+            "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80",
+          videoTitle: "SANEX in Action: Operational Highlights",
+          videoCaption:
+            "Watch our specialized vacuum trucks and decentralized treatment systems providing essential sanitation services across Rwanda.",
+          videoButtonText: "Watch Video",
+          videoPlayButtonColor: "#8DB833",
+          bgColor: "#ffffff",
+          align: "center",
+        };
+        break;
       case "social":
         newBlock = {
           id: newId,
@@ -930,7 +1116,15 @@ export function EmailStudioBuilder({
     setBlocks(updated);
   };
 
-  const triggerImageUpload = (blockId: string, field: "col1Image" | "imageUrl") => {
+  const updateBlock = (id: string, partial: Partial<EmailBlock>) => {
+    const updated = blocks.map((b) => (b.id === id ? { ...b, ...partial } : b));
+    setBlocks(updated);
+  };
+
+  const triggerImageUpload = (
+    blockId: string,
+    field: "col1Image" | "imageUrl" | "videoThumbnail"
+  ) => {
     pendingUploadTargetRef.current = { blockId, field };
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -1361,6 +1555,7 @@ export function EmailStudioBuilder({
             if (!block) return null;
             const hasButton = block.buttonUrl !== undefined || block.col2ButtonUrl !== undefined;
             const isSocial = block.type === "topbar" || block.type === "social";
+            const isVideo = block.type === "video";
 
             return (
               <div className="p-3 bg-slate-50 border rounded-lg space-y-2.5 mt-auto">
@@ -1368,12 +1563,30 @@ export function EmailStudioBuilder({
                   <span className="text-[10px] font-extrabold uppercase text-slate-500">
                     Selected: {block.type === "topbar" ? "Header Socials" : block.type}
                   </span>
-                  {isSocial && (
+                  {(isSocial || isVideo) && (
                     <span className="text-[9px] font-bold text-teal-600 bg-teal-50 px-1.5 py-0.5 rounded">
                       Editable
                     </span>
                   )}
                 </div>
+
+                {isVideo && (
+                  <div className="space-y-2 pt-1.5 border-t">
+                    <Button
+                      type="button"
+                      onClick={() => openVideoEditor(block.id)}
+                      className="w-full h-8 text-xs font-bold bg-[#8DB833] text-black hover:bg-[#8DB833]/90 gap-1.5 shadow-xs"
+                    >
+                      <Video className="h-3.5 w-3.5" /> Configure Video & Links
+                    </Button>
+                    <div className="text-[10px] text-slate-500 flex items-center justify-between">
+                      <span>Source:</span>
+                      <span className="font-bold text-slate-800 capitalize bg-slate-200/70 px-1.5 py-0.5 rounded">
+                        {parseVideoUrl(block.videoUrl).source}
+                      </span>
+                    </div>
+                  </div>
+                )}
 
                 {isSocial && (
                   <div className="space-y-2.5 pt-1.5 border-t">
@@ -2024,6 +2237,89 @@ export function EmailStudioBuilder({
                       );
                     })()}
 
+                    {block.type === "video" && (() => {
+                      const parsed = parseVideoUrl(block.videoUrl);
+                      const thumb =
+                        block.videoThumbnail ||
+                        parsed.thumbnailUrl ||
+                        "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80";
+                      const title = block.videoTitle || "SANEX in Action";
+                      const caption =
+                        block.videoCaption ||
+                        "Watch our video on sanitation and wastewater services in Rwanda.";
+                      const btnText = block.videoButtonText || "Watch Video";
+                      const playColor = block.videoPlayButtonColor || "#8DB833";
+
+                      return (
+                        <div
+                          style={{ backgroundColor: block.bgColor || "#ffffff" }}
+                          onClick={() => openVideoEditor(block.id)}
+                          className="py-5 px-6 flex justify-center cursor-pointer group/video relative transition-all"
+                          title="Click to configure video link and thumbnail"
+                        >
+                          <div className="w-full max-w-[552px] rounded-xl overflow-hidden border border-slate-200 shadow-xs bg-white transition-all group-hover/video:shadow-md group-hover/video:border-primary/50">
+                            {/* VIDEO THUMBNAIL + PLAY BUTTON OVERLAY */}
+                            <div className="relative aspect-video bg-black overflow-hidden flex items-center justify-center">
+                              <img
+                                src={thumb}
+                                alt={title}
+                                className="w-full h-full object-cover transition-transform duration-300 group-hover/video:scale-105 opacity-90"
+                              />
+                              <div className="absolute inset-0 bg-black/30 group-hover/video:bg-black/20 transition-colors" />
+
+                              {/* Centered Play Button */}
+                              <div
+                                style={{ backgroundColor: playColor }}
+                                className="relative z-10 w-16 h-16 rounded-full flex items-center justify-center text-black shadow-xl transition-all duration-200 group-hover/video:scale-110"
+                              >
+                                <Play className="h-7 w-7 fill-current translate-x-0.5" />
+                              </div>
+
+                              {/* Video Source Badge */}
+                              <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-xs text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                                <Film className="h-2.5 w-2.5 text-[#8DB833]" />
+                                <span className="capitalize">{parsed.source || "Video"}</span>
+                              </div>
+
+                              {/* Quick Edit Overlay */}
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openVideoEditor(block.id);
+                                }}
+                                className="absolute top-3 right-3 opacity-0 group-hover/video:opacity-100 transition-opacity bg-slate-900/90 text-white text-[10px] font-bold px-2.5 py-1 rounded-md flex items-center gap-1 shadow-xs cursor-pointer z-10"
+                              >
+                                <Settings2 className="h-3 w-3 text-[#8DB833]" />
+                                <span>Configure Video</span>
+                              </button>
+                            </div>
+
+                            {/* CARD DETAILS BOTTOM BAR */}
+                            <div className="p-4 border-t-2 border-[#8DB833] flex items-center justify-between gap-3 bg-white">
+                              <div className="min-w-0 flex-1">
+                                <h3 className="text-sm font-extrabold text-slate-900 truncate m-0">
+                                  {title}
+                                </h3>
+                                <p className="text-[11px] text-slate-500 line-clamp-1 mt-0.5 m-0">
+                                  {caption}
+                                </p>
+                              </div>
+                              <div className="shrink-0">
+                                <span
+                                  style={{ backgroundColor: playColor }}
+                                  className="inline-flex items-center gap-1.5 text-xs font-extrabold px-3.5 py-1.5 rounded-md text-black shadow-2xs"
+                                >
+                                  <Play className="h-3 w-3 fill-current" />
+                                  <span>{btnText}</span>
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+
                     {block.type === "footer" && (
                       <div className="py-6 px-6 bg-[#0f172a] text-slate-400 text-center text-[11px] leading-relaxed space-y-1">
                         <div className="font-extrabold text-[#8DB833] text-xs uppercase tracking-wider">
@@ -2455,6 +2751,288 @@ export function EmailStudioBuilder({
             <Button
               type="button"
               onClick={() => setSocialEditModal(null)}
+              className="h-8 text-xs font-bold bg-[#8DB833] text-black hover:bg-[#8DB833]/90 shadow-xs"
+            >
+              Done & Save
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* VIDEO CONFIGURATION MODAL */}
+      <Dialog
+        open={!!videoEditModal?.isOpen}
+        onOpenChange={(open) => !open && setVideoEditModal(null)}
+      >
+        <DialogContent className="max-w-xl max-h-[88vh] flex flex-col p-0 overflow-hidden bg-white shadow-2xl">
+          <DialogHeader className="p-4 border-b bg-white shrink-0">
+            <DialogTitle className="text-sm font-bold flex items-center gap-2">
+              <Video className="h-4 w-4 text-emerald-600" /> Video Block Configuration
+            </DialogTitle>
+            <p className="text-[11px] text-muted-foreground m-0">
+              Link to YouTube, Vimeo, website videos, or uploaded MP4 files with a clickable play button.
+            </p>
+          </DialogHeader>
+
+          {videoEditModal && (() => {
+            const block = blocks.find((b) => b.id === videoEditModal.blockId);
+            if (!block) return null;
+
+            const parsed = parseVideoUrl(block.videoUrl);
+            const currentThumb =
+              block.videoThumbnail ||
+              parsed.thumbnailUrl ||
+              "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80";
+            const currentTitle = block.videoTitle || "SANEX in Action";
+            const currentCaption =
+              block.videoCaption ||
+              "Watch our specialized vacuum trucks and decentralized treatment systems in action.";
+            const currentBtnText = block.videoButtonText || "Watch Video";
+            const currentPlayColor = block.videoPlayButtonColor || "#8DB833";
+
+            return (
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
+                {/* LIVE PREVIEW CARD */}
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] uppercase font-bold text-slate-500">
+                    Live Video Card Preview:
+                  </Label>
+                  <div className="rounded-xl overflow-hidden border border-slate-200 bg-white shadow-xs">
+                    <div className="relative aspect-video bg-black overflow-hidden flex items-center justify-center">
+                      <img
+                        src={currentThumb}
+                        alt={currentTitle}
+                        className="w-full h-full object-cover opacity-90"
+                      />
+                      <div className="absolute inset-0 bg-black/25" />
+                      <div
+                        style={{ backgroundColor: currentPlayColor }}
+                        className="relative z-10 w-14 h-14 rounded-full flex items-center justify-center text-black shadow-lg"
+                      >
+                        <Play className="h-6 w-6 fill-current translate-x-0.5" />
+                      </div>
+                      <div className="absolute top-2 left-2 bg-black/70 backdrop-blur-xs text-white text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                        <Film className="h-2.5 w-2.5 text-[#8DB833]" />
+                        <span className="capitalize">{parsed.source || "Video"}</span>
+                      </div>
+                    </div>
+                    <div className="p-3 border-t-2 border-[#8DB833] flex items-center justify-between gap-3 bg-white">
+                      <div className="min-w-0 flex-1">
+                        <div className="font-extrabold text-slate-900 text-xs truncate">
+                          {currentTitle}
+                        </div>
+                        <div className="text-[10px] text-slate-500 line-clamp-1 mt-0.5">
+                          {currentCaption}
+                        </div>
+                      </div>
+                      <span
+                        style={{ backgroundColor: currentPlayColor }}
+                        className="text-[10px] font-extrabold px-3 py-1 rounded text-black shrink-0"
+                      >
+                        ▶ {currentBtnText}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* VIDEO SOURCE & URL */}
+                <div className="p-3 rounded-lg border bg-slate-50 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                      <Film className="h-3.5 w-3.5 text-slate-700" /> Video URL / Web Link
+                    </Label>
+                    {parsed.source === "youtube" && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-red-600 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded">
+                        <Youtube className="h-3 w-3" /> YouTube ID: {parsed.videoId}
+                      </span>
+                    )}
+                  </div>
+
+                  <Input
+                    type="url"
+                    value={block.videoUrl || ""}
+                    onChange={(e) => {
+                      const nextUrl = e.target.value;
+                      const nextParsed = parseVideoUrl(nextUrl);
+                      const autoThumb =
+                        nextParsed.source === "youtube" && nextParsed.thumbnailUrl
+                          ? nextParsed.thumbnailUrl
+                          : block.videoThumbnail;
+
+                      updateBlock(block.id, {
+                        videoUrl: nextUrl,
+                        videoSource: nextParsed.source,
+                        videoThumbnail: autoThumb,
+                      });
+                    }}
+                    placeholder="https://www.youtube.com/watch?v=... or https://sanex.rw/..."
+                    className="h-8 text-xs font-mono bg-white"
+                  />
+
+                  {/* QUICK LINK PRESETS */}
+                  <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                    <span className="text-[10px] text-slate-500 font-bold">Quick Presets:</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        updateBlock(block.id, {
+                          videoUrl: "https://sanex.rw/#video",
+                          videoSource: "website",
+                          videoTitle: "SANEX in Action: Operational Highlights",
+                          videoCaption:
+                            "Watch our specialized vacuum trucks and decentralized treatment systems providing essential sanitation services across Rwanda.",
+                        });
+                      }}
+                      className="px-2 py-0.5 text-[10px] font-bold bg-white border border-slate-200 hover:border-slate-400 rounded text-slate-700 transition-colors"
+                    >
+                      SANEX Homepage Video
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        updateBlock(block.id, {
+                          videoUrl: "https://sanex.rw/gallery",
+                          videoSource: "website",
+                          videoTitle: "SANEX Media & Operations Gallery",
+                          videoCaption:
+                            "Explore photos and operational video clips of our liquid waste management projects.",
+                        });
+                      }}
+                      className="px-2 py-0.5 text-[10px] font-bold bg-white border border-slate-200 hover:border-slate-400 rounded text-slate-700 transition-colors"
+                    >
+                      SANEX Gallery
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        updateBlock(block.id, {
+                          videoUrl: "https://youtube.com/@sanexrwanda",
+                          videoSource: "youtube",
+                          videoTitle: "SANEX Official YouTube Channel",
+                          videoCaption:
+                            "Subscribe and watch informative videos on sanitation, DWTS, and environmental protection.",
+                        });
+                      }}
+                      className="px-2 py-0.5 text-[10px] font-bold bg-white border border-slate-200 hover:border-slate-400 rounded text-slate-700 transition-colors"
+                    >
+                      YouTube Channel
+                    </button>
+                  </div>
+                </div>
+
+                {/* THUMBNAIL / COVER IMAGE */}
+                <div className="p-3 rounded-lg border bg-slate-50 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                      <ImageIcon className="h-3.5 w-3.5 text-slate-700" /> Video Thumbnail / Cover Image
+                    </Label>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => triggerImageUpload(block.id, "videoThumbnail")}
+                      className="h-6 text-[10px] font-bold px-2 gap-1 bg-white border-slate-300"
+                    >
+                      <Upload className="h-3 w-3 text-slate-700" /> Upload Cover Image
+                    </Button>
+                  </div>
+
+                  <Input
+                    type="url"
+                    value={block.videoThumbnail || ""}
+                    onChange={(e) => updateBlock(block.id, { videoThumbnail: e.target.value })}
+                    placeholder="https://... cover image URL"
+                    className="h-8 text-xs font-mono bg-white"
+                  />
+
+                  {parsed.source === "youtube" && parsed.thumbnailUrl && (
+                    <button
+                      type="button"
+                      onClick={() => updateBlock(block.id, { videoThumbnail: parsed.thumbnailUrl })}
+                      className="text-[10px] text-teal-700 hover:underline font-bold flex items-center gap-1"
+                    >
+                      <span>Reset to official HD YouTube cover thumbnail</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* VIDEO TITLE & SUBTITLE */}
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs font-bold text-slate-800">Video Title</Label>
+                    <Input
+                      type="text"
+                      value={block.videoTitle || ""}
+                      onChange={(e) => updateBlock(block.id, { videoTitle: e.target.value })}
+                      placeholder="e.g. SANEX in Action: Liquid Waste Management"
+                      className="h-8 text-xs bg-white"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label className="text-xs font-bold text-slate-800">Caption / Summary</Label>
+                    <textarea
+                      value={block.videoCaption || ""}
+                      onChange={(e) => updateBlock(block.id, { videoCaption: e.target.value })}
+                      placeholder="Brief description of what recipients will see in this video..."
+                      rows={2}
+                      className="w-full text-xs p-2 rounded-md border border-input bg-white resize-none"
+                    />
+                  </div>
+                </div>
+
+                {/* CALL-TO-ACTION BUTTON & PLAY ACCENT */}
+                <div className="grid grid-cols-2 gap-3 pt-1">
+                  <div className="space-y-1">
+                    <Label className="text-xs font-bold text-slate-800">Button Text</Label>
+                    <Input
+                      type="text"
+                      value={block.videoButtonText || ""}
+                      onChange={(e) => updateBlock(block.id, { videoButtonText: e.target.value })}
+                      placeholder="Watch Video"
+                      className="h-8 text-xs bg-white"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label className="text-xs font-bold text-slate-800">Play Button Color</Label>
+                    <div className="flex items-center gap-1.5">
+                      <Input
+                        type="color"
+                        value={currentPlayColor}
+                        onChange={(e) => updateBlock(block.id, { videoPlayButtonColor: e.target.value })}
+                        className="h-8 w-10 p-0.5 cursor-pointer rounded bg-white"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => updateBlock(block.id, { videoPlayButtonColor: "#8DB833" })}
+                        className="px-2 py-1 text-[10px] font-bold rounded bg-[#8DB833] text-black shadow-2xs"
+                        title="SANEX Lime Green"
+                      >
+                        Brand
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => updateBlock(block.id, { videoPlayButtonColor: "#000000" })}
+                        className="px-2 py-1 text-[10px] font-bold rounded bg-black text-white shadow-2xs"
+                        title="Dark"
+                      >
+                        Black
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
+          <div className="p-3 border-t bg-slate-50 flex items-center justify-between shrink-0">
+            <span className="text-[11px] text-muted-foreground">
+              Video block generates responsive, email-client-safe code.
+            </span>
+            <Button
+              type="button"
+              onClick={() => setVideoEditModal(null)}
               className="h-8 text-xs font-bold bg-[#8DB833] text-black hover:bg-[#8DB833]/90 shadow-xs"
             >
               Done & Save
