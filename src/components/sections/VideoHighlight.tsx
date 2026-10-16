@@ -36,7 +36,8 @@ export function VideoHighlight() {
   const embedUrl = isYouTube ? getYouTubeEmbedUrl(content.videoUrl) : content.videoUrl;
 
   return (
-    <section className="py-[20px] bg-transparent">
+    <section id="highlights" className="py-[20px] bg-transparent scroll-mt-24">
+      <span id="operational-highlights" className="scroll-mt-24 absolute -top-24 pointer-events-none" />
       <div className="container mx-auto px-4 md:px-16">
         <div className="flex flex-col items-center text-center mb-5 space-y-1">
           <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-secondary/10 text-secondary text-[10px] font-bold uppercase tracking-widest">

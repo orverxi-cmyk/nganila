@@ -11,7 +11,8 @@ import {
   CarouselContent, 
   CarouselItem,
   CarouselNext,
-  CarouselPrevious
+  CarouselPrevious,
+  type CarouselApi
 } from "@/components/ui/carousel";
 import { Button } from "@/components/ui/button";
 import { Loader2, ArrowRight, Edit3 } from "lucide-react";
@@ -55,8 +56,45 @@ export function HomeSlider() {
     return videoExtensions.some(ext => url.toLowerCase().includes(ext)) || (url.includes('firebasestorage') && url.toLowerCase().includes('.mp4'));
   };
 
+  const [carouselApi, setCarouselApi] = React.useState<CarouselApi>();
+
+  // Smoothly scroll and advance slider to the video slide when arriving via #slider or #video
+  React.useEffect(() => {
+    if (!carouselApi || !items || items.length === 0) return;
+
+    const handleAnchorNavigation = () => {
+      const hash = window.location.hash.toLowerCase();
+      const search = window.location.search.toLowerCase();
+      const isVideoTarget =
+        hash === "#slider" ||
+        hash === "#video" ||
+        hash === "#homeslider" ||
+        search.includes("video") ||
+        search.includes("slider");
+
+      if (isVideoTarget) {
+        const videoIndex = items.findIndex((slide: any) => isVideo(slide.imageUrl));
+        if (videoIndex !== -1) {
+          carouselApi.scrollTo(videoIndex);
+        }
+
+        setTimeout(() => {
+          const section = document.getElementById("slider");
+          if (section) {
+            section.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        }, 120);
+      }
+    };
+
+    handleAnchorNavigation();
+    window.addEventListener("hashchange", handleAnchorNavigation);
+    return () => window.removeEventListener("hashchange", handleAnchorNavigation);
+  }, [carouselApi, items]);
+
   return (
-    <section className="py-[20px] overflow-hidden relative group font-arial bg-transparent">
+    <section id="slider" className="py-[20px] overflow-hidden relative group font-arial bg-transparent scroll-mt-24">
+      <span id="video" className="scroll-mt-24 absolute -top-24 pointer-events-none" />
       {isAdmin && (
         <div className="absolute inset-0 z-20 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
           <Button asChild className="pointer-events-auto bg-black text-white hover:bg-black/80 gap-2 font-bold text-[16px]">
@@ -67,7 +105,7 @@ export function HomeSlider() {
         </div>
       )}
       <div className="container mx-auto px-4 md:px-16 pt-0 pb-0">
-        <Carousel className="w-full relative overflow-visible m-0 p-0" opts={{ loop: true }}>
+        <Carousel setApi={setCarouselApi} className="w-full relative overflow-visible m-0 p-0" opts={{ loop: true }}>
           <CarouselContent className="m-0">
             {items.map((slide: any, i: number) => (
               <CarouselItem key={i} className="h-full pl-0">

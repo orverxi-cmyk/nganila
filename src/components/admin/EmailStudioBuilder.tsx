@@ -193,10 +193,10 @@ export function parseVideoUrl(url?: string): {
 } {
   if (!url || typeof url !== "string") {
     return {
-      source: "custom",
+      source: "website",
       thumbnailUrl:
         "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80",
-      watchUrl: "https://sanex.rw",
+      watchUrl: "https://sanex.rw/#slider",
     };
   }
 
@@ -241,19 +241,23 @@ export function parseVideoUrl(url?: string): {
     };
   }
 
-  // Direct MP4 / Video file
-  if (/\.(mp4|webm|ogg|mov)($|\?)/i.test(clean)) {
+  // Firebase Storage or Direct MP4 / Video file (like slider video)
+  if (clean.includes("firebasestorage.googleapis.com") || /\.(mp4|webm|ogg|mov)($|\?)/i.test(clean)) {
     return {
       source: "mp4",
       thumbnailUrl:
         "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80",
-      watchUrl: clean,
+      // Direct video files like the website slider video must take recipients to the website slider
+      watchUrl: "https://sanex.rw/#slider",
     };
   }
 
   // SANEX Website link
   if (clean.includes("sanex.rw") || clean.startsWith("/")) {
-    const watchUrl = clean.startsWith("http") ? clean : `https://sanex.rw${clean}`;
+    let watchUrl = clean.startsWith("http") ? clean : `https://sanex.rw${clean}`;
+    if (watchUrl === "https://sanex.rw" || watchUrl === "https://sanex.rw/" || watchUrl === "https://sanex.rw/#video") {
+      watchUrl = "https://sanex.rw/#slider";
+    }
     return {
       source: "website",
       thumbnailUrl:
@@ -315,6 +319,7 @@ export interface EmailBlock {
   socialIconColor?: string;
   // Video Block Properties
   videoUrl?: string;
+  videoWatchUrl?: string; // Click destination URL in email (defaults to https://sanex.rw/#slider)
   videoSource?: "youtube" | "vimeo" | "website" | "mp4" | "custom";
   videoThumbnail?: string;
   videoTitle?: string;
@@ -668,7 +673,16 @@ export function compileBlocksToHtml(blocks: EmailBlock[] = INITIAL_SANEX_BLOCKS)
 
         case "video": {
           const parsed = parseVideoUrl(block.videoUrl);
-          const watchUrl = block.videoUrl || parsed.watchUrl || "https://sanex.rw";
+          const isDirectMedia = Boolean(
+            block.videoUrl &&
+              (block.videoUrl.includes("firebasestorage.googleapis.com") ||
+                /\.(mp4|webm|ogg|mov)($|\?)/i.test(block.videoUrl))
+          );
+          const watchUrl =
+            block.videoWatchUrl?.trim() ||
+            (isDirectMedia
+              ? parsed.watchUrl
+              : block.videoUrl?.trim() || parsed.watchUrl || "https://sanex.rw/#slider");
           const thumbnailUrl =
             block.videoThumbnail ||
             parsed.thumbnailUrl ||
@@ -1033,14 +1047,16 @@ export function EmailStudioBuilder({
         newBlock = {
           id: newId,
           type: "video",
-          videoUrl: "https://sanex.rw/#video",
-          videoSource: "website",
+          videoUrl:
+            "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1792173462347_Sanex%20Promo%20Video%20Final.mp4?alt=media&token=7a2b61d9-7261-4583-8b10-7770fd0bc41f",
+          videoWatchUrl: "https://sanex.rw/#slider",
+          videoSource: "mp4",
           videoThumbnail:
             "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80",
-          videoTitle: "SANEX in Action: Operational Highlights",
+          videoTitle: "SANEX in Action: Our Solutions & Services",
           videoCaption:
-            "Watch our specialized vacuum trucks and decentralized treatment systems providing essential sanitation services across Rwanda.",
-          videoButtonText: "Watch Video",
+            "Watch our specialized vacuum trucks and innovative sanitation solutions in action on our website slider.",
+          videoButtonText: "Watch on Website Slider",
           videoPlayButtonColor: "#8DB833",
           bgColor: "#ffffff",
           align: "center",
@@ -1570,23 +1586,54 @@ export function EmailStudioBuilder({
                   )}
                 </div>
 
-                {isVideo && (
-                  <div className="space-y-2 pt-1.5 border-t">
-                    <Button
-                      type="button"
-                      onClick={() => openVideoEditor(block.id)}
-                      className="w-full h-8 text-xs font-bold bg-[#8DB833] text-black hover:bg-[#8DB833]/90 gap-1.5 shadow-xs"
-                    >
-                      <Video className="h-3.5 w-3.5" /> Configure Video & Links
-                    </Button>
-                    <div className="text-[10px] text-slate-500 flex items-center justify-between">
-                      <span>Source:</span>
-                      <span className="font-bold text-slate-800 capitalize bg-slate-200/70 px-1.5 py-0.5 rounded">
-                        {parseVideoUrl(block.videoUrl).source}
-                      </span>
+                {isVideo && (() => {
+                  const parsed = parseVideoUrl(block.videoUrl);
+                  const isDirectMedia = Boolean(
+                    block.videoUrl &&
+                      (block.videoUrl.includes("firebasestorage.googleapis.com") ||
+                        /\.(mp4|webm|ogg|mov)($|\?)/i.test(block.videoUrl))
+                  );
+                  const effectiveWatchUrl =
+                    block.videoWatchUrl?.trim() ||
+                    (isDirectMedia ? parsed.watchUrl : block.videoUrl?.trim() || "https://sanex.rw/#slider");
+
+                  return (
+                    <div className="space-y-2 pt-1.5 border-t">
+                      <Button
+                        type="button"
+                        onClick={() => openVideoEditor(block.id)}
+                        className="w-full h-8 text-xs font-bold bg-[#8DB833] text-black hover:bg-[#8DB833]/90 gap-1.5 shadow-xs"
+                      >
+                        <Video className="h-3.5 w-3.5" /> Configure Video & Links
+                      </Button>
+
+                      <div className="space-y-1">
+                        <Label className="text-[10px] font-bold text-slate-700 flex items-center justify-between">
+                          <span className="flex items-center gap-1">
+                            <Link2 className="h-3 w-3 text-emerald-600" /> Click Destination URL:
+                          </span>
+                        </Label>
+                        <Input
+                          type="url"
+                          value={effectiveWatchUrl}
+                          onChange={(e) => updateBlockField(block.id, "videoWatchUrl", e.target.value)}
+                          placeholder="https://sanex.rw/#slider"
+                          className="h-8 text-xs bg-white font-mono"
+                        />
+                        <p className="text-[9px] text-slate-500 m-0">
+                          Recipients go here when clicking the video in their email.
+                        </p>
+                      </div>
+
+                      <div className="text-[10px] text-slate-500 flex items-center justify-between">
+                        <span>Source:</span>
+                        <span className="font-bold text-slate-800 capitalize bg-slate-200/70 px-1.5 py-0.5 rounded">
+                          {parsed.source}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  );
+                })()}
 
                 {isSocial && (
                   <div className="space-y-2.5 pt-1.5 border-t">
@@ -2239,6 +2286,16 @@ export function EmailStudioBuilder({
 
                     {block.type === "video" && (() => {
                       const parsed = parseVideoUrl(block.videoUrl);
+                      const isDirectMedia = Boolean(
+                        block.videoUrl &&
+                          (block.videoUrl.includes("firebasestorage.googleapis.com") ||
+                            /\.(mp4|webm|ogg|mov)($|\?)/i.test(block.videoUrl))
+                      );
+                      const watchUrl =
+                        block.videoWatchUrl?.trim() ||
+                        (isDirectMedia
+                          ? parsed.watchUrl
+                          : block.videoUrl?.trim() || parsed.watchUrl || "https://sanex.rw/#slider");
                       const thumb =
                         block.videoThumbnail ||
                         parsed.thumbnailUrl ||
@@ -2279,6 +2336,12 @@ export function EmailStudioBuilder({
                               <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-xs text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
                                 <Film className="h-2.5 w-2.5 text-[#8DB833]" />
                                 <span className="capitalize">{parsed.source || "Video"}</span>
+                              </div>
+
+                              {/* Click Destination Pill */}
+                              <div className="absolute bottom-3 left-3 bg-black/80 backdrop-blur-xs text-slate-200 text-[10px] font-mono px-2.5 py-0.5 rounded-full flex items-center gap-1.5 border border-white/10 max-w-[85%] truncate shadow-sm">
+                                <Link2 className="h-2.5 w-2.5 text-[#8DB833] shrink-0" />
+                                <span className="truncate">Opens: {watchUrl}</span>
                               </div>
 
                               {/* Quick Edit Overlay */}
@@ -2779,6 +2842,17 @@ export function EmailStudioBuilder({
             if (!block) return null;
 
             const parsed = parseVideoUrl(block.videoUrl);
+            const isDirectMedia = Boolean(
+              block.videoUrl &&
+                (block.videoUrl.includes("firebasestorage.googleapis.com") ||
+                  /\.(mp4|webm|ogg|mov)($|\?)/i.test(block.videoUrl))
+            );
+            const effectiveWatchUrl =
+              block.videoWatchUrl?.trim() ||
+              (isDirectMedia
+                ? parsed.watchUrl
+                : block.videoUrl?.trim() || parsed.watchUrl || "https://sanex.rw/#slider");
+
             const currentThumb =
               block.videoThumbnail ||
               parsed.thumbnailUrl ||
@@ -2815,6 +2889,10 @@ export function EmailStudioBuilder({
                         <Film className="h-2.5 w-2.5 text-[#8DB833]" />
                         <span className="capitalize">{parsed.source || "Video"}</span>
                       </div>
+                      <div className="absolute bottom-2 left-2 bg-black/85 backdrop-blur-xs text-[9px] text-slate-200 px-2.5 py-0.5 rounded-md flex items-center gap-1 max-w-[90%] truncate font-mono border border-white/10 shadow-xs">
+                        <Link2 className="h-2.5 w-2.5 text-[#8DB833] shrink-0" />
+                        <span className="truncate">Opens: {effectiveWatchUrl}</span>
+                      </div>
                     </div>
                     <div className="p-3 border-t-2 border-[#8DB833] flex items-center justify-between gap-3 bg-white">
                       <div className="min-w-0 flex-1">
@@ -2835,17 +2913,71 @@ export function EmailStudioBuilder({
                   </div>
                 </div>
 
-                {/* VIDEO SOURCE & URL */}
+                {/* SECTION 1: CLICK DESTINATION URL (CRITICAL) */}
+                <div className="p-3.5 rounded-lg border-2 border-emerald-500/40 bg-emerald-50/30 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                      <Link2 className="h-4 w-4 text-emerald-600" /> Click Destination on Website
+                    </Label>
+                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                      Where recipients go when clicked
+                    </span>
+                  </div>
+
+                  <p className="text-[11px] text-slate-600 m-0 leading-relaxed">
+                    When someone clicks this video in their email, they will be taken directly to this website URL. By default, it opens the interactive website slider (<code className="bg-emerald-100 text-emerald-900 px-1 py-0.5 rounded font-mono text-[10px]">https://sanex.rw/#slider</code>) where the video is presented in context, rather than opening a raw video file in the browser.
+                  </p>
+
+                  <Input
+                    type="url"
+                    value={block.videoWatchUrl ?? (isDirectMedia ? "https://sanex.rw/#slider" : block.videoUrl || "https://sanex.rw/#slider")}
+                    onChange={(e) => updateBlock(block.id, { videoWatchUrl: e.target.value })}
+                    placeholder="https://sanex.rw/#slider"
+                    className="h-8 text-xs font-mono bg-white border-emerald-300 focus-visible:ring-emerald-500"
+                  />
+
+                  {/* QUICK DESTINATION BUTTONS */}
+                  <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+                    <span className="text-[10px] text-slate-500 font-bold">Quick Destinations:</span>
+                    <button
+                      type="button"
+                      onClick={() => updateBlock(block.id, { videoWatchUrl: "https://sanex.rw/#slider" })}
+                      className="px-2 py-0.5 text-[10px] font-bold bg-white border border-emerald-300 text-emerald-800 hover:bg-emerald-100 rounded transition-colors shadow-2xs"
+                    >
+                      ▶ SANEX Website Slider (#slider)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => updateBlock(block.id, { videoWatchUrl: "https://sanex.rw" })}
+                      className="px-2 py-0.5 text-[10px] font-bold bg-white border border-slate-200 hover:border-slate-400 rounded text-slate-700 transition-colors"
+                    >
+                      🌐 SANEX Homepage
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => updateBlock(block.id, { videoWatchUrl: "https://sanex.rw/gallery" })}
+                      className="px-2 py-0.5 text-[10px] font-bold bg-white border border-slate-200 hover:border-slate-400 rounded text-slate-700 transition-colors"
+                    >
+                      🎥 Media Gallery
+                    </button>
+                  </div>
+                </div>
+
+                {/* SECTION 2: VIDEO MEDIA SOURCE */}
                 <div className="p-3 rounded-lg border bg-slate-50 space-y-2.5">
                   <div className="flex items-center justify-between">
                     <Label className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                      <Film className="h-3.5 w-3.5 text-slate-700" /> Video URL / Web Link
+                      <Film className="h-3.5 w-3.5 text-slate-700" /> Video Media File / Source Link
                     </Label>
-                    {parsed.source === "youtube" && (
+                    {parsed.source === "youtube" ? (
                       <span className="inline-flex items-center gap-1 text-[10px] font-bold text-red-600 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded">
                         <Youtube className="h-3 w-3" /> YouTube ID: {parsed.videoId}
                       </span>
-                    )}
+                    ) : parsed.source === "mp4" ? (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded">
+                        <Film className="h-3 w-3" /> MP4 Video File
+                      </span>
+                    ) : null}
                   </div>
 
                   <Input
@@ -2854,6 +2986,7 @@ export function EmailStudioBuilder({
                     onChange={(e) => {
                       const nextUrl = e.target.value;
                       const nextParsed = parseVideoUrl(nextUrl);
+                      const isMp4 = nextUrl.includes("firebasestorage.googleapis.com") || /\.(mp4|webm|ogg|mov)($|\?)/i.test(nextUrl);
                       const autoThumb =
                         nextParsed.source === "youtube" && nextParsed.thumbnailUrl
                           ? nextParsed.thumbnailUrl
@@ -2863,13 +2996,14 @@ export function EmailStudioBuilder({
                         videoUrl: nextUrl,
                         videoSource: nextParsed.source,
                         videoThumbnail: autoThumb,
+                        videoWatchUrl: block.videoWatchUrl || (isMp4 ? "https://sanex.rw/#slider" : undefined),
                       });
                     }}
-                    placeholder="https://www.youtube.com/watch?v=... or https://sanex.rw/..."
+                    placeholder="https://firebasestorage.googleapis.com/... or YouTube URL"
                     className="h-8 text-xs font-mono bg-white"
                   />
 
-                  {/* QUICK LINK PRESETS */}
+                  {/* QUICK SOURCE PRESETS */}
                   <div className="flex items-center gap-1.5 flex-wrap pt-1">
                     <span className="text-[10px] text-slate-500 font-bold">Quick Presets:</span>
                     <button
@@ -2877,42 +3011,47 @@ export function EmailStudioBuilder({
                       onClick={() => {
                         updateBlock(block.id, {
                           videoUrl:
-                            "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1779714862617_SANEX_VIDEO_higlights%20-%20Copy.mp4?alt=media&token=789f5d47-98cb-4c35-a048-59bf6a4b39a5",
+                            "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1792173462347_Sanex%20Promo%20Video%20Final.mp4?alt=media&token=7a2b61d9-7261-4583-8b10-7770fd0bc41f",
+                          videoWatchUrl: "https://sanex.rw/#slider",
                           videoSource: "mp4",
                           videoTitle: "SANEX in Action: Our Solutions & Services",
                           videoCaption:
-                            "Watch our specialized vacuum trucks and innovative sanitation solutions in action.",
-                          videoButtonText: "Watch Video",
+                            "Watch our specialized vacuum trucks and innovative sanitation solutions in action on our website slider.",
+                          videoButtonText: "Watch on Website Slider",
                         });
                       }}
                       className="px-2 py-0.5 text-[10px] font-bold bg-white border border-slate-200 hover:border-slate-400 rounded text-slate-700 transition-colors"
                     >
-                      Slider Video (MP4)
+                      Website Slider Video (MP4)
                     </button>
                     <button
                       type="button"
                       onClick={() => {
                         updateBlock(block.id, {
-                          videoUrl: "https://sanex.rw/#video",
+                          videoUrl: "https://sanex.rw/#slider",
+                          videoWatchUrl: "https://sanex.rw/#slider",
                           videoSource: "website",
                           videoTitle: "SANEX in Action: Operational Highlights",
                           videoCaption:
                             "Watch our specialized vacuum trucks and decentralized treatment systems providing essential sanitation services across Rwanda.",
+                          videoButtonText: "Watch on Website Slider",
                         });
                       }}
                       className="px-2 py-0.5 text-[10px] font-bold bg-white border border-slate-200 hover:border-slate-400 rounded text-slate-700 transition-colors"
                     >
-                      SANEX Homepage Video
+                      SANEX Homepage Slider
                     </button>
                     <button
                       type="button"
                       onClick={() => {
                         updateBlock(block.id, {
                           videoUrl: "https://sanex.rw/gallery",
+                          videoWatchUrl: "https://sanex.rw/gallery",
                           videoSource: "website",
                           videoTitle: "SANEX Media & Operations Gallery",
                           videoCaption:
                             "Explore photos and operational video clips of our liquid waste management projects.",
+                          videoButtonText: "Explore Gallery",
                         });
                       }}
                       className="px-2 py-0.5 text-[10px] font-bold bg-white border border-slate-200 hover:border-slate-400 rounded text-slate-700 transition-colors"
@@ -2924,10 +3063,12 @@ export function EmailStudioBuilder({
                       onClick={() => {
                         updateBlock(block.id, {
                           videoUrl: "https://youtube.com/@sanexrwanda",
+                          videoWatchUrl: "https://youtube.com/@sanexrwanda",
                           videoSource: "youtube",
                           videoTitle: "SANEX Official YouTube Channel",
                           videoCaption:
                             "Subscribe and watch informative videos on sanitation, DWTS, and environmental protection.",
+                          videoButtonText: "Watch on YouTube",
                         });
                       }}
                       className="px-2 py-0.5 text-[10px] font-bold bg-white border border-slate-200 hover:border-slate-400 rounded text-slate-700 transition-colors"
