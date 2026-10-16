@@ -135,10 +135,12 @@ export function parseSpreadsheetContacts(
     }
     seenEmails.add(email);
 
-    // Auto-detect sector if default is general or unspecified
-    if (organization || name) {
+    // Only auto-detect sector if default is general or unspecified
+    if ((!defaultSector || defaultSector === "general") && (organization || name)) {
       const inferred = inferSector(`${organization} ${name}`, defaultSector);
       if (inferred !== "general") sector = inferred;
+    } else if (defaultSector && defaultSector !== "general") {
+      sector = defaultSector;
     }
 
     contacts.push({
@@ -199,10 +201,15 @@ export function parseRawTextContacts(
     }
     seenEmails.add(email);
 
+    const sector =
+      !defaultSector || defaultSector === "general"
+        ? inferSector(`${name} ${email}`, defaultSector)
+        : defaultSector;
+
     contacts.push({
       email,
       name: name || email.split("@")[0],
-      sector: inferSector(`${name} ${email}`, defaultSector),
+      sector,
     });
   }
 

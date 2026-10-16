@@ -266,12 +266,17 @@ export function ZohoEmailHub() {
       const email = (c.email || "").trim().toLowerCase();
       if (email && EMAIL_REGEX.test(email)) {
         map.all.push(email);
-        const s = c.sector || "general";
-        if (map[s]) {
-          map[s].push(email);
-        } else {
-          map[s] = [email];
-        }
+        const contactSectors: string[] = Array.isArray(c.sectors) && c.sectors.length > 0
+          ? c.sectors
+          : [c.sector || "general"];
+
+        contactSectors.forEach((s: string) => {
+          if (map[s]) {
+            if (!map[s].includes(email)) map[s].push(email);
+          } else {
+            map[s] = [email];
+          }
+        });
       }
     });
     return map;

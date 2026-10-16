@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { useFirestore, useCollection, useUser } from "@/firebase";
-import { collection, doc, deleteDoc, setDoc, updateDoc } from "firebase/firestore";
+import { collection, doc, deleteDoc, setDoc, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,7 +59,7 @@ import { ContactSector, SECTOR_CONFIG } from "@/lib/contacts-parser";
 import { ZohoContactsImporter } from "@/components/admin/ZohoContactsImporter";
 import { exportToExcel } from "@/lib/exportExcel";
 import { useContactGroups } from "@/hooks/use-contact-groups";
-import { ContactGroup, purgeContactsBatch, reassignContactsBatch } from "@/lib/contact-groups";
+import { ContactGroup, purgeContactsBatch, reassignContactsBatch, addContactsToGroupBatch } from "@/lib/contact-groups";
 
 export function SectorAddressBook() {
   const db = useFirestore();
@@ -132,9 +132,10 @@ export function SectorAddressBook() {
   const [removeRecipientMode, setRemoveRecipientMode] = useState<"remove_from_group" | "delete_permanent">("remove_from_group");
   const [isRemovingRecipient, setIsRemovingRecipient] = useState(false);
 
-  // Bulk Move to Group State
+  // Bulk Move / Add to Group State
   const [isMoveGroupModalOpen, setIsMoveGroupModalOpen] = useState(false);
   const [moveTargetGroup, setMoveTargetGroup] = useState<string>("general");
+  const [moveMode, setMoveMode] = useState<"add" | "move">("add");
   const [isMovingGroup, setIsMovingGroup] = useState(false);
 
   // Firestore contacts query (only run when authenticated)
@@ -159,12 +160,18 @@ export function SectorAddressBook() {
     // Count contacts
     (rawContacts || []).forEach((c: any) => {
       counts.all++;
-      const s = c.sector || "general";
-      if (counts[s] !== undefined) {
-        counts[s]++;
-      } else {
-        counts[s] = (counts[s] || 0) + 1;
-      }
+      const contactSectors: string[] = Array.isArray(c.sectors) && c.sectors.length > 0
+        ? c.sectors
+        : [c.sector || "general"];
+
+      const uniqueSectors = new Set(contactSectors);
+      uniqueSectors.forEach((s) => {
+        if (counts[s] !== undefined) {
+          counts[s]++;
+        } else {
+          counts[s] = 1;
+        }
+      });
     });
 
     return counts;
@@ -174,8 +181,13 @@ export function SectorAddressBook() {
   const filteredContacts = useMemo(() => {
     return (rawContacts || [])
       .filter((c: any) => {
-        if (selectedSector !== "all" && c.sector !== selectedSector) {
-          return false;
+        if (selectedSector !== "all") {
+          const contactSectors: string[] = Array.isArray(c.sectors) && c.sectors.length > 0
+            ? c.sectors
+            : [c.sector || "general"];
+          if (!contactSectors.includes(selectedSector)) {
+            return false;
+          }
         }
 
         if (searchTerm.trim()) {
@@ -368,6 +380,7 @@ export function SectorAddressBook() {
           organization: addRecipientOrg.trim(),
           phone: addRecipientPhone.trim(),
           sector: targetSec,
+          sectors: arrayUnion(targetSec),
           source: "manual_entry",
           createdAt: now,
           updatedAt: now,
@@ -419,6 +432,7 @@ export function SectorAddressBook() {
         organization: editRecipientOrg.trim(),
         phone: editRecipientPhone.trim(),
         sector: editRecipientSector,
+        sectors: arrayUnion(editRecipientSector),
         updatedAt: now,
       });
 
@@ -456,14 +470,23 @@ export function SectorAddressBook() {
       const groupName = getGroupName(contactToRemove.sector || "general");
 
       if (removeRecipientMode === "remove_from_group") {
+        const sectorToRemove = selectedSector !== "all" ? selectedSector : (contactToRemove.sector || "general");
+        const existingSectors: string[] = Array.isArray(contactToRemove.sectors) && contactToRemove.sectors.length > 0
+          ? contactToRemove.sectors
+          : [contactToRemove.sector || "general"];
+        
+        const remainingSectors = existingSectors.filter((s) => s !== sectorToRemove);
+        const newPrimary = remainingSectors.length > 0 ? remainingSectors[0] : "general";
+
         await updateDoc(doc(db, "client_contacts", contactToRemove.id), {
-          sector: "general",
+          sector: newPrimary,
+          sectors: arrayRemove(sectorToRemove),
           updatedAt: Date.now(),
         });
 
         toast({
           title: "Removed from Group",
-          description: `${email} was removed from "${groupName}" and moved to General Institutions.`,
+          description: `${email} was removed from "${groupName}".`,
         });
       } else {
         await deleteDoc(doc(db, "client_contacts", contactToRemove.id));
@@ -487,27 +510,41 @@ export function SectorAddressBook() {
     }
   };
 
-  // Execute Move Selected Contacts to Another Group
+  // Execute Move / Add Selected Contacts to Another Group
   const handleExecuteMoveGroup = async () => {
     if (!db || selectedContactIds.length === 0) return;
 
     setIsMovingGroup(true);
     try {
       const targetLabel = getGroupName(moveTargetGroup);
-      const count = await reassignContactsBatch(db, selectedContactIds, moveTargetGroup);
+      let count = 0;
 
-      toast({
-        title: "Contacts Reassigned",
-        description: `Successfully moved ${count} recipient(s) to "${targetLabel}".`,
-      });
+      if (moveMode === "add") {
+        count = await addContactsToGroupBatch(db, selectedContactIds, moveTargetGroup);
+        toast({
+          title: "Contacts Added to Group",
+          description: `Successfully added ${count} recipient(s) to "${targetLabel}" (kept in current group as well).`,
+        });
+      } else {
+        count = await reassignContactsBatch(
+          db,
+          selectedContactIds,
+          moveTargetGroup,
+          selectedSector !== "all" ? selectedSector : undefined
+        );
+        toast({
+          title: "Contacts Moved Exclusively",
+          description: `Successfully moved ${count} recipient(s) to "${targetLabel}".`,
+        });
+      }
 
       setSelectedContactIds([]);
       setIsMoveGroupModalOpen(false);
     } catch (err: any) {
       toast({
         variant: "destructive",
-        title: "Move Failed",
-        description: err.message || "Could not move selected contacts.",
+        title: "Action Failed",
+        description: err.message || "Could not process selected contacts.",
       });
     } finally {
       setIsMovingGroup(false);
@@ -995,15 +1032,36 @@ export function SectorAddressBook() {
                         )}
                       </div>
 
-                      {/* Sector Badge & Actions */}
+                      {/* Sector Badges & Actions */}
                       <div className="col-span-4 sm:col-span-2 flex items-center justify-end gap-1.5">
-                        <Badge
-                          variant="outline"
-                          className="text-[9px] font-bold py-0.5 px-2 bg-slate-50 border-slate-200 truncate max-w-[90px]"
-                          title={groupLabel}
-                        >
-                          {groupLabel.split(" ")[0]}
-                        </Badge>
+                        {(() => {
+                          const contactSectors: string[] = Array.isArray(c.sectors) && c.sectors.length > 0
+                            ? c.sectors
+                            : [c.sector || "general"];
+
+                          return (
+                            <div className="flex items-center gap-1 flex-wrap justify-end max-w-[130px]">
+                              {contactSectors.slice(0, 2).map((secId) => {
+                                const label = getGroupName(secId);
+                                return (
+                                  <Badge
+                                    key={secId}
+                                    variant="outline"
+                                    className="text-[9px] font-bold py-0.5 px-1.5 bg-slate-50 border-slate-200 truncate max-w-[80px]"
+                                    title={label}
+                                  >
+                                    {label.split(" ")[0]}
+                                  </Badge>
+                                );
+                              })}
+                              {contactSectors.length > 2 && (
+                                <Badge variant="secondary" className="text-[8px] font-bold py-0 px-1">
+                                  +{contactSectors.length - 2}
+                                </Badge>
+                              )}
+                            </div>
+                          );
+                        })()}
 
                         {/* Edit Recipient or Reassign Group */}
                         <button
@@ -1934,6 +1992,46 @@ export function SectorAddressBook() {
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Assignment Mode: Add to Group vs Move Exclusively */}
+            <div className="space-y-1.5 pt-1 border-t">
+              <Label className="text-xs font-bold text-foreground">Assignment Action:</Label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setMoveMode("add")}
+                  className={`p-2.5 rounded-lg border text-left transition-all ${
+                    moveMode === "add"
+                      ? "border-primary bg-primary/10 ring-1 ring-primary"
+                      : "border-slate-200 hover:border-slate-300 bg-white"
+                  }`}
+                >
+                  <div className="font-bold text-xs text-slate-900 flex items-center gap-1.5">
+                    <UserPlus className="h-3.5 w-3.5 text-primary" /> Add to Group
+                  </div>
+                  <div className="text-[10px] text-muted-foreground mt-0.5 leading-snug">
+                    Keep in current group AND also include in new group
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setMoveMode("move")}
+                  className={`p-2.5 rounded-lg border text-left transition-all ${
+                    moveMode === "move"
+                      ? "border-primary bg-primary/10 ring-1 ring-primary"
+                      : "border-slate-200 hover:border-slate-300 bg-white"
+                  }`}
+                >
+                  <div className="font-bold text-xs text-slate-900 flex items-center gap-1.5">
+                    <ArrowRightLeft className="h-3.5 w-3.5 text-slate-700" /> Move Exclusively
+                  </div>
+                  <div className="text-[10px] text-muted-foreground mt-0.5 leading-snug">
+                    Transfer completely out of current group to new group
+                  </div>
+                </button>
+              </div>
+            </div>
           </div>
 
           <DialogFooter className="gap-2 sm:gap-0">
@@ -1954,10 +2052,12 @@ export function SectorAddressBook() {
             >
               {isMovingGroup ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
+              ) : moveMode === "add" ? (
+                <UserPlus className="h-4 w-4" />
               ) : (
                 <ArrowRightLeft className="h-4 w-4" />
               )}
-              Move {selectedContactIds.length} Contact(s)
+              {moveMode === "add" ? "Add" : "Move"} {selectedContactIds.length} Contact(s)
             </Button>
           </DialogFooter>
         </DialogContent>

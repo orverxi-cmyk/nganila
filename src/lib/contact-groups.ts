@@ -1,4 +1,4 @@
-import { Firestore, doc, writeBatch } from "firebase/firestore";
+import { Firestore, doc, writeBatch, arrayUnion, arrayRemove } from "firebase/firestore";
 
 export interface ContactGroup {
   id: string;
@@ -114,15 +114,53 @@ export async function purgeContactsBatch(
 }
 
 /**
+ * Adds contacts to a group without removing them from their existing groups
+ */
+export async function addContactsToGroupBatch(
+  db: Firestore,
+  contactIds: string[],
+  targetGroupId: string,
+  onProgress?: (processedCount: number, total: number) => void
+): Promise<number> {
+  if (!contactIds || contactIds.length === 0) return 0;
+
+  const chunks = chunkArray(contactIds, 400);
+  let totalProcessed = 0;
+  const now = Date.now();
+
+  for (const chunk of chunks) {
+    const batch = writeBatch(db);
+    for (const id of chunk) {
+      batch.update(doc(db, "client_contacts", id), {
+        sector: targetGroupId,
+        sectors: arrayUnion(targetGroupId),
+        updatedAt: now,
+      });
+    }
+    await batch.commit();
+    totalProcessed += chunk.length;
+    if (onProgress) {
+      onProgress(totalProcessed, contactIds.length);
+    }
+  }
+
+  return totalProcessed;
+}
+
+/**
  * Reassigns contacts to another group in safe batches of 400
  */
 export async function reassignContactsBatch(
   db: Firestore,
   contactIds: string[],
   targetGroupId: string,
+  sourceGroupIdOrProgress?: string | ((reassignedCount: number, total: number) => void),
   onProgress?: (reassignedCount: number, total: number) => void
 ): Promise<number> {
   if (!contactIds || contactIds.length === 0) return 0;
+
+  const sourceGroupId = typeof sourceGroupIdOrProgress === "string" ? sourceGroupIdOrProgress : undefined;
+  const progressFn = typeof sourceGroupIdOrProgress === "function" ? sourceGroupIdOrProgress : onProgress;
 
   const chunks = chunkArray(contactIds, 400);
   let totalReassigned = 0;
@@ -131,15 +169,21 @@ export async function reassignContactsBatch(
   for (const chunk of chunks) {
     const batch = writeBatch(db);
     for (const id of chunk) {
-      batch.update(doc(db, "client_contacts", id), {
+      const ref = doc(db, "client_contacts", id);
+      const updates: Record<string, any> = {
         sector: targetGroupId,
+        sectors: arrayUnion(targetGroupId),
         updatedAt: now,
-      });
+      };
+      if (sourceGroupId && sourceGroupId !== targetGroupId && sourceGroupId !== "all") {
+        updates.sectors = arrayRemove(sourceGroupId);
+      }
+      batch.update(ref, updates);
     }
     await batch.commit();
     totalReassigned += chunk.length;
-    if (onProgress) {
-      onProgress(totalReassigned, contactIds.length);
+    if (progressFn) {
+      progressFn(totalReassigned, contactIds.length);
     }
   }
 

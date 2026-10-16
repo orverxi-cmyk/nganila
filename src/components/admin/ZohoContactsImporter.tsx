@@ -40,7 +40,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useFirestore } from "@/firebase";
-import { doc, writeBatch } from "firebase/firestore";
+import { doc, writeBatch, arrayUnion } from "firebase/firestore";
 import {
   ContactSector,
   SECTOR_CONFIG,
@@ -193,6 +193,7 @@ export function ZohoContactsImporter({
           // Use safe sanitized email as doc ID to prevent duplicates
           const safeId = c.email.replace(/[^a-zA-Z0-9]/g, "_").toLowerCase();
           const ref = doc(db, "client_contacts", safeId);
+          const finalSector = c.sector || targetSector;
           batch.set(
             ref,
             {
@@ -201,7 +202,8 @@ export function ZohoContactsImporter({
               email: c.email.toLowerCase(),
               organization: c.organization || "",
               phone: c.phone || "",
-              sector: c.sector || targetSector,
+              sector: finalSector,
+              sectors: arrayUnion(finalSector),
               source: fileName ? "zoho_import" : "pasted_list",
               updatedAt: now,
               createdAt: now,
@@ -261,6 +263,7 @@ export function ZohoContactsImporter({
           organization: singleOrg.trim(),
           phone: singlePhone.trim(),
           sector: targetSector,
+          sectors: arrayUnion(targetSector),
           source: "manual",
           updatedAt: now,
           createdAt: now,
