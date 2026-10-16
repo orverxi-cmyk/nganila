@@ -708,8 +708,9 @@ export function compileBlocksToHtml(blocks: EmailBlock[] = INITIAL_SANEX_BLOCKS)
                   </tr>
                   <!-- TITLE, CAPTION & CTA BAR -->
                   <tr>
-                    <td style="padding:16px 20px; background-color:#ffffff; border-top:3px solid ${playColor};">
-                      <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <td class="sanex-video-bar" style="padding:16px 20px; background-color:#ffffff; border-top:3px solid ${playColor};">
+                      <!-- DESKTOP BAR (hidden on mobile <= 600px) -->
+                      <table border="0" cellpadding="0" cellspacing="0" width="100%" class="sanex-desktop-col">
                         <tr>
                           <td valign="middle" align="left">
                             <h3 style="color:#0f172a; font-size:15px; font-weight:800; margin:0 0 4px 0; line-height:1.35; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
@@ -728,6 +729,25 @@ export function compileBlocksToHtml(blocks: EmailBlock[] = INITIAL_SANEX_BLOCKS)
                           </td>
                         </tr>
                       </table>
+
+                      <!-- MOBILE VERTICALLY STACKED BAR (hidden on desktop, active on mobile <= 600px) -->
+                      <!--[if !mso]><!-->
+                      <div class="sanex-mobile-col" style="display:none; max-height:0; overflow:hidden; mso-hide:all; text-align:left;">
+                        <h3 style="color:#0f172a; font-size:15px; font-weight:800; margin:0 0 6px 0; line-height:1.35; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+                          ${title}
+                        </h3>
+                        ${
+                          caption
+                            ? `<p style="color:#64748b; font-size:12px; line-height:1.55; margin:0 0 12px 0; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">${caption}</p>`
+                            : ""
+                        }
+                        <div style="margin-top:${caption ? "0" : "10px"}; text-align:left;">
+                          <a href="${watchUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-block; background-color:${playColor}; color:#000000; font-size:12px; font-weight:800; text-decoration:none; padding:9px 18px; border-radius:6px; white-space:nowrap; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+                            ▶ ${btnText}
+                          </a>
+                        </div>
+                      </div>
+                      <!--<![endif]-->
                     </td>
                   </tr>
                 </table>
@@ -775,6 +795,9 @@ export function compileBlocksToHtml(blocks: EmailBlock[] = INITIAL_SANEX_BLOCKS)
       .sanex-col-cell {
         padding: 20px 16px !important;
       }
+      .sanex-video-bar {
+        padding: 16px 16px !important;
+      }
     }
     .mobile-forced .sanex-desktop-col {
       display: none !important;
@@ -789,6 +812,9 @@ export function compileBlocksToHtml(blocks: EmailBlock[] = INITIAL_SANEX_BLOCKS)
     }
     .mobile-forced .sanex-col-cell {
       padding: 20px 16px !important;
+    }
+    .mobile-forced .sanex-video-bar {
+      padding: 16px 16px !important;
     }
   </style>
 </head>
@@ -2359,16 +2385,40 @@ export function EmailStudioBuilder({
                             </div>
 
                             {/* CARD DETAILS BOTTOM BAR */}
-                            <div className="p-4 border-t-2 border-[#8DB833] flex items-center justify-between gap-3 bg-white">
-                              <div className="min-w-0 flex-1">
-                                <h3 className="text-sm font-extrabold text-slate-900 truncate m-0">
+                            <div
+                              className={`p-4 border-t-2 border-[#8DB833] bg-white ${
+                                previewDevice === "mobile"
+                                  ? "flex flex-col items-start gap-3"
+                                  : "flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                              }`}
+                            >
+                              <div className="min-w-0 w-full">
+                                <h3
+                                  className={`text-sm font-extrabold text-slate-900 m-0 ${
+                                    previewDevice === "mobile" ? "leading-snug" : "truncate"
+                                  }`}
+                                >
                                   {title}
                                 </h3>
-                                <p className="text-[11px] text-slate-500 line-clamp-1 mt-0.5 m-0">
-                                  {caption}
-                                </p>
+                                {caption && (
+                                  <p
+                                    className={`text-slate-500 m-0 ${
+                                      previewDevice === "mobile"
+                                        ? "text-xs leading-relaxed mt-1"
+                                        : "text-[11px] line-clamp-1 mt-0.5"
+                                    }`}
+                                  >
+                                    {caption}
+                                  </p>
+                                )}
                               </div>
-                              <div className="shrink-0">
+                              <div
+                                className={
+                                  previewDevice === "mobile"
+                                    ? "w-full flex items-center justify-start pt-0.5"
+                                    : "shrink-0 sm:self-auto self-start"
+                                }
+                              >
                                 <span
                                   style={{ backgroundColor: playColor }}
                                   className="inline-flex items-center gap-1.5 text-xs font-extrabold px-3.5 py-1.5 rounded-md text-black shadow-2xs"
