@@ -71,15 +71,15 @@ export function HomeSlider() {
           <CarouselContent className="m-0">
             {items.map((slide: any, i: number) => (
               <CarouselItem key={i} className="h-full pl-0">
-                <div className="grid grid-cols-1 lg:grid-cols-4 rounded-xl overflow-hidden border bg-white shadow-lg min-h-0 lg:h-[500px]">
-                  <div className="relative w-full h-[200px] lg:h-full lg:col-span-3 bg-muted border-b lg:border-b-0 lg:border-r border-primary/10">
+                <div className="grid grid-cols-1 lg:grid-cols-4 rounded-xl overflow-hidden border bg-white shadow-lg items-stretch">
+                  <div className="relative w-full aspect-video lg:col-span-3 bg-black border-b lg:border-b-0 lg:border-r border-primary/10 flex items-center justify-center overflow-hidden">
                     {slide.imageUrl && isVideo(slide.imageUrl) ? (
                       <video 
                         src={slide.imageUrl} 
                         controls 
                         playsInline 
                         preload="metadata" 
-                        className="w-full h-full object-cover" 
+                        className="w-full h-full object-contain bg-black" 
                       />
                     ) : slide.imageUrl ? (
                       <Image 
@@ -97,9 +97,9 @@ export function HomeSlider() {
                     )}
                   </div>
 
-                  <div className="flex flex-col justify-center p-5 lg:p-8 space-y-4 lg:col-span-1 bg-primary text-black">
-                    <div className="space-y-2 text-left">
-                      <h2 className="text-[16px] font-bold text-black tracking-tight leading-tight">
+                  <div className="flex flex-col justify-between p-6 lg:p-8 space-y-4 lg:col-span-1 bg-primary text-black">
+                    <div className="space-y-3 text-left">
+                      <h2 className="text-[18px] lg:text-[20px] font-bold text-black tracking-tight leading-tight">
                         {slide.title}
                       </h2>
                       <div 
@@ -107,10 +107,10 @@ export function HomeSlider() {
                         dangerouslySetInnerHTML={{ __html: slide.description }}
                       />
                     </div>
-                    <div className="pt-1 flex flex-wrap gap-x-[5px] gap-y-[20px]">
-                      <Button asChild className="w-full rounded-full bg-black text-primary font-bold uppercase tracking-widest hover:bg-black/90 gap-2 h-10 px-6 text-[14px]">
+                    <div className="pt-2 flex flex-wrap gap-x-[5px] gap-y-[15px]">
+                      <Button asChild className="w-full rounded-full bg-black text-primary font-bold uppercase tracking-widest hover:bg-black/90 gap-2 h-11 px-6 text-[14px] shadow-sm">
                         <Link href={slide.link || "#"}>
-                          {slide.buttonText || "Learn More"} <ArrowRight className="h-3.5 w-3.5 text-primary" />
+                          {slide.buttonText || "Learn More"} <ArrowRight className="h-4 w-4 text-primary" />
                         </Link>
                       </Button>
                     </div>
