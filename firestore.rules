@@ -26,7 +26,7 @@ service cloud.firestore {
     }
     match /settings/{docId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if isAdmin() || docId == 'email_template' || docId == 'email_templates';
     }
 
     // User profiles: read by self/admin; update by self or admin

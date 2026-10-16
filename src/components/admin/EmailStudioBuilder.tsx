@@ -43,6 +43,12 @@ import {
   CheckCircle2,
   Link2,
   Globe,
+  Settings2,
+  Plus,
+  Check,
+  ExternalLink,
+  Cloud,
+  RefreshCw,
 } from "lucide-react";
 
 export type BlockType =
@@ -62,6 +68,126 @@ export type BlockType =
   | "social"
   | "code"
   | "footer";
+
+export type SocialPlatform =
+  | "x"
+  | "linkedin"
+  | "youtube"
+  | "facebook"
+  | "instagram"
+  | "whatsapp"
+  | "website";
+
+export interface SocialLinkItem {
+  id: string;
+  platform: SocialPlatform;
+  url: string;
+  label?: string;
+  enabled?: boolean;
+}
+
+export const SOCIAL_PLATFORMS: {
+  id: SocialPlatform;
+  name: string;
+  iconText: string;
+  color: string;
+  bg: string;
+  defaultUrl: string;
+  placeholder: string;
+}[] = [
+  {
+    id: "x",
+    name: "X (Twitter)",
+    iconText: "𝕏",
+    color: "#0f172a",
+    bg: "#ffffff",
+    defaultUrl: "https://x.com/SanexRwanda",
+    placeholder: "https://x.com/SanexRwanda",
+  },
+  {
+    id: "linkedin",
+    name: "LinkedIn",
+    iconText: "in",
+    color: "#0a66c2",
+    bg: "#ffffff",
+    defaultUrl: "https://linkedin.com/company/sanex-rwanda",
+    placeholder: "https://linkedin.com/company/sanex-rwanda",
+  },
+  {
+    id: "youtube",
+    name: "YouTube",
+    iconText: "▶",
+    color: "#ff0000",
+    bg: "#ffffff",
+    defaultUrl: "https://youtube.com/@sanexrwanda",
+    placeholder: "https://youtube.com/@sanexrwanda",
+  },
+  {
+    id: "facebook",
+    name: "Facebook",
+    iconText: "f",
+    color: "#1877f2",
+    bg: "#ffffff",
+    defaultUrl: "https://facebook.com/SanexRwanda",
+    placeholder: "https://facebook.com/SanexRwanda",
+  },
+  {
+    id: "instagram",
+    name: "Instagram",
+    iconText: "IG",
+    color: "#e1306c",
+    bg: "#ffffff",
+    defaultUrl: "https://instagram.com/sanex_rwanda",
+    placeholder: "https://instagram.com/sanex_rwanda",
+  },
+  {
+    id: "whatsapp",
+    name: "WhatsApp",
+    iconText: "WA",
+    color: "#25d366",
+    bg: "#ffffff",
+    defaultUrl: "https://wa.me/250788300000",
+    placeholder: "https://wa.me/250788300000",
+  },
+  {
+    id: "website",
+    name: "Website",
+    iconText: "🌐",
+    color: "#0f172a",
+    bg: "#ffffff",
+    defaultUrl: "https://sanex.rw",
+    placeholder: "https://sanex.rw",
+  },
+];
+
+export const DEFAULT_HEADER_SOCIALS: SocialLinkItem[] = [
+  { id: "x", platform: "x", url: "https://x.com/SanexRwanda", label: "𝕏", enabled: true },
+  { id: "linkedin", platform: "linkedin", url: "https://linkedin.com/company/sanex-rwanda", label: "in", enabled: true },
+  { id: "youtube", platform: "youtube", url: "https://youtube.com/@sanexrwanda", label: "▶", enabled: true },
+  { id: "facebook", platform: "facebook", url: "https://facebook.com/SanexRwanda", label: "f", enabled: false },
+  { id: "instagram", platform: "instagram", url: "https://instagram.com/sanex_rwanda", label: "IG", enabled: false },
+  { id: "whatsapp", platform: "whatsapp", url: "https://wa.me/250788300000", label: "WA", enabled: false },
+  { id: "website", platform: "website", url: "https://sanex.rw", label: "🌐", enabled: false },
+];
+
+export function getSocialPlatformMeta(platform: string) {
+  return SOCIAL_PLATFORMS.find((p) => p.id === platform) || {
+    id: platform as SocialPlatform,
+    name: platform,
+    iconText: "★",
+    color: "#0f172a",
+    bg: "#ffffff",
+    defaultUrl: "https://sanex.rw",
+    placeholder: "https://...",
+  };
+}
+
+export function getEffectiveSocialLinks(block: EmailBlock): SocialLinkItem[] {
+  if (Array.isArray(block.socialLinks) && block.socialLinks.length > 0) {
+    return block.socialLinks;
+  }
+  return DEFAULT_HEADER_SOCIALS;
+}
 
 export interface EmailBlock {
   id: string;
@@ -95,6 +221,10 @@ export interface EmailBlock {
   col2ButtonColor?: string;
   col2ButtonTextColor?: string;
   rawHtml?: string;
+  socialLinks?: SocialLinkItem[];
+  socialStyle?: "circle" | "rounded" | "pill";
+  socialIconBg?: string;
+  socialIconColor?: string;
 }
 
 interface EmailStudioBuilderProps {
@@ -102,6 +232,10 @@ interface EmailStudioBuilderProps {
   initialBlocks?: EmailBlock[];
   onSaveAndProceed: (compiledHtml: string, blocks: EmailBlock[]) => void;
   onBackToSending: (blocks?: EmailBlock[]) => void;
+  onSaveToCloud?: (compiledHtml: string, blocks: EmailBlock[]) => Promise<any>;
+  onOpenCloudTransfer?: () => void;
+  cloudSyncStatus?: "synced" | "saving" | "error" | "idle";
+  lastSyncTime?: Date | null;
 }
 
 const INITIAL_SANEX_BLOCKS: EmailBlock[] = [
@@ -109,6 +243,8 @@ const INITIAL_SANEX_BLOCKS: EmailBlock[] = [
     id: "topbar-1",
     type: "topbar",
     bgColor: "#8DB833",
+    align: "right",
+    socialLinks: [...DEFAULT_HEADER_SOCIALS],
   },
   {
     id: "logo-1",
@@ -166,26 +302,37 @@ export function compileBlocksToHtml(blocks: EmailBlock[] = INITIAL_SANEX_BLOCKS)
   const renderedBlocks = safeBlocks
     .map((block) => {
       switch (block.type) {
-        case "topbar":
+        case "topbar": {
+          const links = getEffectiveSocialLinks(block).filter((l) => l.enabled !== false && l.url);
+          const align = block.align || "right";
+          const bgColor = block.bgColor || "#8DB833";
+          const iconBg = block.socialIconBg || "#ffffff";
+
+          const cells = links
+            .map((link) => {
+              const meta = getSocialPlatformMeta(link.platform);
+              const label = link.label || meta.iconText;
+              const textColor = block.socialIconColor || meta.color;
+              return `
+                <td style="padding:0 5px;">
+                  <a href="${link.url}" target="_blank" rel="noopener noreferrer" style="text-decoration:none; display:inline-block; width:22px; height:22px; line-height:22px; text-align:center; background-color:${iconBg}; color:${textColor}; border-radius:50%; font-size:11px; font-weight:bold; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">${label}</a>
+                </td>
+              `;
+            })
+            .join("");
+
           return `
             <tr>
-              <td align="right" style="background-color:${block.bgColor || "#8DB833"}; padding:8px 24px; text-align:right;">
+              <td align="${align}" style="background-color:${bgColor}; padding:8px 24px; text-align:${align};">
                 <table border="0" cellpadding="0" cellspacing="0" style="display:inline-block; border-collapse:collapse;">
                   <tr>
-                    <td style="padding:0 6px;">
-                      <a href="https://x.com/SanexRwanda" target="_blank" style="text-decoration:none; display:inline-block; width:22px; height:22px; line-height:22px; text-align:center; background-color:#ffffff; color:#0f172a; border-radius:50%; font-size:11px; font-weight:bold;">𝕏</a>
-                    </td>
-                    <td style="padding:0 6px;">
-                      <a href="https://linkedin.com/company/sanex-rwanda" target="_blank" style="text-decoration:none; display:inline-block; width:22px; height:22px; line-height:22px; text-align:center; background-color:#ffffff; color:#0a66c2; border-radius:50%; font-size:11px; font-weight:bold;">in</a>
-                    </td>
-                    <td style="padding:0 6px;">
-                      <a href="https://youtube.com/@sanexrwanda" target="_blank" style="text-decoration:none; display:inline-block; width:22px; height:22px; line-height:22px; text-align:center; background-color:#ffffff; color:#ff0000; border-radius:50%; font-size:10px; font-weight:bold;">▶</a>
-                    </td>
+                    ${cells || `<td>&nbsp;</td>`}
                   </tr>
                 </table>
               </td>
             </tr>
           `;
+        }
 
         case "logo":
           return `
@@ -391,6 +538,38 @@ export function compileBlocksToHtml(blocks: EmailBlock[] = INITIAL_SANEX_BLOCKS)
             </tr>
           `;
 
+        case "social": {
+          const links = getEffectiveSocialLinks(block).filter((l) => l.enabled !== false && l.url);
+          const align = block.align || "center";
+          const bgColor = block.bgColor || "#ffffff";
+          const iconBg = block.socialIconBg || "#f1f5f9";
+
+          const cells = links
+            .map((link) => {
+              const meta = getSocialPlatformMeta(link.platform);
+              const label = link.label || meta.iconText;
+              const textColor = block.socialIconColor || meta.color;
+              return `
+                <td style="padding:0 6px;">
+                  <a href="${link.url}" target="_blank" rel="noopener noreferrer" style="text-decoration:none; display:inline-block; width:30px; height:30px; line-height:30px; text-align:center; background-color:${iconBg}; color:${textColor}; border-radius:50%; font-size:13px; font-weight:bold; border:1px solid #e2e8f0; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">${label}</a>
+                </td>
+              `;
+            })
+            .join("");
+
+          return `
+            <tr>
+              <td align="${align}" style="background-color:${bgColor}; padding:18px 24px; text-align:${align};">
+                <table border="0" cellpadding="0" cellspacing="0" style="display:inline-block; border-collapse:collapse;">
+                  <tr>
+                    ${cells || `<td>&nbsp;</td>`}
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          `;
+        }
+
         case "code":
           return `
             <tr>
@@ -514,6 +693,10 @@ export function EmailStudioBuilder({
   initialBlocks,
   onSaveAndProceed,
   onBackToSending,
+  onSaveToCloud,
+  onOpenCloudTransfer,
+  cloudSyncStatus = "idle",
+  lastSyncTime,
 }: EmailStudioBuilderProps) {
   const [blocks, setBlocks] = useState<EmailBlock[]>(() =>
     initialBlocks && initialBlocks.length > 0 ? initialBlocks : INITIAL_SANEX_BLOCKS
@@ -557,6 +740,20 @@ export function EmailStudioBuilder({
       fieldText,
       fieldColor,
       fieldTextColor,
+    });
+  };
+
+  // Social Media Configuration Modal State
+  const [socialEditModal, setSocialEditModal] = useState<{
+    isOpen: boolean;
+    blockId: string;
+  } | null>(null);
+
+  const openSocialEditor = (blockId: string) => {
+    setActiveBlockId(blockId);
+    setSocialEditModal({
+      isOpen: true,
+      blockId,
     });
   };
 
@@ -661,6 +858,25 @@ export function EmailStudioBuilder({
           col2Width: type === "columns_1" ? 0 : 67,
           col2Heading: "Column Feature Block",
           col2Text: "Describe this service offering.",
+        };
+        break;
+      case "social":
+        newBlock = {
+          id: newId,
+          type: "social",
+          align: "center",
+          bgColor: "#ffffff",
+          socialIconBg: "#f1f5f9",
+          socialLinks: [...DEFAULT_HEADER_SOCIALS],
+        };
+        break;
+      case "topbar":
+        newBlock = {
+          id: newId,
+          type: "topbar",
+          bgColor: "#8DB833",
+          align: "right",
+          socialLinks: [...DEFAULT_HEADER_SOCIALS],
         };
         break;
       case "footer":
@@ -913,6 +1129,59 @@ export function EmailStudioBuilder({
             <Redo2 className="h-4 w-4" />
           </button>
 
+          {onSaveToCloud && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => onSaveToCloud(compiledHtml, blocks)}
+              disabled={cloudSyncStatus === "saving"}
+              className={`h-8 text-xs font-bold gap-1.5 transition-all ${
+                cloudSyncStatus === "saving"
+                  ? "border-amber-300 bg-amber-50 text-amber-900"
+                  : cloudSyncStatus === "synced"
+                  ? "border-emerald-300 bg-emerald-50 text-emerald-900"
+                  : "border-slate-300 text-slate-700 hover:bg-slate-50"
+              }`}
+              title={
+                lastSyncTime
+                  ? `Synced with Cloud & Live Site at ${lastSyncTime.toLocaleTimeString()}`
+                  : "Sync template to Cloud & Live Site"
+              }
+            >
+              <Cloud
+                className={`h-3.5 w-3.5 ${
+                  cloudSyncStatus === "saving"
+                    ? "animate-pulse text-amber-600"
+                    : cloudSyncStatus === "synced"
+                    ? "text-emerald-600"
+                    : "text-sky-600"
+                }`}
+              />
+              <span>
+                {cloudSyncStatus === "saving"
+                  ? "Syncing..."
+                  : cloudSyncStatus === "synced"
+                  ? "Synced"
+                  : "Sync Cloud"}
+              </span>
+            </Button>
+          )}
+
+          {onOpenCloudTransfer && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onOpenCloudTransfer}
+              className="h-8 text-xs font-bold gap-1.5 border-slate-300 text-slate-700 hover:bg-slate-50"
+              title="Cloud & Live Website Sync & Transfer Settings"
+            >
+              <RefreshCw className="h-3.5 w-3.5 text-slate-700" />
+              <span>Live Sync</span>
+            </Button>
+          )}
+
           <Button
             type="button"
             variant="outline"
@@ -1091,12 +1360,52 @@ export function EmailStudioBuilder({
             const block = blocks.find((b) => b.id === activeBlockId);
             if (!block) return null;
             const hasButton = block.buttonUrl !== undefined || block.col2ButtonUrl !== undefined;
+            const isSocial = block.type === "topbar" || block.type === "social";
 
             return (
               <div className="p-3 bg-slate-50 border rounded-lg space-y-2.5 mt-auto">
-                <span className="text-[10px] font-extrabold uppercase text-slate-500">
-                  Selected: {block.type}
-                </span>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-extrabold uppercase text-slate-500">
+                    Selected: {block.type === "topbar" ? "Header Socials" : block.type}
+                  </span>
+                  {isSocial && (
+                    <span className="text-[9px] font-bold text-teal-600 bg-teal-50 px-1.5 py-0.5 rounded">
+                      Editable
+                    </span>
+                  )}
+                </div>
+
+                {isSocial && (
+                  <div className="space-y-2.5 pt-1.5 border-t">
+                    <Button
+                      type="button"
+                      onClick={() => openSocialEditor(block.id)}
+                      className="w-full h-8 text-xs font-bold bg-[#8DB833] text-black hover:bg-[#8DB833]/90 gap-1.5 shadow-xs"
+                    >
+                      <Settings2 className="h-3.5 w-3.5" /> Configure Social Media
+                    </Button>
+
+                    <div className="space-y-1">
+                      <Label className="text-[10px] uppercase font-bold text-slate-600">
+                        Header Background Color:
+                      </Label>
+                      <div className="flex items-center gap-1.5">
+                        {["#8DB833", "#0f172a", "#000000", "#ffffff"].map((color) => (
+                          <button
+                            key={color}
+                            type="button"
+                            onClick={() => updateBlockField(block.id, "bgColor", color)}
+                            style={{ backgroundColor: color }}
+                            className={`h-5 w-5 rounded-full border border-slate-300 shadow-2xs transition-transform hover:scale-110 ${
+                              (block.bgColor || "#8DB833") === color ? "ring-2 ring-teal-500 scale-110" : ""
+                            }`}
+                            title={color}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {hasButton && (
                   <div className="space-y-1.5 pt-1.5 border-t">
@@ -1119,7 +1428,9 @@ export function EmailStudioBuilder({
                 )}
 
                 <p className="text-[11px] text-slate-600 m-0">
-                  Click directly on any text or button inside the canvas to edit in place.
+                  {isSocial
+                    ? "Click directly on the header socials in the canvas or click the button above to edit links."
+                    : "Click directly on any text or button inside the canvas to edit in place."}
                 </p>
               </div>
             );
@@ -1201,24 +1512,61 @@ export function EmailStudioBuilder({
                       </button>
                     </div>
 
-                    {block.type === "topbar" && (
-                      <div
-                        style={{ backgroundColor: block.bgColor || "#8DB833" }}
-                        className="py-2 px-6 flex items-center justify-end gap-2 text-white"
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="w-5 h-5 rounded-full bg-white text-slate-900 flex items-center justify-center text-[10px] font-black">
-                            𝕏
-                          </span>
-                          <span className="w-5 h-5 rounded-full bg-white text-[#0a66c2] flex items-center justify-center text-[10px] font-black">
-                            in
-                          </span>
-                          <span className="w-5 h-5 rounded-full bg-white text-red-600 flex items-center justify-center text-[9px] font-black">
-                            ▶
-                          </span>
+                    {block.type === "topbar" && (() => {
+                      const links = getEffectiveSocialLinks(block).filter((l) => l.enabled !== false && l.url);
+                      const isLeft = block.align === "left";
+                      const isCenter = block.align === "center";
+
+                      return (
+                        <div
+                          style={{ backgroundColor: block.bgColor || "#8DB833" }}
+                          onClick={() => openSocialEditor(block.id)}
+                          className={`py-2 px-6 flex items-center transition-all cursor-pointer relative group/topbar ${
+                            isLeft ? "justify-start" : isCenter ? "justify-center" : "justify-end"
+                          }`}
+                          title="Click to configure header social media links and colors"
+                        >
+                          <div className="flex items-center gap-2">
+                            {links.map((link) => {
+                              const meta = getSocialPlatformMeta(link.platform);
+                              const textColor = block.socialIconColor || meta.color;
+                              const iconBg = block.socialIconBg || "#ffffff";
+                              return (
+                                <button
+                                  key={link.id}
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    openSocialEditor(block.id);
+                                  }}
+                                  style={{
+                                    backgroundColor: iconBg,
+                                    color: textColor,
+                                  }}
+                                  className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black hover:scale-110 transition-transform shadow-2xs cursor-pointer"
+                                  title={`Click to edit ${meta.name} link (${link.url})`}
+                                >
+                                  {link.label || meta.iconText}
+                                </button>
+                              );
+                            })}
+                          </div>
+
+                          {/* Quick Configure Pill Overlay */}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openSocialEditor(block.id);
+                            }}
+                            className="absolute left-3 top-1/2 -translate-y-1/2 opacity-0 group-hover/topbar:opacity-100 transition-opacity bg-black/80 hover:bg-black text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm cursor-pointer z-10"
+                          >
+                            <Settings2 className="h-3 w-3 text-[#8DB833]" />
+                            <span>Configure Socials</span>
+                          </button>
                         </div>
-                      </div>
-                    )}
+                      );
+                    })()}
 
                     {block.type === "logo" && (
                       <div className="py-6 px-4 bg-white text-center">
@@ -1620,6 +1968,62 @@ export function EmailStudioBuilder({
                       </div>
                     )}
 
+                    {block.type === "social" && (() => {
+                      const links = getEffectiveSocialLinks(block).filter((l) => l.enabled !== false && l.url);
+                      const isLeft = block.align === "left";
+                      const isRight = block.align === "right";
+
+                      return (
+                        <div
+                          style={{ backgroundColor: block.bgColor || "#ffffff" }}
+                          onClick={() => openSocialEditor(block.id)}
+                          className={`py-5 px-6 flex items-center transition-all cursor-pointer relative group/social ${
+                            isLeft ? "justify-start" : isRight ? "justify-end" : "justify-center"
+                          }`}
+                          title="Click to configure social links"
+                        >
+                          <div className="flex items-center gap-2.5 flex-wrap">
+                            {links.map((link) => {
+                              const meta = getSocialPlatformMeta(link.platform);
+                              const textColor = block.socialIconColor || meta.color;
+                              const iconBg = block.socialIconBg || "#f1f5f9";
+                              return (
+                                <button
+                                  key={link.id}
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    openSocialEditor(block.id);
+                                  }}
+                                  style={{
+                                    backgroundColor: iconBg,
+                                    color: textColor,
+                                  }}
+                                  className="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center text-xs font-black hover:scale-110 transition-transform shadow-2xs cursor-pointer"
+                                  title={`Click to edit ${meta.name} (${link.url})`}
+                                >
+                                  {link.label || meta.iconText}
+                                </button>
+                              );
+                            })}
+                          </div>
+
+                          {/* Quick Configure Overlay */}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openSocialEditor(block.id);
+                            }}
+                            className="absolute top-2 right-2 opacity-0 group-hover/social:opacity-100 transition-opacity bg-slate-900 hover:bg-slate-800 text-white text-[10px] font-bold px-2.5 py-1 rounded-md flex items-center gap-1 shadow-xs cursor-pointer z-10"
+                          >
+                            <Settings2 className="h-3 w-3 text-[#8DB833]" />
+                            <span>Configure Social Media</span>
+                          </button>
+                        </div>
+                      );
+                    })()}
+
                     {block.type === "footer" && (
                       <div className="py-6 px-6 bg-[#0f172a] text-slate-400 text-center text-[11px] leading-relaxed space-y-1">
                         <div className="font-extrabold text-[#8DB833] text-xs uppercase tracking-wider">
@@ -1746,6 +2150,316 @@ export function EmailStudioBuilder({
               </div>
             );
           })()}
+        </DialogContent>
+      </Dialog>
+
+      {/* SOCIAL MEDIA & HEADER CONFIGURATION MODAL */}
+      <Dialog
+        open={!!socialEditModal?.isOpen}
+        onOpenChange={(open) => !open && setSocialEditModal(null)}
+      >
+        <DialogContent className="max-w-lg max-h-[85vh] flex flex-col p-0 overflow-hidden bg-white shadow-2xl">
+          <DialogHeader className="p-4 border-b bg-white shrink-0">
+            <DialogTitle className="text-sm font-bold flex items-center gap-2">
+              <Share2 className="h-4 w-4 text-teal-600" /> Header & Social Media Settings
+            </DialogTitle>
+            <p className="text-[11px] text-muted-foreground m-0">
+              Configure which social media channels are displayed, customize their web links, and adjust header appearance.
+            </p>
+          </DialogHeader>
+
+          {socialEditModal && (() => {
+            const block = blocks.find((b) => b.id === socialEditModal.blockId);
+            if (!block) return null;
+
+            const effectiveLinks = getEffectiveSocialLinks(block);
+            const isTopbar = block.type === "topbar";
+            const currentBg = block.bgColor || (isTopbar ? "#8DB833" : "#ffffff");
+            const currentAlign = block.align || (isTopbar ? "right" : "center");
+
+            return (
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
+                {/* LIVE PREVIEW STRIP */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-[10px] uppercase font-bold text-slate-500">
+                      Live Header Preview:
+                    </Label>
+                    <span className="text-[10px] text-muted-foreground font-mono">
+                      {currentAlign} aligned · {effectiveLinks.filter((l) => l.enabled !== false && l.url).length} active
+                    </span>
+                  </div>
+                  <div
+                    style={{ backgroundColor: currentBg }}
+                    className={`py-2 px-5 rounded-md flex items-center transition-colors border border-black/10 shadow-xs ${
+                      currentAlign === "left"
+                        ? "justify-start"
+                        : currentAlign === "center"
+                        ? "justify-center"
+                        : "justify-end"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      {effectiveLinks
+                        .filter((l) => l.enabled !== false && l.url)
+                        .map((link) => {
+                          const meta = getSocialPlatformMeta(link.platform);
+                          const textColor = block.socialIconColor || meta.color;
+                          const iconBg = block.socialIconBg || (isTopbar ? "#ffffff" : "#f1f5f9");
+                          return (
+                            <span
+                              key={link.id}
+                              style={{
+                                backgroundColor: iconBg,
+                                color: textColor,
+                              }}
+                              className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black shadow-2xs"
+                              title={`${meta.name}: ${link.url}`}
+                            >
+                              {link.label || meta.iconText}
+                            </span>
+                          );
+                        })}
+                      {effectiveLinks.filter((l) => l.enabled !== false && l.url).length === 0 && (
+                        <span className="text-[10px] text-white/70 italic">
+                          (No social icons enabled)
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* APPEARANCE CONTROLS */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-slate-50 border rounded-lg">
+                  {/* Background Color */}
+                  <div className="space-y-1.5">
+                    <Label className="text-[10px] uppercase font-bold text-slate-700 flex items-center gap-1">
+                      <Palette className="h-3 w-3 text-teal-600" /> Header Bar Color
+                    </Label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={currentBg}
+                        onChange={(e) => updateBlockField(block.id, "bgColor", e.target.value)}
+                        className="h-7 w-7 rounded cursor-pointer border border-slate-300 p-0 shrink-0"
+                      />
+                      <Input
+                        type="text"
+                        value={currentBg}
+                        onChange={(e) => updateBlockField(block.id, "bgColor", e.target.value)}
+                        className="h-7 text-xs font-mono"
+                        placeholder="#8DB833"
+                      />
+                    </div>
+                    {/* Quick Swatches */}
+                    <div className="flex items-center gap-1.5 pt-0.5">
+                      {[
+                        { label: "Sanex Lime", color: "#8DB833" },
+                        { label: "Dark Slate", color: "#0f172a" },
+                        { label: "Black", color: "#000000" },
+                        { label: "White", color: "#ffffff" },
+                      ].map((swatch) => (
+                        <button
+                          key={swatch.color}
+                          type="button"
+                          onClick={() => updateBlockField(block.id, "bgColor", swatch.color)}
+                          style={{ backgroundColor: swatch.color }}
+                          className={`h-4 w-4 rounded-full border border-slate-300 transition-all ${
+                            currentBg.toLowerCase() === swatch.color.toLowerCase()
+                              ? "ring-2 ring-teal-500 scale-110"
+                              : "hover:scale-105"
+                          }`}
+                          title={swatch.label}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Alignment */}
+                  <div className="space-y-1.5">
+                    <Label className="text-[10px] uppercase font-bold text-slate-700">
+                      Icons Alignment
+                    </Label>
+                    <div className="grid grid-cols-3 gap-1">
+                      {[
+                        { id: "left", label: "Left" },
+                        { id: "center", label: "Center" },
+                        { id: "right", label: "Right" },
+                      ].map((al) => (
+                        <Button
+                          key={al.id}
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => updateBlockField(block.id, "align", al.id)}
+                          className={`h-7 text-[10px] font-bold ${
+                            currentAlign === al.id
+                              ? "bg-teal-50 border-teal-500 text-teal-700 ring-1 ring-teal-500"
+                              : "bg-white text-slate-700"
+                          }`}
+                        >
+                          {al.label}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* CHANNELS LIST */}
+                <div className="space-y-2 pt-1">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-bold text-slate-900">
+                      Configure Social Channels & URLs
+                    </Label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const updated = blocks.map((b) =>
+                          b.id === block.id ? { ...b, socialLinks: [...DEFAULT_HEADER_SOCIALS] } : b
+                        );
+                        commitBlocks(updated);
+                      }}
+                      className="text-[10px] text-teal-600 hover:text-teal-700 hover:underline font-bold"
+                    >
+                      Reset to Sanex Defaults
+                    </button>
+                  </div>
+
+                  <div className="divide-y divide-slate-100 border rounded-lg bg-white overflow-hidden shadow-2xs">
+                    {effectiveLinks.map((link) => {
+                      const meta = getSocialPlatformMeta(link.platform);
+                      const isEnabled = link.enabled !== false;
+
+                      return (
+                        <div
+                          key={link.id}
+                          className={`p-2.5 flex items-center gap-2.5 transition-colors ${
+                            isEnabled ? "bg-white" : "bg-slate-50/60 opacity-60"
+                          }`}
+                        >
+                          {/* Toggle active checkbox */}
+                          <input
+                            type="checkbox"
+                            checked={isEnabled}
+                            onChange={(e) => {
+                              const nextLinks = effectiveLinks.map((l) =>
+                                l.id === link.id ? { ...l, enabled: e.target.checked } : l
+                              );
+                              const updated = blocks.map((b) =>
+                                b.id === block.id ? { ...b, socialLinks: nextLinks } : b
+                              );
+                              commitBlocks(updated);
+                            }}
+                            className="h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500 cursor-pointer"
+                            id={`social-toggle-${link.id}`}
+                          />
+
+                          {/* Icon Badge Preview */}
+                          <div
+                            style={{
+                              backgroundColor: meta.bg || "#ffffff",
+                              color: meta.color || "#0f172a",
+                            }}
+                            className="w-6 h-6 rounded-full border border-slate-200 flex items-center justify-center text-xs font-black shrink-0 shadow-2xs"
+                          >
+                            {link.label || meta.iconText}
+                          </div>
+
+                          {/* Channel Details & URL Input */}
+                          <div className="flex-1 space-y-0.5 min-w-0">
+                            <div className="flex items-center justify-between">
+                              <label
+                                htmlFor={`social-toggle-${link.id}`}
+                                className="text-[11px] font-bold text-slate-800 cursor-pointer"
+                              >
+                                {meta.name}
+                              </label>
+                              {link.url !== meta.defaultUrl && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const nextLinks = effectiveLinks.map((l) =>
+                                      l.id === link.id ? { ...l, url: meta.defaultUrl } : l
+                                    );
+                                    const updated = blocks.map((b) =>
+                                      b.id === block.id ? { ...b, socialLinks: nextLinks } : b
+                                    );
+                                    commitBlocks(updated);
+                                  }}
+                                  className="text-[9px] text-teal-600 hover:underline"
+                                  title="Reset to default official Sanex URL"
+                                >
+                                  Reset URL
+                                </button>
+                              )}
+                            </div>
+                            <Input
+                              type="url"
+                              value={link.url}
+                              disabled={!isEnabled}
+                              onChange={(e) => {
+                                const nextLinks = effectiveLinks.map((l) =>
+                                  l.id === link.id ? { ...l, url: e.target.value } : l
+                                );
+                                const updated = blocks.map((b) =>
+                                  b.id === block.id ? { ...b, socialLinks: nextLinks } : b
+                                );
+                                setBlocks(updated);
+                              }}
+                              placeholder={meta.placeholder}
+                              className="h-7 text-xs font-mono disabled:opacity-40"
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Add Custom Social Channel Button */}
+                <div className="pt-1">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const newId = `custom-social-${Date.now()}`;
+                      const nextLinks: SocialLinkItem[] = [
+                        ...effectiveLinks,
+                        {
+                          id: newId,
+                          platform: "website",
+                          url: "https://sanex.rw",
+                          label: "🔗",
+                          enabled: true,
+                        },
+                      ];
+                      const updated = blocks.map((b) =>
+                        b.id === block.id ? { ...b, socialLinks: nextLinks } : b
+                      );
+                      commitBlocks(updated);
+                    }}
+                    className="h-7 text-[10px] font-bold gap-1 border-dashed w-full text-slate-600 hover:text-slate-900"
+                  >
+                    <Plus className="h-3 w-3" /> Add Another Social Link / Custom Website
+                  </Button>
+                </div>
+              </div>
+            );
+          })()}
+
+          <div className="p-3 border-t bg-slate-50 flex items-center justify-between shrink-0">
+            <span className="text-[11px] text-muted-foreground">
+              Social links and colors update live in your email template.
+            </span>
+            <Button
+              type="button"
+              onClick={() => setSocialEditModal(null)}
+              className="h-8 text-xs font-bold bg-[#8DB833] text-black hover:bg-[#8DB833]/90 shadow-xs"
+            >
+              Done & Save
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 

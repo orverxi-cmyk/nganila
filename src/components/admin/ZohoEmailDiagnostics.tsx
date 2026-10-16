@@ -52,12 +52,20 @@ import {
   Columns,
   ArrowRight,
   ArrowLeft,
+  Cloud,
+  RefreshCw,
+  DownloadCloud,
+  UploadCloud,
+  Copy,
+  ExternalLink,
+  Database,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ZohoContactsImporter } from "./ZohoContactsImporter";
 import { useContactGroups } from "@/hooks/use-contact-groups";
 import { RichTextEditor } from "@/components/RichTextEditor";
 import { EmailStudioBuilder, type EmailBlock } from "./EmailStudioBuilder";
+import { useEmailTemplates } from "@/hooks/use-email-templates";
 
 export interface CampaignTemplate {
   id: string;
@@ -166,72 +174,63 @@ export function ZohoEmailHub() {
   } | null>(null);
   const [isImporterOpen, setIsImporterOpen] = useState(false);
 
-  // Restore custom email draft from storage on mount
+  // Cloud Sync & Email Templates Engine
+  const {
+    cloudTemplate,
+    cloudLoading,
+    syncStatus,
+    lastSyncTime,
+    getLocalDraft,
+    setLocalDraft,
+    saveActiveTemplateToCloud,
+    importRawTemplate,
+  } = useEmailTemplates();
+
+  const [isCloudSyncModalOpen, setIsCloudSyncModalOpen] = useState(false);
+  const [rawImportInput, setRawImportInput] = useState("");
+  const [isImporting, setIsImporting] = useState(false);
+  const [copiedScript, setCopiedScript] = useState(false);
+  const lastAppliedCloudTimeRef = React.useRef<number>(0);
+
+  // 1. Restore from local storage draft if available immediately on mount
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    try {
-      const savedRaw =
-        localStorage.getItem("sanex_custom_email_draft") ||
-        sessionStorage.getItem("sanex_custom_email_draft");
-      if (savedRaw) {
-        const parsed = JSON.parse(savedRaw);
-        if (parsed.message) setCustomMessage(parsed.message);
-        if (parsed.mode) setEditorMode(parsed.mode);
-        if (parsed.blocks) setCustomEmailBlocks(parsed.blocks);
+    const local = getLocalDraft();
+    if (local) {
+      if (local.message) setCustomMessage(local.message);
+      if (local.mode) setEditorMode(local.mode);
+      if (local.blocks && Array.isArray(local.blocks) && local.blocks.length > 0) {
+        setCustomEmailBlocks(local.blocks);
       }
-    } catch {
-      // Fallback silently if storage read fails
     }
-  }, []);
+  }, [getLocalDraft]);
 
-  // Persist custom email draft safely without exceeding storage quota
+  // 2. Real-time Firestore Cloud listener: when settings/email_template updates, hydrate active state
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (!customMessage && !customEmailBlocks) return;
+    if (!cloudTemplate) return;
+    if (cloudTemplate.updatedAt && cloudTemplate.updatedAt > lastAppliedCloudTimeRef.current) {
+      lastAppliedCloudTimeRef.current = cloudTemplate.updatedAt;
+      if (cloudTemplate.blocks && Array.isArray(cloudTemplate.blocks) && cloudTemplate.blocks.length > 0) {
+        setCustomEmailBlocks(cloudTemplate.blocks);
+      }
+      if (cloudTemplate.message) {
+        setCustomMessage(cloudTemplate.message);
+      }
+      if (cloudTemplate.mode) {
+        setEditorMode(cloudTemplate.mode);
+      }
+    }
+  }, [cloudTemplate]);
 
-    const draftKey = "sanex_custom_email_draft";
-    const payload = JSON.stringify({
+  // 3. Persist local draft as offline/tab cache
+  useEffect(() => {
+    if (!customMessage && !customEmailBlocks) return;
+    setLocalDraft({
       message: customMessage,
       mode: editorMode,
-      blocks: customEmailBlocks,
+      blocks: customEmailBlocks || undefined,
+      updatedAt: Date.now(),
     });
-
-    try {
-      localStorage.setItem(draftKey, payload);
-    } catch {
-      // If localStorage quota exceeded, try saving sanitized blocks (strip large inline base64 blobs)
-      try {
-        let strippedBlocks: EmailBlock[] | null = null;
-        if (customEmailBlocks && Array.isArray(customEmailBlocks)) {
-          strippedBlocks = customEmailBlocks.map((b) => {
-            const copy = { ...b };
-            if (copy.col1Image && copy.col1Image.startsWith("data:") && copy.col1Image.length > 30000) {
-              copy.col1Image = "";
-            }
-            if (copy.imageUrl && copy.imageUrl.startsWith("data:") && copy.imageUrl.length > 30000) {
-              copy.imageUrl = "";
-            }
-            return copy;
-          });
-        }
-        localStorage.setItem(
-          draftKey,
-          JSON.stringify({
-            message: customMessage,
-            mode: editorMode,
-            blocks: strippedBlocks || customEmailBlocks,
-          })
-        );
-      } catch {
-        // Fallback to sessionStorage which has independent tab quota
-        try {
-          sessionStorage.setItem(draftKey, payload);
-        } catch {
-          // If storage is saturated, maintain draft in active React state without crashing
-        }
-      }
-    }
-  }, [customMessage, editorMode, customEmailBlocks]);
+  }, [customMessage, editorMode, customEmailBlocks, setLocalDraft]);
 
   // When campaign selection changes, update subject line
   const handleSelectCampaign = (campaignId: string) => {
@@ -768,11 +767,52 @@ export function ZohoEmailHub() {
                           setCustomEmailBlocks(savedBlocks);
                           setEditorMode("html");
                           setCustomStep("send");
+                          saveActiveTemplateToCloud({
+                            message: compiledHtml,
+                            blocks: savedBlocks,
+                            mode: "html",
+                          });
+                          toast({
+                            title: "Template Saved & Synced",
+                            description: "Your custom email design is synchronized across localhost and live website.",
+                          });
                         }}
                         onBackToSending={(currentBlocks) => {
-                          if (currentBlocks) setCustomEmailBlocks(currentBlocks);
+                          if (currentBlocks) {
+                            setCustomEmailBlocks(currentBlocks);
+                            saveActiveTemplateToCloud({
+                              message: customMessage,
+                              blocks: currentBlocks,
+                              mode: editorMode,
+                            });
+                          }
                           setCustomStep("send");
                         }}
+                        onSaveToCloud={async (compiledHtml, savedBlocks) => {
+                          setCustomMessage(compiledHtml);
+                          setCustomEmailBlocks(savedBlocks);
+                          const res = await saveActiveTemplateToCloud({
+                            message: compiledHtml,
+                            blocks: savedBlocks,
+                            mode: "html",
+                          });
+                          if (res.success) {
+                            toast({
+                              title: "Cloud Synced",
+                              description: "Template saved to Firestore and synchronized with live website.",
+                            });
+                          } else {
+                            toast({
+                              title: "Sync Error",
+                              description: res.error || "Failed to sync to cloud.",
+                              variant: "destructive",
+                            });
+                          }
+                          return res;
+                        }}
+                        onOpenCloudTransfer={() => setIsCloudSyncModalOpen(true)}
+                        cloudSyncStatus={syncStatus}
+                        lastSyncTime={lastSyncTime}
                       />
                     </div>
                   );
@@ -1277,6 +1317,21 @@ export function ZohoEmailHub() {
                           type="button"
                           variant="outline"
                           size="sm"
+                          onClick={() => setIsCloudSyncModalOpen(true)}
+                          className={`h-8 text-xs font-bold gap-1.5 transition-all ${
+                            syncStatus === "synced"
+                              ? "border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100"
+                              : "border-slate-300 text-slate-800 bg-white hover:bg-slate-50"
+                          }`}
+                          title="Cloud & Live Website Sync Settings"
+                        >
+                          <Cloud className={`h-3.5 w-3.5 ${syncStatus === "synced" ? "text-emerald-600" : "text-sky-600"}`} />
+                          <span>Live Sync</span>
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
                           onClick={() => setCustomStep("design")}
                           className="h-8 text-xs font-bold gap-1.5 border-slate-300 text-slate-800 bg-white hover:bg-slate-50"
                         >
@@ -1484,6 +1539,302 @@ export function ZohoEmailHub() {
         onOpenChange={setIsImporterOpen}
         defaultSector={selectedCampaignId as any}
       />
+
+      {/* Cloud & Live Website Sync Modal */}
+      <Dialog open={isCloudSyncModalOpen} onOpenChange={setIsCloudSyncModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold flex items-center gap-2">
+              <Cloud className="h-5 w-5 text-sky-600" />
+              <span>Live Website & Cloud Synchronization</span>
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-5 py-2 text-xs">
+            {/* Environment & Backend Status */}
+            <div className="p-3.5 rounded-xl border border-sky-100 bg-sky-50/60 flex items-start justify-between gap-3">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-sky-600 text-white font-bold text-[10px]">
+                    Firebase Firestore
+                  </Badge>
+                  <span className="font-extrabold text-slate-900">
+                    Project: studio-9595184890-5bb3c
+                  </span>
+                </div>
+                <p className="text-slate-600 text-[11px] m-0">
+                  Both localhost and your live website share this Firestore database. Any template saved here is accessible and synchronized bidirectionally.
+                </p>
+              </div>
+              <div className="text-right shrink-0">
+                <span
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                    syncStatus === "synced"
+                      ? "bg-emerald-100 text-emerald-800"
+                      : syncStatus === "saving"
+                      ? "bg-amber-100 text-amber-800"
+                      : "bg-slate-200 text-slate-700"
+                  }`}
+                >
+                  <span
+                    className={`h-2 w-2 rounded-full ${
+                      syncStatus === "synced"
+                        ? "bg-emerald-500"
+                        : syncStatus === "saving"
+                        ? "bg-amber-500 animate-ping"
+                        : "bg-slate-400"
+                    }`}
+                  />
+                  {syncStatus === "synced"
+                    ? "Synced"
+                    : syncStatus === "saving"
+                    ? "Saving..."
+                    : "Ready"}
+                </span>
+              </div>
+            </div>
+
+            {/* Cloud Template Status Card */}
+            <div className="p-4 rounded-xl border bg-slate-50 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-slate-800 flex items-center gap-1.5">
+                  <Database className="h-4 w-4 text-slate-600" />
+                  Active Cloud Template in Firestore:
+                </span>
+                {cloudLoading && <Loader2 className="h-3.5 w-3.5 animate-spin text-slate-500" />}
+              </div>
+
+              {cloudTemplate && cloudTemplate.updatedAt ? (
+                <div className="text-slate-700 space-y-1 bg-white p-3 rounded-lg border border-slate-200">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-slate-900">
+                      {cloudTemplate.name || "Default Template"}
+                    </span>
+                    <Badge variant="outline" className="text-[10px] font-semibold">
+                      {cloudTemplate.blocks?.length || 0} Layout Blocks
+                    </Badge>
+                  </div>
+                  <div className="text-[11px] text-slate-500 flex items-center gap-3 pt-1">
+                    <span>
+                      Last updated: {new Date(cloudTemplate.updatedAt).toLocaleString()}
+                    </span>
+                    <span>By: {cloudTemplate.updatedBy || "admin"}</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-3 bg-amber-50/70 border border-amber-200 rounded-lg text-amber-800 text-[11px]">
+                  No template has been saved to Cloud Firestore yet. Click{" "}
+                  <strong>&quot;Push Local to Cloud&quot;</strong> or import your live template below to publish it to Firestore.
+                </div>
+              )}
+
+              {/* Push / Pull Quick Action Buttons */}
+              <div className="flex items-center gap-2 pt-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (cloudTemplate) {
+                      if (cloudTemplate.blocks && Array.isArray(cloudTemplate.blocks)) {
+                        setCustomEmailBlocks(cloudTemplate.blocks);
+                      }
+                      if (cloudTemplate.message) setCustomMessage(cloudTemplate.message);
+                      if (cloudTemplate.mode) setEditorMode(cloudTemplate.mode);
+                      toast({
+                        title: "Template Loaded from Cloud",
+                        description: "Your local editor now has the latest cloud template.",
+                      });
+                      setIsCloudSyncModalOpen(false);
+                    } else {
+                      toast({
+                        title: "No Cloud Template",
+                        description: "There is no saved template in Cloud Firestore yet.",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                  disabled={!cloudTemplate || cloudLoading}
+                  className="h-8 text-xs font-bold gap-1.5 bg-white text-slate-700 hover:bg-slate-50"
+                >
+                  <DownloadCloud className="h-3.5 w-3.5 text-sky-600" />
+                  Pull Latest from Cloud
+                </Button>
+
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={async () => {
+                    setIsImporting(true);
+                    const res = await saveActiveTemplateToCloud({
+                      message: customMessage,
+                      blocks: customEmailBlocks || undefined,
+                      mode: editorMode,
+                    });
+                    setIsImporting(false);
+                    if (res.success) {
+                      toast({
+                        title: "Pushed to Cloud",
+                        description:
+                          "Current template is now saved in Firestore for both localhost and live website.",
+                      });
+                    } else {
+                      toast({
+                        title: "Save Failed",
+                        description: res.error,
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                  disabled={isImporting}
+                  className="h-8 text-xs font-bold gap-1.5 bg-slate-900 text-white hover:bg-slate-800"
+                >
+                  {isImporting ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <UploadCloud className="h-3.5 w-3.5" />
+                  )}
+                  Push Local to Cloud
+                </Button>
+              </div>
+            </div>
+
+            {/* Quick Transfer from Live Website */}
+            <div className="p-4 rounded-xl border border-emerald-200 bg-emerald-50/40 space-y-3">
+              <div className="flex items-center gap-2">
+                <Badge className="bg-[#8DB833] text-black font-extrabold text-[10px]">
+                  Instant Transfer
+                </Badge>
+                <h4 className="font-extrabold text-slate-900 m-0">
+                  Transfer Updated Template from Live Website (sanex.rw)
+                </h4>
+              </div>
+
+              <p className="text-[11px] text-slate-600 m-0 leading-relaxed">
+                Because web browsers isolate storage per domain, your browser&apos;s draft on{" "}
+                <code>https://sanex.rw</code> is private to that origin. Follow these two simple steps to instantly copy it into localhost and sync it to Cloud:
+              </p>
+
+              <div className="space-y-3 pt-1">
+                {/* Step 1 */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-slate-800 text-[11px]">
+                      Step 1: In your live website tab (
+                      <a
+                        href="https://sanex.rw/admin/emails"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-teal-700 underline font-semibold"
+                      >
+                        https://sanex.rw/admin/emails
+                      </a>
+                      ), press F12 (Console) and run:
+                    </span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        navigator.clipboard.writeText(
+                          "copy(localStorage.getItem('sanex_custom_email_draft'))"
+                        );
+                        setCopiedScript(true);
+                        setTimeout(() => setCopiedScript(false), 2500);
+                        toast({
+                          title: "Script Copied!",
+                          description:
+                            "Paste into browser console on https://sanex.rw and press Enter.",
+                        });
+                      }}
+                      className="h-6 text-[10px] font-bold px-2 gap-1 bg-white"
+                    >
+                      {copiedScript ? (
+                        <Check className="h-3 w-3 text-emerald-600" />
+                      ) : (
+                        <Copy className="h-3 w-3" />
+                      )}
+                      <span>{copiedScript ? "Copied Script!" : "Copy Snippet"}</span>
+                    </Button>
+                  </div>
+
+                  <div className="bg-slate-900 text-emerald-400 p-2.5 rounded-lg font-mono text-[11px] overflow-x-auto select-all">
+                    copy(localStorage.getItem(&apos;sanex_custom_email_draft&apos;))
+                  </div>
+                  <span className="text-[10px] text-slate-500 block">
+                    (This automatically copies your live template data to your clipboard)
+                  </span>
+                </div>
+
+                {/* Step 2 */}
+                <div className="space-y-1.5 pt-1">
+                  <span className="font-bold text-slate-800 text-[11px] block">
+                    Step 2: Paste the copied template JSON below:
+                  </span>
+                  <Textarea
+                    value={rawImportInput}
+                    onChange={(e) => setRawImportInput(e.target.value)}
+                    placeholder="Paste the copied template JSON here..."
+                    className="h-24 font-mono text-[11px] bg-white resize-y"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-[10px] text-slate-500">
+                    Once imported, this template is automatically saved to Firestore Cloud and synchronized bidirectionally.
+                  </span>
+                  <Button
+                    type="button"
+                    disabled={!rawImportInput.trim() || isImporting}
+                    onClick={async () => {
+                      setIsImporting(true);
+                      try {
+                        const res = await importRawTemplate(rawImportInput.trim());
+                        if (res && res.success && res.template) {
+                          if (res.template.blocks && res.template.blocks.length > 0) {
+                            setCustomEmailBlocks(res.template.blocks);
+                          }
+                          if (res.template.message) {
+                            setCustomMessage(res.template.message);
+                          }
+                          if (res.template.mode) {
+                            setEditorMode(res.template.mode);
+                          }
+                          setRawImportInput("");
+                          toast({
+                            title: "Live Template Imported & Synced!",
+                            description:
+                              "The live template is now active in localhost and saved to Cloud Firestore for bidirectional sync.",
+                          });
+                          setIsCloudSyncModalOpen(false);
+                        }
+                      } catch (err: any) {
+                        toast({
+                          title: "Import Error",
+                          description:
+                            err.message ||
+                            "Failed to parse template JSON. Ensure you copied the entire string.",
+                          variant: "destructive",
+                        });
+                      } finally {
+                        setIsImporting(false);
+                      }
+                    }}
+                    className="h-8 text-xs font-extrabold bg-[#8DB833] text-black hover:bg-[#8DB833]/90 gap-1.5 shadow-xs"
+                  >
+                    {isImporting ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Sparkles className="h-3.5 w-3.5" />
+                    )}
+                    <span>Import & Sync to Cloud</span>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
