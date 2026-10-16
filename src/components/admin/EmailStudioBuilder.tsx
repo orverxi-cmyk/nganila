@@ -2876,6 +2876,23 @@ export function EmailStudioBuilder({
                       type="button"
                       onClick={() => {
                         updateBlock(block.id, {
+                          videoUrl:
+                            "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1779714862617_SANEX_VIDEO_higlights%20-%20Copy.mp4?alt=media&token=789f5d47-98cb-4c35-a048-59bf6a4b39a5",
+                          videoSource: "mp4",
+                          videoTitle: "SANEX in Action: Our Solutions & Services",
+                          videoCaption:
+                            "Watch our specialized vacuum trucks and innovative sanitation solutions in action.",
+                          videoButtonText: "Watch Video",
+                        });
+                      }}
+                      className="px-2 py-0.5 text-[10px] font-bold bg-white border border-slate-200 hover:border-slate-400 rounded text-slate-700 transition-colors"
+                    >
+                      Slider Video (MP4)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        updateBlock(block.id, {
                           videoUrl: "https://sanex.rw/#video",
                           videoSource: "website",
                           videoTitle: "SANEX in Action: Operational Highlights",
