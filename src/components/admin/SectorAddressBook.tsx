@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { useFirestore, useCollection, useUser } from "@/firebase";
-import { collection, doc, deleteDoc } from "firebase/firestore";
+import { collection, doc, deleteDoc, setDoc, updateDoc } from "firebase/firestore";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,14 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import {
   Users,
   Search,
@@ -39,6 +47,11 @@ import {
   CheckCircle2,
   Layers,
   Sparkles,
+  UserPlus,
+  UserMinus,
+  Pencil,
+  ArrowRightLeft,
+  Check,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
@@ -46,7 +59,7 @@ import { ContactSector, SECTOR_CONFIG } from "@/lib/contacts-parser";
 import { ZohoContactsImporter } from "@/components/admin/ZohoContactsImporter";
 import { exportToExcel } from "@/lib/exportExcel";
 import { useContactGroups } from "@/hooks/use-contact-groups";
-import { ContactGroup, purgeContactsBatch } from "@/lib/contact-groups";
+import { ContactGroup, purgeContactsBatch, reassignContactsBatch } from "@/lib/contact-groups";
 
 export function SectorAddressBook() {
   const db = useFirestore();
@@ -95,6 +108,34 @@ export function SectorAddressBook() {
   // Bulk Selected Delete Modal State
   const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+
+  // Manual Add Recipient State
+  const [isAddRecipientModalOpen, setIsAddRecipientModalOpen] = useState(false);
+  const [addRecipientEmail, setAddRecipientEmail] = useState("");
+  const [addRecipientName, setAddRecipientName] = useState("");
+  const [addRecipientOrg, setAddRecipientOrg] = useState("");
+  const [addRecipientPhone, setAddRecipientPhone] = useState("");
+  const [addRecipientSector, setAddRecipientSector] = useState<string>("hotel");
+  const [isSavingRecipient, setIsSavingRecipient] = useState(false);
+
+  // Edit Recipient State
+  const [editingContact, setEditingContact] = useState<any | null>(null);
+  const [editRecipientEmail, setEditRecipientEmail] = useState("");
+  const [editRecipientName, setEditRecipientName] = useState("");
+  const [editRecipientOrg, setEditRecipientOrg] = useState("");
+  const [editRecipientPhone, setEditRecipientPhone] = useState("");
+  const [editRecipientSector, setEditRecipientSector] = useState<string>("hotel");
+  const [isUpdatingRecipient, setIsUpdatingRecipient] = useState(false);
+
+  // Remove Recipient State
+  const [contactToRemove, setContactToRemove] = useState<any | null>(null);
+  const [removeRecipientMode, setRemoveRecipientMode] = useState<"remove_from_group" | "delete_permanent">("remove_from_group");
+  const [isRemovingRecipient, setIsRemovingRecipient] = useState(false);
+
+  // Bulk Move to Group State
+  const [isMoveGroupModalOpen, setIsMoveGroupModalOpen] = useState(false);
+  const [moveTargetGroup, setMoveTargetGroup] = useState<string>("general");
+  const [isMovingGroup, setIsMovingGroup] = useState(false);
 
   // Firestore contacts query (only run when authenticated)
   const contactsQuery = useMemo(() => {
@@ -280,6 +321,199 @@ export function SectorAddressBook() {
     }
   };
 
+  // Standard email validation pattern
+  const EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
+
+  // Open Add Recipient Dialog
+  const handleOpenAddRecipient = (targetSector?: string) => {
+    const defaultSec = targetSector || (selectedSector !== "all" ? selectedSector : groups[0]?.id || "hotel");
+    setAddRecipientSector(defaultSec);
+    setAddRecipientEmail("");
+    setAddRecipientName("");
+    setAddRecipientOrg("");
+    setAddRecipientPhone("");
+    setIsAddRecipientModalOpen(true);
+  };
+
+  // Execute Add Recipient to Group
+  const handleSaveRecipient = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!db) {
+      toast({ variant: "destructive", title: "Database unavailable" });
+      return;
+    }
+
+    const email = addRecipientEmail.trim().toLowerCase();
+    if (!email || !EMAIL_REGEX.test(email)) {
+      toast({
+        variant: "destructive",
+        title: "Invalid Email",
+        description: "Please enter a valid email address.",
+      });
+      return;
+    }
+
+    setIsSavingRecipient(true);
+    try {
+      const safeId = email.replace(/[^a-zA-Z0-9]/g, "_").toLowerCase();
+      const targetSec = addRecipientSector || "general";
+      const now = Date.now();
+
+      await setDoc(
+        doc(db, "client_contacts", safeId),
+        {
+          id: safeId,
+          name: addRecipientName.trim() || email.split("@")[0],
+          email,
+          organization: addRecipientOrg.trim(),
+          phone: addRecipientPhone.trim(),
+          sector: targetSec,
+          source: "manual_entry",
+          createdAt: now,
+          updatedAt: now,
+        },
+        { merge: true }
+      );
+
+      toast({
+        title: "Recipient Added",
+        description: `${email} was successfully added to ${getGroupName(targetSec)}.`,
+      });
+
+      setIsAddRecipientModalOpen(false);
+      setAddRecipientEmail("");
+      setAddRecipientName("");
+      setAddRecipientOrg("");
+      setAddRecipientPhone("");
+    } catch (err: any) {
+      toast({
+        variant: "destructive",
+        title: "Failed to Add Recipient",
+        description: err.message || "An unexpected error occurred.",
+      });
+    } finally {
+      setIsSavingRecipient(false);
+    }
+  };
+
+  // Open Edit Recipient Dialog
+  const handleOpenEditRecipient = (c: any) => {
+    setEditingContact(c);
+    setEditRecipientEmail(c.email || "");
+    setEditRecipientName(c.name || "");
+    setEditRecipientOrg(c.organization || "");
+    setEditRecipientPhone(c.phone || "");
+    setEditRecipientSector(c.sector || "general");
+  };
+
+  // Execute Update Recipient
+  const handleUpdateRecipient = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!db || !editingContact) return;
+
+    setIsUpdatingRecipient(true);
+    try {
+      const now = Date.now();
+      await updateDoc(doc(db, "client_contacts", editingContact.id), {
+        name: editRecipientName.trim() || editingContact.email.split("@")[0],
+        organization: editRecipientOrg.trim(),
+        phone: editRecipientPhone.trim(),
+        sector: editRecipientSector,
+        updatedAt: now,
+      });
+
+      toast({
+        title: "Recipient Updated",
+        description: `Changes to ${editingContact.email} saved successfully.`,
+      });
+
+      setEditingContact(null);
+    } catch (err: any) {
+      toast({
+        variant: "destructive",
+        title: "Update Failed",
+        description: err.message || "Could not update recipient.",
+      });
+    } finally {
+      setIsUpdatingRecipient(false);
+    }
+  };
+
+  // Open Remove Recipient Dialog
+  const handleOpenRemoveRecipient = (c: any) => {
+    setContactToRemove(c);
+    const isSpecificGroup = c.sector && c.sector !== "general";
+    setRemoveRecipientMode(isSpecificGroup ? "remove_from_group" : "delete_permanent");
+  };
+
+  // Execute Remove Recipient
+  const handleExecuteRemoveRecipient = async () => {
+    if (!db || !contactToRemove) return;
+
+    setIsRemovingRecipient(true);
+    try {
+      const email = contactToRemove.email;
+      const groupName = getGroupName(contactToRemove.sector || "general");
+
+      if (removeRecipientMode === "remove_from_group") {
+        await updateDoc(doc(db, "client_contacts", contactToRemove.id), {
+          sector: "general",
+          updatedAt: Date.now(),
+        });
+
+        toast({
+          title: "Removed from Group",
+          description: `${email} was removed from "${groupName}" and moved to General Institutions.`,
+        });
+      } else {
+        await deleteDoc(doc(db, "client_contacts", contactToRemove.id));
+        setSelectedContactIds((prev) => prev.filter((id) => id !== contactToRemove.id));
+
+        toast({
+          title: "Recipient Deleted",
+          description: `${email} was permanently deleted from your address book.`,
+        });
+      }
+
+      setContactToRemove(null);
+    } catch (err: any) {
+      toast({
+        variant: "destructive",
+        title: "Action Failed",
+        description: err.message || "Could not remove recipient.",
+      });
+    } finally {
+      setIsRemovingRecipient(false);
+    }
+  };
+
+  // Execute Move Selected Contacts to Another Group
+  const handleExecuteMoveGroup = async () => {
+    if (!db || selectedContactIds.length === 0) return;
+
+    setIsMovingGroup(true);
+    try {
+      const targetLabel = getGroupName(moveTargetGroup);
+      const count = await reassignContactsBatch(db, selectedContactIds, moveTargetGroup);
+
+      toast({
+        title: "Contacts Reassigned",
+        description: `Successfully moved ${count} recipient(s) to "${targetLabel}".`,
+      });
+
+      setSelectedContactIds([]);
+      setIsMoveGroupModalOpen(false);
+    } catch (err: any) {
+      toast({
+        variant: "destructive",
+        title: "Move Failed",
+        description: err.message || "Could not move selected contacts.",
+      });
+    } finally {
+      setIsMovingGroup(false);
+    }
+  };
+
   // Add a new Group
   const handleCreateGroup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -457,9 +691,18 @@ export function SectorAddressBook() {
                   setImporterDefaultSector(selectedSector !== "all" ? selectedSector : "hotel");
                   setIsImporterOpen(true);
                 }}
-                className="h-8 text-xs font-bold bg-primary text-black hover:bg-primary/90 gap-1.5"
+                variant="outline"
+                className="h-8 text-xs font-bold border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700 gap-1.5"
               >
                 <Upload className="h-3.5 w-3.5" /> Import Contacts
+              </Button>
+
+              <Button
+                size="sm"
+                onClick={() => handleOpenAddRecipient()}
+                className="h-8 text-xs font-bold bg-primary text-black hover:bg-primary/90 gap-1.5 shadow-xs"
+              >
+                <UserPlus className="h-3.5 w-3.5" /> Add Recipient
               </Button>
             </div>
           </div>
@@ -558,7 +801,15 @@ export function SectorAddressBook() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Button
+                  size="sm"
+                  onClick={() => handleOpenAddRecipient(selectedSector)}
+                  className="h-7 text-xs font-bold bg-primary text-black hover:bg-primary/90 gap-1.5 shadow-xs"
+                >
+                  <UserPlus className="h-3 w-3" /> Add Recipient
+                </Button>
+
                 <Button
                   variant="outline"
                   size="sm"
@@ -602,15 +853,29 @@ export function SectorAddressBook() {
               </span>
 
               {selectedContactIds.length > 0 && (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="destructive"
-                  onClick={() => setIsBulkDeleteModalOpen(true)}
-                  className="h-8 text-xs font-bold gap-1.5 shadow-xs"
-                >
-                  <Trash2 className="h-3.5 w-3.5" /> Delete Selected ({selectedContactIds.length})
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setMoveTargetGroup(selectedSector !== "all" ? selectedSector : groups[0]?.id || "general");
+                      setIsMoveGroupModalOpen(true);
+                    }}
+                    className="h-8 text-xs font-bold gap-1.5 border-primary/50 text-slate-800 hover:bg-primary/10"
+                  >
+                    <ArrowRightLeft className="h-3.5 w-3.5 text-primary" /> Move Selected ({selectedContactIds.length})
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => setIsBulkDeleteModalOpen(true)}
+                    className="h-8 text-xs font-bold gap-1.5 shadow-xs"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" /> Delete Selected ({selectedContactIds.length})
+                  </Button>
+                </div>
               )}
             </div>
           </div>
@@ -636,16 +901,27 @@ export function SectorAddressBook() {
                     : "Your address book is currently empty."}
                 </p>
               </div>
-              <Button
-                size="sm"
-                onClick={() => {
-                  setImporterDefaultSector(selectedSector !== "all" ? selectedSector : "hotel");
-                  setIsImporterOpen(true);
-                }}
-                className="h-8 text-xs font-bold bg-primary text-black"
-              >
-                <Plus className="h-3.5 w-3.5 mr-1" /> Import Contacts Now
-              </Button>
+              <div className="flex items-center justify-center gap-2 flex-wrap">
+                <Button
+                  size="sm"
+                  onClick={() => handleOpenAddRecipient(selectedSector !== "all" ? selectedSector : undefined)}
+                  className="h-8 text-xs font-bold bg-primary text-black hover:bg-primary/90 gap-1.5 shadow-xs"
+                >
+                  <UserPlus className="h-3.5 w-3.5" />
+                  {selectedSector !== "all" ? `Add Recipient to ${getGroupName(selectedSector)}` : "Add Recipient"}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setImporterDefaultSector(selectedSector !== "all" ? selectedSector : "hotel");
+                    setIsImporterOpen(true);
+                  }}
+                  className="h-8 text-xs font-bold gap-1.5"
+                >
+                  <Upload className="h-3.5 w-3.5" /> Import Contacts
+                </Button>
+              </div>
             </div>
           ) : (
             <div className="border rounded-xl overflow-hidden divide-y">
@@ -719,25 +995,36 @@ export function SectorAddressBook() {
                         )}
                       </div>
 
-                      {/* Sector Badge & Delete */}
-                      <div className="col-span-4 sm:col-span-2 flex items-center justify-end gap-2">
+                      {/* Sector Badge & Actions */}
+                      <div className="col-span-4 sm:col-span-2 flex items-center justify-end gap-1.5">
                         <Badge
                           variant="outline"
-                          className="text-[9px] font-bold py-0.5 px-2 bg-slate-50 border-slate-200 truncate max-w-[100px]"
+                          className="text-[9px] font-bold py-0.5 px-2 bg-slate-50 border-slate-200 truncate max-w-[90px]"
                           title={groupLabel}
                         >
                           {groupLabel.split(" ")[0]}
                         </Badge>
 
+                        {/* Edit Recipient or Reassign Group */}
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEditRecipient(c)}
+                          className="h-7 w-7 rounded-lg hover:bg-slate-100 text-muted-foreground hover:text-slate-900 flex items-center justify-center transition-colors shrink-0"
+                          title="Edit recipient or change group"
+                        >
+                          <Pencil className="h-3 w-3" />
+                        </button>
+
+                        {/* Remove Recipient from Group / Delete */}
                         <button
                           type="button"
                           disabled={deletingId === c.id}
-                          onClick={() => handleDelete(c.id, c.email)}
+                          onClick={() => handleOpenRemoveRecipient(c)}
                           className="h-7 w-7 rounded-lg hover:bg-red-50 text-muted-foreground hover:text-red-600 flex items-center justify-center transition-colors shrink-0"
-                          title="Delete contact"
+                          title={selectedSector !== "all" ? `Remove recipient from ${groupLabel}` : "Delete recipient"}
                         >
-                          {deletingId === c.id ? (
-                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          {selectedSector !== "all" ? (
+                            <UserMinus className="h-3.5 w-3.5" />
                           ) : (
                             <Trash2 className="h-3.5 w-3.5" />
                           )}
@@ -1227,6 +1514,454 @@ export function SectorAddressBook() {
         onOpenChange={setIsImporterOpen}
         defaultSector={importerDefaultSector}
       />
+
+      {/* ======================================================== */}
+      {/* 6. ADD RECIPIENT MODAL                                  */}
+      {/* ======================================================== */}
+      <Dialog open={isAddRecipientModalOpen} onOpenChange={setIsAddRecipientModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-2.5 text-primary mb-1">
+              <div className="h-9 w-9 rounded-xl bg-primary/20 text-primary flex items-center justify-center shrink-0">
+                <UserPlus className="h-5 w-5" />
+              </div>
+              <div>
+                <DialogTitle className="text-base font-bold text-slate-900">
+                  Add Recipient
+                </DialogTitle>
+                <DialogDescription className="text-xs text-muted-foreground">
+                  Add an individual recipient directly into a target contact group
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+
+          <form onSubmit={handleSaveRecipient} className="space-y-4 py-2">
+            {/* Target Group Selector */}
+            <div className="space-y-1.5">
+              <Label className="text-xs font-bold text-foreground">Contact Group</Label>
+              <Select
+                value={addRecipientSector}
+                onValueChange={(val) => setAddRecipientSector(val)}
+              >
+                <SelectTrigger className="h-9 text-xs font-semibold bg-white">
+                  <SelectValue placeholder="Select target group" />
+                </SelectTrigger>
+                <SelectContent>
+                  {groups.map((g) => (
+                    <SelectItem key={g.id} value={g.id} className="text-xs font-medium">
+                      <div className="flex items-center gap-2">
+                        {renderGroupIcon(g.id)}
+                        <span>{g.name}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Email Address */}
+            <div className="space-y-1.5">
+              <Label className="text-xs font-bold text-foreground">
+                Email Address <span className="text-red-500">*</span>
+              </Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="email"
+                  required
+                  placeholder="recipient@example.com"
+                  value={addRecipientEmail}
+                  onChange={(e) => setAddRecipientEmail(e.target.value)}
+                  className="pl-9 h-9 text-xs"
+                />
+              </div>
+            </div>
+
+            {/* Full Name */}
+            <div className="space-y-1.5">
+              <Label className="text-xs font-bold text-foreground">Full Name or Title</Label>
+              <Input
+                type="text"
+                placeholder="e.g. John Doe / General Manager"
+                value={addRecipientName}
+                onChange={(e) => setAddRecipientName(e.target.value)}
+                className="h-9 text-xs"
+              />
+            </div>
+
+            {/* Organization & Phone */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-foreground">Organization</Label>
+                <div className="relative">
+                  <Building className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="text"
+                    placeholder="e.g. Kigali Serena Hotel"
+                    value={addRecipientOrg}
+                    onChange={(e) => setAddRecipientOrg(e.target.value)}
+                    className="pl-9 h-9 text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-foreground">Phone Number</Label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="tel"
+                    placeholder="+250 788 123 456"
+                    value={addRecipientPhone}
+                    onChange={(e) => setAddRecipientPhone(e.target.value)}
+                    className="pl-9 h-9 text-xs"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <DialogFooter className="pt-2 gap-2 sm:gap-0">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isSavingRecipient}
+                onClick={() => setIsAddRecipientModalOpen(false)}
+                className="text-xs h-9"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSavingRecipient || !addRecipientEmail.trim()}
+                className="text-xs h-9 font-bold bg-primary text-black hover:bg-primary/90 gap-1.5"
+              >
+                {isSavingRecipient ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <UserPlus className="h-4 w-4" />
+                )}
+                Save Recipient
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* ======================================================== */}
+      {/* 7. EDIT RECIPIENT MODAL                                 */}
+      {/* ======================================================== */}
+      {editingContact && (
+        <Dialog open={Boolean(editingContact)} onOpenChange={() => setEditingContact(null)}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <div className="flex items-center gap-2.5 text-slate-800 mb-1">
+                <div className="h-9 w-9 rounded-xl bg-slate-100 text-slate-800 flex items-center justify-center shrink-0">
+                  <Pencil className="h-5 w-5" />
+                </div>
+                <div>
+                  <DialogTitle className="text-base font-bold text-slate-900">
+                    Edit Recipient
+                  </DialogTitle>
+                  <DialogDescription className="text-xs text-muted-foreground">
+                    Update recipient contact details or change group assignment
+                  </DialogDescription>
+                </div>
+              </div>
+            </DialogHeader>
+
+            <form onSubmit={handleUpdateRecipient} className="space-y-4 py-2">
+              {/* Email (Readonly ID) */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-foreground">Email Address</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="email"
+                    disabled
+                    value={editRecipientEmail}
+                    className="pl-9 h-9 text-xs bg-slate-50 font-mono text-slate-600"
+                  />
+                </div>
+              </div>
+
+              {/* Contact Group Selection */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-foreground">Contact Group</Label>
+                <Select
+                  value={editRecipientSector}
+                  onValueChange={(val) => setEditRecipientSector(val)}
+                >
+                  <SelectTrigger className="h-9 text-xs font-semibold bg-white">
+                    <SelectValue placeholder="Select target group" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {groups.map((g) => (
+                      <SelectItem key={g.id} value={g.id} className="text-xs font-medium">
+                        <div className="flex items-center gap-2">
+                          {renderGroupIcon(g.id)}
+                          <span>{g.name}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Full Name */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-foreground">Full Name or Title</Label>
+                <Input
+                  type="text"
+                  placeholder="e.g. John Doe / General Manager"
+                  value={editRecipientName}
+                  onChange={(e) => setEditRecipientName(e.target.value)}
+                  className="h-9 text-xs"
+                />
+              </div>
+
+              {/* Organization & Phone */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-bold text-foreground">Organization</Label>
+                  <div className="relative">
+                    <Building className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type="text"
+                      placeholder="e.g. Kigali Serena Hotel"
+                      value={editRecipientOrg}
+                      onChange={(e) => setEditRecipientOrg(e.target.value)}
+                      className="pl-9 h-9 text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-bold text-foreground">Phone Number</Label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type="tel"
+                      placeholder="+250 788 123 456"
+                      value={editRecipientPhone}
+                      onChange={(e) => setEditRecipientPhone(e.target.value)}
+                      className="pl-9 h-9 text-xs"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <DialogFooter className="pt-2 gap-2 sm:gap-0">
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={isUpdatingRecipient}
+                  onClick={() => setEditingContact(null)}
+                  className="text-xs h-9"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isUpdatingRecipient}
+                  className="text-xs h-9 font-bold bg-primary text-black hover:bg-primary/90 gap-1.5"
+                >
+                  {isUpdatingRecipient ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Check className="h-4 w-4" />
+                  )}
+                  Save Changes
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* ======================================================== */}
+      {/* 8. REMOVE RECIPIENT MODAL                               */}
+      {/* ======================================================== */}
+      {contactToRemove && (
+        <Dialog open={Boolean(contactToRemove)} onOpenChange={() => setContactToRemove(null)}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <div className="flex items-center gap-2.5 text-red-600 mb-1">
+                <div className="h-9 w-9 rounded-xl bg-red-100 flex items-center justify-center shrink-0">
+                  <UserMinus className="h-5 w-5" />
+                </div>
+                <div>
+                  <DialogTitle className="text-base font-bold text-slate-900">
+                    Remove Recipient
+                  </DialogTitle>
+                  <DialogDescription className="text-xs text-muted-foreground">
+                    {contactToRemove.name ? `${contactToRemove.name} (${contactToRemove.email})` : contactToRemove.email}
+                  </DialogDescription>
+                </div>
+              </div>
+            </DialogHeader>
+
+            <div className="space-y-4 py-2 text-xs">
+              {contactToRemove.sector && contactToRemove.sector !== "general" ? (
+                <div className="space-y-3">
+                  <div className="p-3 rounded-xl border bg-amber-50/80 border-amber-200 text-amber-900 space-y-1">
+                    <p className="font-semibold text-[11px] leading-relaxed">
+                      Recipient is currently assigned to group: <strong className="font-bold underline">{getGroupName(contactToRemove.sector)}</strong>.
+                      Choose an action:
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="flex items-start gap-2.5 p-3 rounded-lg border cursor-pointer hover:bg-slate-50 transition-colors">
+                      <input
+                        type="radio"
+                        name="removeRecipientMode"
+                        value="remove_from_group"
+                        checked={removeRecipientMode === "remove_from_group"}
+                        onChange={() => setRemoveRecipientMode("remove_from_group")}
+                        className="mt-0.5"
+                      />
+                      <div>
+                        <div className="font-bold text-slate-900">Remove from "{getGroupName(contactToRemove.sector)}"</div>
+                        <div className="text-[11px] text-muted-foreground">
+                          Keeps the recipient saved in SANEX, but reassigns them to General Institutions.
+                        </div>
+                      </div>
+                    </label>
+
+                    <label className="flex items-start gap-2.5 p-3 rounded-lg border border-red-200 bg-red-50/50 cursor-pointer hover:bg-red-50 transition-colors">
+                      <input
+                        type="radio"
+                        name="removeRecipientMode"
+                        value="delete_permanent"
+                        checked={removeRecipientMode === "delete_permanent"}
+                        onChange={() => setRemoveRecipientMode("delete_permanent")}
+                        className="mt-0.5 text-red-600"
+                      />
+                      <div>
+                        <div className="font-bold text-red-700">Delete Permanently</div>
+                        <div className="text-[11px] text-red-600">
+                          Completely deletes this recipient and their contact details from the database.
+                        </div>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-3 rounded-xl border bg-slate-50 text-slate-700">
+                  <p>
+                    Are you sure you want to permanently delete recipient <strong className="text-slate-900">{contactToRemove.email}</strong> from your address book?
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isRemovingRecipient}
+                onClick={() => setContactToRemove(null)}
+                className="text-xs h-9"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                variant={removeRecipientMode === "delete_permanent" ? "destructive" : "default"}
+                disabled={isRemovingRecipient}
+                onClick={handleExecuteRemoveRecipient}
+                className={`text-xs h-9 font-bold gap-1.5 ${
+                  removeRecipientMode === "delete_permanent"
+                    ? "bg-red-600 hover:bg-red-700 text-white"
+                    : "bg-slate-900 text-white hover:bg-slate-800"
+                }`}
+              >
+                {isRemovingRecipient ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : removeRecipientMode === "delete_permanent" ? (
+                  <Trash2 className="h-4 w-4" />
+                ) : (
+                  <UserMinus className="h-4 w-4" />
+                )}
+                {removeRecipientMode === "delete_permanent" ? "Delete Permanently" : "Remove from Group"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* ======================================================== */}
+      {/* 9. MOVE SELECTED TO GROUP MODAL                         */}
+      {/* ======================================================== */}
+      <Dialog open={isMoveGroupModalOpen} onOpenChange={setIsMoveGroupModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-2.5 text-primary mb-1">
+              <div className="h-9 w-9 rounded-xl bg-primary/20 text-primary flex items-center justify-center shrink-0">
+                <ArrowRightLeft className="h-5 w-5" />
+              </div>
+              <div>
+                <DialogTitle className="text-base font-bold text-slate-900">
+                  Move Recipients to Group
+                </DialogTitle>
+                <DialogDescription className="text-xs text-muted-foreground">
+                  Reassign {selectedContactIds.length} selected recipient(s) to another contact group
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-bold text-foreground">Select Destination Group</Label>
+              <Select
+                value={moveTargetGroup}
+                onValueChange={(val) => setMoveTargetGroup(val)}
+              >
+                <SelectTrigger className="h-9 text-xs font-semibold bg-white">
+                  <SelectValue placeholder="Select target group" />
+                </SelectTrigger>
+                <SelectContent>
+                  {groups.map((g) => (
+                    <SelectItem key={g.id} value={g.id} className="text-xs font-medium">
+                      <div className="flex items-center gap-2">
+                        {renderGroupIcon(g.id)}
+                        <span>{g.name}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isMovingGroup}
+              onClick={() => setIsMoveGroupModalOpen(false)}
+              className="text-xs h-9"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              disabled={isMovingGroup}
+              onClick={handleExecuteMoveGroup}
+              className="text-xs h-9 font-bold bg-primary text-black hover:bg-primary/90 gap-1.5"
+            >
+              {isMovingGroup ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <ArrowRightLeft className="h-4 w-4" />
+              )}
+              Move {selectedContactIds.length} Contact(s)
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

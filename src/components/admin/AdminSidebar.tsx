@@ -16,7 +16,8 @@ import {
   ChevronRight,
   ExternalLink,
   UserCheck,
-  Mail
+  Mail,
+  BookUser
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -53,6 +54,7 @@ export function AdminSidebar({ activeTab, onSelectTab, pendingRequestsCount }: A
   const isUsersActive = pathname.startsWith("/admin/users");
   const isBookingsActive = pathname.startsWith("/admin/bookings");
   const isClientsActive = pathname.startsWith("/admin/clients");
+  const isContactsActive = pathname.startsWith("/admin/contacts");
   const isEmailsActive = pathname.startsWith("/admin/emails");
   const isAnalyticsActive = pathname.startsWith("/admin/analytics") || (pathname === "/admin" && (activeTab === "platforms" || currentTab === "platforms"));
   const isRequestsActive = pathname === "/admin" && (activeTab === "requests" || currentTab === "requests");
@@ -159,6 +161,28 @@ export function AdminSidebar({ activeTab, onSelectTab, pendingRequestsCount }: A
               </div>
             </div>
             {isClientsActive && <ChevronRight className="h-4 w-4 shrink-0" />}
+          </Link>
+
+          {/* Manage Contacts */}
+          <Link
+            href="/admin/contacts"
+            className={cn(
+              "w-full flex items-center justify-between p-3 rounded-xl font-bold text-xs transition-all text-left",
+              isContactsActive
+                ? "bg-primary text-black shadow-sm"
+                : "hover:bg-muted text-foreground"
+            )}
+          >
+            <div className="flex items-center gap-3">
+              <BookUser className="h-4 w-4 shrink-0 text-black" />
+              <div>
+                <div className="font-bold">Manage Contacts</div>
+                <div className={cn("text-[10px] font-normal", isContactsActive ? "text-black/80" : "text-muted-foreground")}>
+                  Groups &amp; Recipients
+                </div>
+              </div>
+            </div>
+            {isContactsActive && <ChevronRight className="h-4 w-4 shrink-0" />}
           </Link>
 
           {/* Send Email */}
