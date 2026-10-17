@@ -469,7 +469,7 @@ export function compileBlocksToHtml(blocks: EmailBlock[] = INITIAL_SANEX_BLOCKS)
               <td style="background-color:${bgColor}; padding:22px 24px 18px; border-bottom:3px solid #8DB833; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
                 <table border="0" cellpadding="0" cellspacing="0" width="100%">
                   <tr>
-                    <td valign="middle">
+                    <td class="sanex-header-brand-cell" valign="middle">
                       <table border="0" cellpadding="0" cellspacing="0">
                         <tr>
                           <td style="padding-right:12px;" valign="middle">
@@ -492,13 +492,14 @@ export function compileBlocksToHtml(blocks: EmailBlock[] = INITIAL_SANEX_BLOCKS)
                         </tr>
                       </table>
                     </td>
-                    <td align="right" valign="middle">
-                      ${
-                        links.length > 0
-                          ? `<table border="0" cellpadding="0" cellspacing="0" style="display:inline-block;"><tr>${socialCells}</tr></table>`
-                          : ""
-                      }
-                    </td>
+                    ${
+                      links.length > 0
+                        ? `
+                    <td class="sanex-header-socials-cell" align="right" valign="middle">
+                      <table border="0" cellpadding="0" cellspacing="0" class="sanex-header-socials-table" style="display:inline-block;"><tr>${socialCells}</tr></table>
+                    </td>`
+                        : ""
+                    }
                   </tr>
                 </table>
                 <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-top:1px solid #1e293b; margin-top:14px; padding-top:10px;">
@@ -941,6 +942,24 @@ export function compileBlocksToHtml(blocks: EmailBlock[] = INITIAL_SANEX_BLOCKS)
         overflow: visible !important;
         font-size: inherit !important;
       }
+      .sanex-header-brand-cell {
+        display: block !important;
+        width: 100% !important;
+        padding-bottom: 12px !important;
+        text-align: left !important;
+      }
+      .sanex-header-socials-cell {
+        display: block !important;
+        width: 100% !important;
+        text-align: left !important;
+        padding-top: 2px !important;
+        padding-bottom: 6px !important;
+      }
+      .sanex-header-socials-table {
+        margin: 0 !important;
+        text-align: left !important;
+        display: block !important;
+      }
       .sanex-col-cell {
         padding: 20px 16px !important;
       }
@@ -958,6 +977,24 @@ export function compileBlocksToHtml(blocks: EmailBlock[] = INITIAL_SANEX_BLOCKS)
       max-height: none !important;
       overflow: visible !important;
       font-size: inherit !important;
+    }
+    .mobile-forced .sanex-header-brand-cell {
+      display: block !important;
+      width: 100% !important;
+      padding-bottom: 12px !important;
+      text-align: left !important;
+    }
+    .mobile-forced .sanex-header-socials-cell {
+      display: block !important;
+      width: 100% !important;
+      text-align: left !important;
+      padding-top: 2px !important;
+      padding-bottom: 6px !important;
+    }
+    .mobile-forced .sanex-header-socials-table {
+      margin: 0 !important;
+      text-align: left !important;
+      display: block !important;
     }
     .mobile-forced .sanex-col-cell {
       padding: 20px 16px !important;
@@ -3061,13 +3098,14 @@ export function EmailStudioBuilder({
                       const email = block.companyEmail || "info@sanex.rw";
                       const website = block.websiteUrl || "https://sanex.rw";
                       const links = getEffectiveSocialLinks(block).filter((l) => l.enabled !== false && l.url);
+                      const isMobile = previewDevice === "mobile";
 
                       return (
                         <div
                           onClick={() => setActiveBlockId(block.id)}
                           className="p-4 sm:p-5 bg-[#0f172a] text-white border-b-4 border-[#8DB833] space-y-3 cursor-pointer group hover:ring-2 hover:ring-[#8DB833]/60 transition-all"
                         >
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                          <div className={isMobile ? "flex flex-col items-start gap-2.5" : "flex flex-col sm:flex-row sm:items-center justify-between gap-3"}>
                             <div className="flex items-center gap-3">
                               <div
                                 onClick={(e) => {
@@ -3110,7 +3148,7 @@ export function EmailStudioBuilder({
 
                             {/* Social Icons */}
                             {links.length > 0 && (
-                              <div className="flex items-center gap-1.5 self-end sm:self-auto">
+                              <div className={isMobile ? "flex items-center gap-1.5 self-start pt-1" : "flex items-center gap-1.5 self-end sm:self-auto"}>
                                 {links.map((link) => {
                                   const meta = getSocialPlatformMeta(link.platform);
                                   return (
@@ -5148,7 +5186,11 @@ export function EmailStudioBuilder({
 
           <div className="flex-1 overflow-y-auto p-4 sm:p-6 flex justify-center">
             <iframe
-              srcDoc={compiledHtml}
+              srcDoc={
+                modalPreviewDevice === "mobile"
+                  ? compiledHtml.replace("<html", '<html class="mobile-forced"')
+                  : compiledHtml
+              }
               title="Email Preview"
               className={`w-full min-h-[580px] bg-white rounded-lg shadow-md border transition-all duration-300 ${
                 modalPreviewDevice === "mobile" ? "max-w-[375px]" : "max-w-[620px]"
