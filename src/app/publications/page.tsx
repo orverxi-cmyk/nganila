@@ -18,7 +18,6 @@ import {
   Facebook,
   MessageCircle,
   Copy,
-  Mail,
   ExternalLink,
   Eye,
 } from "lucide-react";
@@ -292,55 +291,11 @@ export default function PublicationsPage() {
               <div className="space-y-1">
                 <h3 className="text-lg font-bold text-slate-900">No Publications Found</h3>
                 <p className="text-xs text-muted-foreground">
-                  {searchQuery || selectedCategory !== "all"
-                    ? "Try adjusting your search criteria or resetting filters."
-                    : "Sent email broadcasts and newsletters will appear here as public publications."}
+                  Official announcements and newsletters will appear here once published.
                 </p>
               </div>
-              {(searchQuery || selectedCategory !== "all") && (
-                <Button
-                  onClick={() => {
-                    setSearchQuery("");
-                    setSelectedCategory("all");
-                  }}
-                  className="bg-primary text-black font-bold h-9 text-xs"
-                >
-                  Clear All Filters
-                </Button>
-              )}
             </div>
           )}
-
-          {/* Newsletter Subscription Banner at Bottom */}
-          <div className="mt-14 rounded-3xl bg-slate-900 text-white p-6 sm:p-10 border border-slate-800 shadow-lg relative overflow-hidden">
-            <div className="relative z-10 max-w-2xl space-y-3">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/20 text-primary text-[10px] font-bold uppercase tracking-wider">
-                <Mail className="h-3 w-3" /> Never Miss an Official Update
-              </div>
-              <h3 className="text-2xl sm:text-3xl font-extrabold font-headline text-white">
-                Subscribe to SANEX Newsletters &amp; Publications
-              </h3>
-              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                Receive future sector wastewater management case studies, regulatory guidelines,
-                and technical sanitation newsletters directly in your inbox.
-              </p>
-              <div className="pt-2 flex flex-wrap gap-3">
-                <Button
-                  asChild
-                  className="bg-primary hover:bg-primary/90 text-black font-extrabold text-xs h-10 px-6 rounded-full shadow-sm"
-                >
-                  <Link href="/book">Book an Environmental Consultation</Link>
-                </Button>
-                <Button
-                  asChild
-                  variant="outline"
-                  className="border-slate-700 bg-white/5 hover:bg-white/10 text-white font-bold text-xs h-10 px-6 rounded-full"
-                >
-                  <Link href="/contact">Contact Communications Desk</Link>
-                </Button>
-              </div>
-            </div>
-          </div>
         </div>
       </main>
 
