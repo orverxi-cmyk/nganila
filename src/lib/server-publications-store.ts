@@ -406,21 +406,6 @@ export function updateServerPublication(
   return resultPub;
 }
 
-/**
- * Resolves a publication by slug or id from server store.
- */
-export function getServerPublicationBySlug(slugOrId: string): Publication | null {
-  const store = getPublicationsStore();
-  const cleanTarget = slugify(slugOrId);
-
-  return (
-    store.publications.find((p) => {
-      if (p.id === slugOrId) return true;
-      const pSlug = p.slug ? slugify(p.slug) : slugify(p.title || "");
-      return pSlug === cleanTarget || slugify(p.title || "") === cleanTarget;
-    }) || null
-  );
-}
 
 /**
  * Gets the current setting for whether views counts are displayed on public pages.
@@ -525,4 +510,70 @@ export function incrementServerArticleViews(idOrSlug: string): number {
 
   return newCount;
 }
+
+/**
+ * Server-side resolver to retrieve a publication for Open Graph / Twitter Card preview metadata.
+ */
+export async function getServerPublicationBySlug(
+  slugOrId: string
+): Promise<Publication | null> {
+  const cleanTarget = decodeURIComponent(slugOrId || "").trim();
+  if (!cleanTarget) return null;
+  const targetSlug = slugify(cleanTarget);
+
+  const store = getPublicationsStore();
+  const matched = store.publications.find((p) => {
+    if (p.id === cleanTarget) return true;
+    const pSlug = p.slug ? slugify(p.slug) : slugify(p.title || "");
+    return pSlug === targetSlug || slugify(p.title || "") === targetSlug;
+  });
+
+  if (matched) return matched;
+
+  // Fallback to active template if requesting the default custom newsletter
+  if (
+    cleanTarget === "sustainable-liquid-waste-management-clean-water-rwanda" ||
+    cleanTarget === "pub_custom_sanex_newsletter" ||
+    (store.template.name && slugify(store.template.name) === targetSlug)
+  ) {
+    const tpl = store.template;
+    return {
+      id: "pub_custom_sanex_newsletter",
+      slug: "sustainable-liquid-waste-management-clean-water-rwanda",
+      title: tpl.name || "SANEX Official Custom Newsletter",
+      subject: tpl.subject || tpl.name || "SANEX Official Custom Newsletter",
+      excerpt: extractExcerptFromHtml(tpl.message) || "Sanex Company LTD is a Rwandan company specializing in liquid waste management, emptying services, and clean water delivery.",
+      content: tpl.message,
+      category: "Company Announcements",
+      author: "SANEX Communications",
+      publishedAt: tpl.updatedAt || Date.now(),
+      createdAt: tpl.updatedAt || Date.now(),
+      updatedAt: tpl.updatedAt || Date.now(),
+      recipientCount: 85,
+      status: "published",
+      isCustom: true,
+      coverImage: tpl.coverImage || extractFirstImage(tpl.message) || "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1779722491089_B25A3102.jpg?alt=media&token=e7f97250-ccbd-4a24-a9fa-793f86798a7d",
+    };
+  }
+
+  // Check Firestore if not found in memory store
+  try {
+    const { firestore } = initializeFirebase();
+    if (firestore) {
+      const { collection: fsCollection, query: fsQuery, where: fsWhere, getDocs: fsGetDocs, limit: fsLimit, doc: fsDoc, getDoc: fsGetDoc } = await import("firebase/firestore");
+      const q = fsQuery(fsCollection(firestore, "publications"), fsWhere("slug", "==", cleanTarget), fsLimit(1));
+      const snap = await fsGetDocs(q);
+      if (!snap.empty) {
+        return { id: snap.docs[0].id, ...(snap.docs[0].data() as any) };
+      }
+      const directDoc = await fsGetDoc(fsDoc(firestore, "publications", cleanTarget));
+      if (directDoc.exists()) {
+        return { id: directDoc.id, ...(directDoc.data() as any) };
+      }
+    }
+  } catch {}
+
+  return null;
+}
+
 

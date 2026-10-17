@@ -1,42 +1,43 @@
+import type { Metadata } from "next";
+import { ServicesClient } from "./ServicesClient";
 
-"use client";
-
-import React from "react";
-import { Navbar } from "@/components/sections/Navbar";
-import { Footer } from "@/components/sections/Footer";
-import { Services } from "@/components/sections/Services";
-import { RegionalPortal } from "@/components/sections/RegionalPortal";
-import { Highlights } from "@/components/sections/Highlights";
-import { VideoHighlight } from "@/components/sections/VideoHighlight";
-import { Hero } from "@/components/sections/Hero";
+export const metadata: Metadata = {
+  title: "Liquid Waste Management Services & Solutions | SANEX Rwanda",
+  description:
+    "Professional liquid waste collection, modern vacuum exhauster trucks, decentralized wastewater treatment systems (DWTS), septic tank emptying, and clean water delivery across Rwanda.",
+  alternates: {
+    canonical: "https://sanex.rw/services",
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_RW",
+    url: "https://sanex.rw/services",
+    siteName: "SANEX Company Ltd",
+    title: "Liquid Waste Management Services & Solutions | SANEX Rwanda",
+    description:
+      "Professional liquid waste collection, modern vacuum exhauster trucks, decentralized wastewater treatment systems (DWTS), and clean water delivery across Rwanda.",
+    images: [
+      {
+        url: "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media&token=d3048d2c-2d02-4fdb-8eaa-f741686a4401",
+        width: 1200,
+        height: 630,
+        alt: "SANEX Specialized Vacuum Exhauster Trucks & Wastewater Services in Rwanda",
+        type: "image/jpeg",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Liquid Waste Management Services & Solutions | SANEX Rwanda",
+    description:
+      "Professional liquid waste collection, modern vacuum exhauster trucks, and wastewater treatment solutions across Rwanda.",
+    creator: "@sanex_rw",
+    images: [
+      "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media&token=d3048d2c-2d02-4fdb-8eaa-f741686a4401",
+    ],
+  },
+};
 
 export default function ServicesPage() {
-  return (
-    <div className="min-h-screen flex flex-col font-arial">
-      <Navbar />
-      <main className="flex-grow">
-        <div className="bg-primary py-2.5">
-          <div className="container mx-auto px-4 md:px-16 text-center">
-            <h1 className="text-[16px] font-bold text-black uppercase tracking-widest">Our Solutions</h1>
-            <p className="mt-1 text-black/80 max-w-2xl mx-auto font-bold text-[15px]">
-              Professional, eco-friendly, and nationwide liquid waste management services.
-            </p>
-          </div>
-        </div>
-        <Hero />
-        <Services />
-        <VideoHighlight />
-        
-        <div className="bg-muted/30 py-10 border-t">
-          <div className="container mx-auto px-4 md:px-16">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
-              <RegionalPortal />
-              <Highlights />
-            </div>
-          </div>
-        </div>
-      </main>
-      <Footer />
-    </div>
-  );
+  return <ServicesClient />;
 }

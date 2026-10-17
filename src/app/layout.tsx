@@ -34,12 +34,24 @@ export const metadata: Metadata = {
     siteName: 'SANEX Company Ltd',
     title: 'Sanex | Leading Liquid Waste Management in Rwanda',
     description: 'Professional liquid waste collection, modern vacuum exhauster trucks, and decentralized wastewater treatment solutions across Rwanda.',
+    images: [
+      {
+        url: 'https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media&token=d3048d2c-2d02-4fdb-8eaa-f741686a4401',
+        width: 1200,
+        height: 630,
+        alt: 'SANEX Company Ltd - Sustainable Liquid Waste Management in Rwanda',
+        type: 'image/jpeg',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Sanex | Leading Liquid Waste Management in Rwanda',
     description: 'Professional liquid waste collection, vacuum exhauster trucks, and wastewater treatment systems across Rwanda.',
     creator: '@sanex_rw',
+    images: [
+      'https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media&token=d3048d2c-2d02-4fdb-8eaa-f741686a4401',
+    ],
   },
   manifest: '/manifest.webmanifest',
   icons: {
