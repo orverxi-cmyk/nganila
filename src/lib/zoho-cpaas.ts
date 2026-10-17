@@ -912,6 +912,11 @@ export function renderCustomBroadcastHtml(data: CustomBroadcastTemplateData): st
     privacyUrl = "https://sanex.rw/privacy",
   } = data;
 
+  const rawRecipient = (recipientName || '').trim();
+  const effectiveRecipient = (rawRecipient && rawRecipient !== '{{name}}' && rawRecipient !== '{{email}}')
+    ? rawRecipient
+    : (recipientEmail || 'Valued Partner');
+
   // Format paragraphs safely
   const paragraphs = (message || '')
     .split(/\n\s*\n/)
@@ -969,7 +974,7 @@ export function renderCustomBroadcastHtml(data: CustomBroadcastTemplateData): st
           <tr>
             <td style="padding: 32px;">
               ${title ? `<h2 style="margin: 0 0 16px 0; font-size: 20px; color: #0f172a; font-weight: 700;">${title}</h2>` : ''}
-              ${recipientName ? `<p style="margin: 0 0 14px 0; font-size: 15px; color: #0f172a; font-weight: 600;">Dear ${recipientName},</p>` : ''}
+              ${effectiveRecipient && effectiveRecipient !== 'Valued Partner' ? `<p style="margin: 0 0 14px 0; font-size: 15px; color: #0f172a; font-weight: 600;">Dear ${effectiveRecipient},</p>` : ''}
               ${paragraphs || `<p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.6; color: #334155;">${message}</p>`}
               ${
                 ctaText && ctaUrl
@@ -992,7 +997,7 @@ export function renderCustomBroadcastHtml(data: CustomBroadcastTemplateData): st
           <tr>
             <td align="center" style="background-color: #0f172a; padding: 24px 20px; text-align: center; border-top: 1px solid #1e293b; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 11px; line-height: 1.55; color: #94a3b8;">
               <p style="margin: 0 0 8px 0; font-size: 12px; color: #cbd5e1; line-height: 1.5;">
-                This email was intended for <strong style="color: #ffffff;">${recipientName || recipientEmail || 'Valued Partner'}</strong>${roleOrgDetails ? ` <span style="color: #94a3b8;">(${roleOrgDetails})</span>` : ''} · <a href="${privacyUrl}" target="_blank" style="color: ${BRAND_COLOR}; text-decoration: underline;">Learn why we included this</a>.
+                This email was intended for <strong style="color: #ffffff;">${effectiveRecipient}</strong>${roleOrgDetails ? ` <span style="color: #94a3b8;">(${roleOrgDetails})</span>` : ''} · <a href="${privacyUrl}" target="_blank" style="color: ${BRAND_COLOR}; text-decoration: underline;">Learn why we included this</a>.
               </p>
               <p style="margin: 0 auto 10px auto; color: #94a3b8; font-size: 11px; max-width: 520px; line-height: 1.55;">
                 You are receiving this official communication from <strong>${BRAND_NAME}</strong> regarding ${sectorName ? `${sectorName} wastewater and sanitation operations` : 'liquid waste management, decentralized treatment systems, and sanitation operations'} in Rwanda.
@@ -1019,17 +1024,22 @@ export function renderCustomBroadcastHtml(data: CustomBroadcastTemplateData): st
  * Plain text fallback for custom broadcast messages.
  */
 export function renderCustomBroadcastText(data: CustomBroadcastTemplateData): string {
-  const { title, message, ctaText, ctaUrl, recipientName, recipientRole, organization, sectorName, unsubscribeUrl } = data;
+  const { title, message, ctaText, ctaUrl, recipientName, recipientEmail, recipientRole, organization, sectorName, unsubscribeUrl } = data;
+  const rawRecipient = (recipientName || '').trim();
+  const effectiveRecipient = (rawRecipient && rawRecipient !== '{{name}}' && rawRecipient !== '{{email}}')
+    ? rawRecipient
+    : (recipientEmail || 'Valued Partner');
+
   let text = `${BRAND_NAME} · Sustainable Liquid Waste Management · Rwanda\nKN 3 Rd, Kigali, Rwanda | Phone: ${COMPANY_PHONE} | Email: ${COMPANY_EMAIL}\n\n`;
-  if (recipientName) {
+  if (effectiveRecipient && effectiveRecipient !== 'Valued Partner') {
     const roleOrg = [recipientRole, organization].filter(Boolean).join(" at ");
-    text += `Dear ${recipientName}${roleOrg ? ` (${roleOrg})` : ''},\n\n`;
+    text += `Dear ${effectiveRecipient}${roleOrg ? ` (${roleOrg})` : ''},\n\n`;
   }
   if (title) text += `${title.toUpperCase()}\n\n`;
   text += `${message}\n\n`;
   if (ctaText && ctaUrl) text += `${ctaText}: ${ctaUrl}\n\n`;
   text += `---\n`;
-  text += `This email was intended for ${recipientName || 'Valued Partner'}${organization ? ` (${organization})` : ''}.\n`;
+  text += `This email was intended for ${effectiveRecipient}${organization ? ` (${organization})` : ''}.\n`;
   text += `Learn why we included this: https://sanex.rw/privacy\n\n`;
   text += `You are receiving this official communication regarding ${sectorName || 'sanitation operations'} in Rwanda.\n`;
   if (unsubscribeUrl) text += `Unsubscribe: ${unsubscribeUrl}\n`;

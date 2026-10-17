@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import {
   sendZohoEmailBatch,
+  sendZohoEmail,
   getZohoConfig,
   parseEmailList,
   renderCustomBroadcastHtml,
@@ -169,6 +170,7 @@ export async function POST(request: Request) {
         ctaText: ctaText?.trim() || undefined,
         ctaUrl: ctaUrl?.trim() || undefined,
         recipientName: body.recipientName?.trim() || undefined,
+        recipientEmail: cleanedRecipients[0],
         recipientRole: body.recipientRole?.trim() || undefined,
         organization: body.organization?.trim() || undefined,
         sectorName: body.sectorName?.trim() || undefined,
@@ -180,6 +182,7 @@ export async function POST(request: Request) {
         ctaText: ctaText?.trim() || undefined,
         ctaUrl: ctaUrl?.trim() || undefined,
         recipientName: body.recipientName?.trim() || undefined,
+        recipientEmail: cleanedRecipients[0],
         recipientRole: body.recipientRole?.trim() || undefined,
         organization: body.organization?.trim() || undefined,
         sectorName: body.sectorName?.trim() || undefined,
@@ -212,7 +215,7 @@ export async function POST(request: Request) {
     );
   }
 
-  // 5. Send through Zoho CPaaS (supporting transparent 50-recipient chunking)
+  // 5. Convert inline base64 images to CID attachments
   const inlineImages: { name: string; mime_type: string; content: string; cid: string }[] = [];
   if (finalHtml && finalHtml.includes('data:image/')) {
     let imgIdx = 0;
@@ -231,6 +234,117 @@ export async function POST(request: Request) {
         return `src="cid:${cid}"`;
       }
     );
+  }
+
+  // Helper to replace personalization variables ({{email}}, {{name}})
+  const substitutePersonalization = (
+    content: string,
+    recipientEmail: string,
+    recipientName?: string
+  ): string => {
+    const rawName = (recipientName || '').trim();
+    const effectiveName = rawName && rawName !== '{{name}}' && rawName !== '{{email}}'
+      ? rawName
+      : recipientEmail;
+
+    return content
+      .replace(/\{\{\s*email\s*\}\}/gi, recipientEmail)
+      .replace(/\{\{\s*recipient_?email\s*\}\}/gi, recipientEmail)
+      .replace(/\{\{\s*name\s*\}\}/gi, effectiveName)
+      .replace(/\{\{\s*recipient_?name\s*\}\}/gi, effectiveName);
+  };
+
+  const hasPersonalizationTokens = (content?: string): boolean => {
+    if (!content) return false;
+    return /\{\{\s*(email|recipient_?email|name|recipient_?name)\s*\}\}/i.test(content);
+  };
+
+  const needsPersonalization =
+    hasPersonalizationTokens(finalHtml) || hasPersonalizationTokens(finalText);
+
+  // If there are multiple recipients and personalization tags are present,
+  // dispatch personalized emails to each recipient individually so each receives
+  // their specific email in the security disclaimer and privacy footer.
+  if (cleanedRecipients.length > 1 && needsPersonalization) {
+    const requestIds: string[] = [];
+    const errors: string[] = [];
+    let successCount = 0;
+    const CONCURRENCY = 5;
+
+    for (let i = 0; i < cleanedRecipients.length; i += CONCURRENCY) {
+      const chunk = cleanedRecipients.slice(i, i + CONCURRENCY);
+      const chunkPromises = chunk.map(async (recipientEmail, subIdx) => {
+        const itemIdx = i + subIdx;
+        const personalizedHtml = finalHtml
+          ? substitutePersonalization(finalHtml, recipientEmail, body.recipientName)
+          : undefined;
+        const personalizedText = finalText
+          ? substitutePersonalization(finalText, recipientEmail, body.recipientName)
+          : undefined;
+
+        return sendZohoEmail({
+          to: recipientEmail,
+          // Attach CC and BCC only to the first dispatched email to avoid multiplying copies
+          cc: itemIdx === 0 && ccParsed.valid.length > 0 ? ccParsed.valid : undefined,
+          bcc: itemIdx === 0 && bccParsed.valid.length > 0 ? bccParsed.valid : undefined,
+          subject: subject?.trim(),
+          html: personalizedHtml,
+          text: personalizedText,
+          templateKey: templateKey?.trim(),
+          templateAlias: templateAlias?.trim(),
+          mergeInfo,
+          inlineImages: inlineImages.length > 0 ? inlineImages : undefined,
+          clientReference: `${clientReference || `broadcast-${Date.now()}`}-${itemIdx + 1}`,
+          fromEmail: config.fromEmail,
+          fromName: config.fromName,
+        });
+      });
+
+      const chunkResults = await Promise.all(chunkPromises);
+      for (const res of chunkResults) {
+        if (res.success) {
+          successCount++;
+          if (res.requestId) requestIds.push(res.requestId);
+        } else {
+          errors.push(res.message || res.error || 'Failed');
+        }
+      }
+    }
+
+    if (successCount > 0) {
+      return NextResponse.json({
+        success: true,
+        status: 'accepted',
+        message: `Personalized email dispatched to ${successCount} of ${cleanedRecipients.length} recipients.`,
+        requestId: requestIds.join(', '),
+        requestIds,
+        recipientCount: successCount,
+        batchCount: Math.ceil(cleanedRecipients.length / CONCURRENCY),
+        clientReference,
+        warnings: errors.length > 0 ? errors : undefined,
+      });
+    }
+
+    return NextResponse.json(
+      {
+        success: false,
+        status: 'failed',
+        error: 'Failed to dispatch personalized emails through Zoho CPaaS.',
+        message: errors.join('; '),
+      },
+      { status: 502 }
+    );
+  }
+
+  // Single recipient: substitute personalization tokens before sending
+  if (cleanedRecipients.length === 1 && needsPersonalization) {
+    const singleEmail = cleanedRecipients[0];
+    if (finalHtml) {
+      finalHtml = substitutePersonalization(finalHtml, singleEmail, body.recipientName);
+    }
+    if (finalText) {
+      finalText = substitutePersonalization(finalText, singleEmail, body.recipientName);
+    }
   }
 
   const result = await sendZohoEmailBatch({

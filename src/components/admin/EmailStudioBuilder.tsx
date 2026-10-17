@@ -426,9 +426,9 @@ const INITIAL_SANEX_BLOCKS: EmailBlock[] = [
   {
     id: "footer-1",
     type: "footer",
-    recipientName: "Harushyamagara Theophile",
-    recipientRole: "Senior Communication Officer",
-    organization: "Water For People in Rwanda",
+    recipientName: "{{email}}",
+    recipientRole: "",
+    organization: "",
     disclaimerContext: "You are receiving this official communication from SANEX Company Ltd regarding environmental sanitation, liquid waste operations, and wastewater management in Rwanda.",
     showDisclaimer: true,
     unsubscribeUrl: "https://sanex.rw/unsubscribe",
@@ -739,7 +739,10 @@ export function compileBlocksToHtml(blocks: EmailBlock[] = INITIAL_SANEX_BLOCKS)
           `;
 
         case "footer": {
-          const recName = block.recipientName || "{{name}}";
+          const rawName = (block.recipientName || "").trim();
+          const recName = (!rawName || rawName === "{{name}}" || rawName === "{{email}}")
+            ? "{{email}}"
+            : rawName;
           const recRole = block.recipientRole || "";
           const org = block.organization || "";
           const showDisc = block.showDisclaimer !== false;
@@ -1426,9 +1429,9 @@ export function EmailStudioBuilder({
         newBlock = {
           id: newId,
           type: "footer",
-          recipientName: "{{name}}",
-          recipientRole: "{{role}}",
-          organization: "{{organization}}",
+          recipientName: "{{email}}",
+          recipientRole: "",
+          organization: "",
           disclaimerContext:
             "You are receiving this official communication from SANEX Company Ltd regarding environmental sanitation, liquid waste operations, and wastewater management in Rwanda.",
           showDisclaimer: true,
@@ -1769,7 +1772,9 @@ export function EmailStudioBuilder({
       case "footer":
         return {
           title: "Disclaimer Footer",
-          desc: block.recipientName ? `Intended for ${block.recipientName}` : "Compliance & legal",
+          desc: block.recipientName && block.recipientName !== "{{email}}" && block.recipientName !== "{{name}}"
+            ? `Intended for ${block.recipientName}`
+            : "Intended for recipient email",
           icon: PanelBottom,
         };
       case "logo":
@@ -2451,15 +2456,18 @@ export function EmailStudioBuilder({
 
                     <div className="space-y-1">
                       <Label className="text-[10px] uppercase font-bold text-slate-600">
-                        Recipient Name / Merge Tag:
+                        Recipient Identifier (defaults to recipient email):
                       </Label>
                       <Input
                         type="text"
-                        value={block.recipientName || ""}
+                        value={block.recipientName === "{{name}}" ? "{{email}}" : (block.recipientName || "")}
                         onChange={(e) => updateBlockField(block.id, "recipientName", e.target.value)}
-                        placeholder="Harushyamagara Theophile or {{name}}"
+                        placeholder="{{email}} or recipient name"
                         className="h-8 text-xs bg-white font-mono"
                       />
+                      <p className="text-[10px] text-slate-500 leading-tight">
+                        Defaults to <code className="text-[#4d7c0f] font-bold">{"{{email}}"}</code> which resolves to each recipient&apos;s email address when sent.
+                      </p>
                     </div>
 
                     <div className="grid grid-cols-2 gap-1.5">
@@ -3777,7 +3785,10 @@ export function EmailStudioBuilder({
                     })()}
 
                     {block.type === "footer" && (() => {
-                      const recName = block.recipientName || "{{name}}";
+                      const rawName = (block.recipientName || "").trim();
+                      const recName = (!rawName || rawName === "{{name}}" || rawName === "{{email}}")
+                        ? "{{email}}"
+                        : rawName;
                       const recRole = block.recipientRole || "";
                       const org = block.organization || "";
                       const roleOrgDetails = [recRole, org].filter(Boolean).join(" at ");
@@ -4675,41 +4686,44 @@ export function EmailStudioBuilder({
                   </p>
 
                   <div className="space-y-2 pt-1">
-                    <div>
-                      <Label className="text-[10px] uppercase font-bold text-slate-500 mb-1 block">
-                        Recipient Name / Merge Variable:
+                    <div className="space-y-1">
+                      <Label className="text-[11px] uppercase font-bold text-slate-600 mb-1 block">
+                        Recipient Identifier / Merge Variable (defaults to recipient email):
                       </Label>
                       <Input
                         type="text"
-                        value={block.recipientName || ""}
+                        value={block.recipientName === "{{name}}" ? "{{email}}" : (block.recipientName || "")}
                         onChange={(e) => updateBlockField(block.id, "recipientName", e.target.value)}
-                        placeholder="Harushyamagara Theophile or {{name}}"
+                        placeholder="{{email}} or recipient name"
                         className="h-8 text-xs bg-white font-mono"
                       />
+                      <p className="text-[10px] text-slate-500 mt-1">
+                        Use <code className="text-[#4d7c0f] font-bold">{"{{email}}"}</code> to automatically display each recipient&apos;s actual email address in the security disclaimer.
+                      </p>
                     </div>
 
                     <div className="grid grid-cols-2 gap-2">
                       <div>
                         <Label className="text-[10px] uppercase font-bold text-slate-500 mb-1 block">
-                          Role / Title:
+                          Role / Title (optional):
                         </Label>
                         <Input
                           type="text"
                           value={block.recipientRole || ""}
                           onChange={(e) => updateBlockField(block.id, "recipientRole", e.target.value)}
-                          placeholder="Senior Communication Officer or {{role}}"
+                          placeholder="e.g. Director"
                           className="h-8 text-xs bg-white"
                         />
                       </div>
                       <div>
                         <Label className="text-[10px] uppercase font-bold text-slate-500 mb-1 block">
-                          Organization / Company:
+                          Organization / Company (optional):
                         </Label>
                         <Input
                           type="text"
                           value={block.organization || ""}
                           onChange={(e) => updateBlockField(block.id, "organization", e.target.value)}
-                          placeholder="Water For People in Rwanda or {{organization}}"
+                          placeholder="e.g. Ministry of Environment"
                           className="h-8 text-xs bg-white"
                         />
                       </div>
@@ -4719,6 +4733,7 @@ export function EmailStudioBuilder({
                     <div className="flex items-center gap-1.5 pt-1">
                       <span className="text-[10px] text-slate-500 font-bold">Quick Tags:</span>
                       {[
+                        { label: "{{email}}", field: "recipientName" as const },
                         { label: "{{name}}", field: "recipientName" as const },
                         { label: "{{role}}", field: "recipientRole" as const },
                         { label: "{{organization}}", field: "organization" as const },
@@ -4787,7 +4802,12 @@ export function EmailStudioBuilder({
                     Live Disclaimer Preview:
                   </span>
                   <p className="m-0 text-slate-300">
-                    This email was intended for <strong className="text-white">{block.recipientName || "{{name}}"}</strong>
+                    This email was intended for{" "}
+                    <strong className="text-white">
+                      {(!block.recipientName || block.recipientName === "{{name}}" || block.recipientName === "{{email}}")
+                        ? "{{email}}"
+                        : block.recipientName}
+                    </strong>
                     {(block.recipientRole || block.organization) && (
                       <span className="text-slate-400"> ({[block.recipientRole, block.organization].filter(Boolean).join(" at ")})</span>
                     )} · <span className="text-[#8DB833] underline">Learn why we included this</span>.
