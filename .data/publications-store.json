@@ -153,7 +153,8 @@
       }
     ],
     "updatedAt": 1792254148513,
-    "updatedBy": "admin@sanex.rw"
+    "updatedBy": "admin@sanex.rw",
+    "coverImage": "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1779722491089_B25A3102.jpg?alt=media&token=e7f97250-ccbd-4a24-a9fa-793f86798a7d"
   },
   "publications": [
     {
@@ -168,15 +169,21 @@
       "author": "SANEX Communications",
       "publishedAt": 1792254148513,
       "createdAt": 1792254041575,
-      "updatedAt": 1792254148513,
+      "updatedAt": 1792256649264,
       "recipientCount": 85,
       "status": "published",
       "isCustom": true,
-      "coverImage": "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/emails%2Fimages%2F1792253488122_Sanex_logo.jpg?alt=media&token=11fd644d-2e3e-4d6e-b1d7-c7ea999cb592",
-      "thumbnailImg": "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/emails%2Fimages%2F1792253488122_Sanex_logo.jpg?alt=media&token=11fd644d-2e3e-4d6e-b1d7-c7ea999cb592",
+      "coverImage": "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1779722491089_B25A3102.jpg?alt=media&token=e7f97250-ccbd-4a24-a9fa-793f86798a7d",
+      "thumbnailImg": "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1779722491089_B25A3102.jpg?alt=media&token=e7f97250-ccbd-4a24-a9fa-793f86798a7d",
       "linkedNewsletters": [],
-      "viewsCount": 25
+      "viewsCount": 32
     }
   ],
-  "lastSavedAt": 1792254148513
+  "lastSavedAt": 1792256677392,
+  "articleViews": {
+    "installation-and-management-of-decentralized-wastewater-treatment-systems": 1
+  },
+  "settings": {
+    "showViewsOnFrontend": true
+  }
 }

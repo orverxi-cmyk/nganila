@@ -3,14 +3,15 @@
 import React from "react";
 import { Navbar } from "@/components/sections/Navbar";
 import { Footer } from "@/components/sections/Footer";
-import { useDoc, useFirestore } from "@/firebase";
+import { useDoc, useFirestore, useUser } from "@/firebase";
 import { doc, getDoc, collection, query, where, getDocs, limit } from "firebase/firestore";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { Loader2, Calendar, ChevronLeft, User, Share2, Twitter, Linkedin, Facebook, Link as LinkIcon, Check } from "lucide-react";
+import { Loader2, Calendar, ChevronLeft, User, Share2, Twitter, Linkedin, Facebook, Link as LinkIcon, Check, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { slugify, getArticleSlug, getArticleUrl } from "@/lib/slug";
+import { useTrackView, useViewsDisplay, getArticleViewsCount } from "@/hooks/use-view-tracker";
 
 export default function ArticleDetailPage() {
   const params = useParams();
@@ -18,6 +19,17 @@ export default function ArticleDetailPage() {
   const rawSlug = (params?.slug || params?.articleId) as string;
   const slugParam = React.useMemo(() => decodeURIComponent(rawSlug || "").trim(), [rawSlug]);
   const db = useFirestore();
+  const { user } = useUser();
+  const { showViewsOnFrontend, articleViews } = useViewsDisplay();
+
+  const userDocRef = React.useMemo(() => (db && user ? doc(db, "users", user.uid) : null), [db, user]);
+  const { data: userProfile } = useDoc(userDocRef);
+
+  const isAuthorizedAdmin =
+    user?.email?.toLowerCase() === "orverxi@gmail.com" ||
+    user?.email?.toLowerCase() === "sanexcompany@gmail.com" ||
+    (user as any)?.role === "admin" ||
+    userProfile?.role === "admin";
 
   const [resolvedId, setResolvedId] = React.useState<string | null>(null);
   const [resolving, setResolving] = React.useState(true);
@@ -93,6 +105,9 @@ export default function ArticleDetailPage() {
     [db, resolvedId]
   );
   const { data: article, loading: docLoading } = useDoc(articleRef);
+
+  // Automatically record view upon reading article (with session deduplication)
+  useTrackView("article", resolvedId, slugParam);
 
   const loading = resolving || (Boolean(resolvedId) && docLoading);
 
@@ -274,6 +289,15 @@ export default function ArticleDetailPage() {
               {article.category && (
                 <span className="px-2 py-0.5 rounded bg-primary text-black font-bold">
                   {article.category}
+                </span>
+              )}
+              {(showViewsOnFrontend || isAuthorizedAdmin) && (
+                <span className="flex items-center gap-1 bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-full border border-slate-200 font-medium">
+                  <Eye className="h-3.5 w-3.5 text-emerald-600" />
+                  <span>{getArticleViewsCount(article, articleViews)} views</span>
+                  {!showViewsOnFrontend && isAuthorizedAdmin && (
+                    <span className="text-[8px] text-amber-600 font-bold ml-0.5">(Admin only)</span>
+                  )}
                 </span>
               )}
             </div>

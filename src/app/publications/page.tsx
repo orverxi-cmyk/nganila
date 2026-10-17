@@ -24,7 +24,10 @@ import {
   ExternalLink,
   SlidersHorizontal,
   X,
+  Eye,
 } from "lucide-react";
+import { useUser } from "@/firebase";
+import { useViewsDisplay } from "@/hooks/use-view-tracker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -35,10 +38,18 @@ import {
   getSocialShareLinks,
   isCustomEmailPublication,
   extractFirstImage,
+  isLikelyBrandLogo,
 } from "@/lib/publications";
 
 export default function PublicationsPage() {
   const db = useFirestore();
+  const { user } = useUser();
+  const { showViewsOnFrontend } = useViewsDisplay();
+  const isAuthorized =
+    Boolean(user?.email) &&
+    (user?.email?.toLowerCase() === "orverxi@gmail.com" ||
+      user?.email?.toLowerCase() === "sanexcompany@gmail.com");
+
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -253,7 +264,10 @@ export default function PublicationsPage() {
                     })
                   : "Recently Published";
 
-                const thumbnailImg = pub.coverImage || extractFirstImage(pub.content);
+                const thumbnailImg =
+                  pub.coverImage && !isLikelyBrandLogo(pub.coverImage)
+                    ? pub.coverImage
+                    : extractFirstImage(pub.content);
 
                 return (
                   <article
@@ -277,14 +291,25 @@ export default function PublicationsPage() {
                     )}
 
                     {/* Header Strip with Category and Date */}
-                    <div className="p-5 pb-3 border-b border-slate-100 flex items-center justify-between gap-2">
+                    <div className="p-5 pb-3 border-b border-slate-100 flex items-center justify-between gap-2 flex-wrap">
                       <Badge className="bg-primary/20 hover:bg-primary/30 text-black border-primary/30 text-[10px] font-extrabold uppercase tracking-wider">
                         {pub.category || "Announcement"}
                       </Badge>
-                      <span className="text-[11px] text-muted-foreground flex items-center gap-1 font-medium">
-                        <Calendar className="h-3 w-3 text-muted-foreground/70" />
-                        {publishedDateStr}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        {(showViewsOnFrontend || isAuthorized) && (
+                          <span className="text-[11px] text-muted-foreground flex items-center gap-1 font-medium bg-slate-50 px-2 py-0.5 rounded-full border border-slate-200">
+                            <Eye className="h-3 w-3 text-emerald-600" />
+                            <span>{pub.viewsCount || 0}</span>
+                            {!showViewsOnFrontend && isAuthorized && (
+                              <span className="text-[9px] text-amber-600 font-bold">(Admin)</span>
+                            )}
+                          </span>
+                        )}
+                        <span className="text-[11px] text-muted-foreground flex items-center gap-1 font-medium">
+                          <Calendar className="h-3 w-3 text-muted-foreground/70" />
+                          {publishedDateStr}
+                        </span>
+                      </div>
                     </div>
 
                     {/* Main Content Area */}

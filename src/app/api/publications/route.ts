@@ -27,8 +27,9 @@ import {
 } from "@/lib/publications";
 import { compileBlocksToHtml, INITIAL_SANEX_BLOCKS } from "@/lib/email-template-compiler";
 import { slugify } from "@/lib/slug";
-import { getAllServerPublications } from "@/lib/server-publications-store";
+import { getAllServerPublications, updateServerPublication } from "@/lib/server-publications-store";
 
+// Authoritative publications API endpoint for SANEX
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -216,16 +217,25 @@ export async function POST(request: Request) {
       metaDescription: excerpt,
     };
 
-    await setDoc(docRef, publicationData, { merge: true });
+    // Authoritatively persist in server store (.data/publications-store.json)
+    const savedPub = updateServerPublication(pubId, publicationData);
+
+    try {
+      if (firestore) {
+        await setDoc(docRef, publicationData, { merge: true });
+      }
+    } catch (fsErr: any) {
+      console.warn("[api/publications POST] Firestore write warning:", fsErr?.message);
+    }
 
     const host = request.headers.get("host") || "sanex.rw";
     const protocol = host.includes("localhost") ? "http" : "https";
     const origin = `${protocol}://${host}`;
-    const publicationUrl = getPublicationUrl(publicationData, origin);
+    const publicationUrl = getPublicationUrl(savedPub, origin);
 
     return NextResponse.json({
       success: true,
-      publication: publicationData,
+      publication: savedPub,
       publicationUrl,
       slug: finalSlug,
     });

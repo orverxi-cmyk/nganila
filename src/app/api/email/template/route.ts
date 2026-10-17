@@ -12,6 +12,7 @@ export interface TemplateRequestBody {
   mode?: "text" | "html";
   blocks?: EmailBlock[];
   userEmail?: string;
+  coverImage?: string;
 }
 
 export async function GET() {
@@ -49,6 +50,7 @@ export async function POST(request: Request) {
       mode = "html",
       blocks = [],
       userEmail = "admin@sanex.rw",
+      coverImage,
     } = body;
 
     // Persist custom email template & update the corresponding website publication
@@ -59,6 +61,7 @@ export async function POST(request: Request) {
       mode,
       blocks,
       userEmail,
+      coverImage,
     });
 
     return NextResponse.json({

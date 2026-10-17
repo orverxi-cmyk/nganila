@@ -18,6 +18,8 @@ import { MediaPicker } from "@/components/MediaPicker";
 import { RichTextEditor } from "@/components/RichTextEditor";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { Switch } from "@/components/ui/switch";
+import { useViewsDisplay, getArticleViewsCount } from "@/hooks/use-view-tracker";
 import { 
   ChevronLeft, 
   ImageIcon, 
@@ -49,7 +51,8 @@ import {
   ChevronDown,
   MessageCircle,
   Youtube,
-  ExternalLink
+  ExternalLink,
+  Eye
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
@@ -321,6 +324,8 @@ function NavigationEditor({ initialData, onSave }: { initialData: any, onSave: (
 function ArticleManager({ articles, loading }: { articles: any, loading: boolean }) {
   const functions = useFunctions();
   const { toast } = useToast();
+  const { showViewsOnFrontend, toggleViewsDisplay, articleViews } = useViewsDisplay();
+  const [isTogglingViews, setIsTogglingViews] = React.useState(false);
   const [isEditing, setIsEditing] = React.useState<string | null>(null);
   const [formData, setFormData] = React.useState({
     title: "", slug: "", excerpt: "", content: "", imageUrl: "", imageAlt: "", imageWidth: 1200, imageHeight: 600, category: "Impact", author: "SANEX Team"
@@ -474,8 +479,39 @@ function ArticleManager({ articles, loading }: { articles: any, loading: boolean
       </Card>
 
       <Card className="lg:col-span-2">
-        <CardHeader>
-          <CardTitle className="text-xl">Existing Articles</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-3 pb-3">
+          <div>
+            <CardTitle className="text-xl">Existing Articles</CardTitle>
+            <CardDescription className="text-xs">
+              Total Views: {articleList.reduce((sum: number, a: any) => sum + getArticleViewsCount(a, articleViews), 0)} tracked across articles
+            </CardDescription>
+          </div>
+          <div className="flex items-center gap-3 bg-muted/50 p-2 px-3 rounded-lg border">
+            <div className="flex flex-col text-right">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1 justify-end">
+                <Eye className="h-3 w-3 text-emerald-600" />
+                <span>Public Views Badge</span>
+              </span>
+              <span className="text-[11px] font-bold text-slate-700">
+                {showViewsOnFrontend ? "Visible on Front End" : "Hidden (Admin Only)"}
+              </span>
+            </div>
+            <Switch
+              checked={showViewsOnFrontend}
+              disabled={isTogglingViews}
+              onCheckedChange={async (val) => {
+                setIsTogglingViews(true);
+                await toggleViewsDisplay(val);
+                setIsTogglingViews(false);
+                toast({
+                  title: val ? "Public Views Enabled" : "Public Views Hidden",
+                  description: val
+                    ? "Article & publication view counts are now visible to visitors on the website."
+                    : "Article & publication view counts are now hidden from public visitors. You can always track them as admin.",
+                });
+              }}
+            />
+          </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
@@ -489,6 +525,10 @@ function ArticleManager({ articles, loading }: { articles: any, loading: boolean
                   <p className="text-[10px] text-muted-foreground line-clamp-1">{a.excerpt}</p>
                   <div className="mt-1 flex flex-wrap items-center gap-2">
                     <Badge variant="outline" className="text-[8px] font-bold uppercase tracking-widest px-1.5 py-0">{a.category}</Badge>
+                    <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full flex items-center gap-1">
+                      <Eye className="h-3 w-3" />
+                      <span>{getArticleViewsCount(a, articleViews)} views</span>
+                    </span>
                     <span className="text-[8px] text-muted-foreground">{a.imageWidth}x{a.imageHeight}</span>
                     <Link 
                       href={getArticleUrl(a)} 

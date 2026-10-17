@@ -72,35 +72,71 @@ export function extractExcerptFromHtml(html: string, maxLength: number = 180): s
 }
 
 /**
- * Extracts the first image URL found in HTML content (if any)
+ * Detects whether an image URL or img tag represents a company brand logo, emblem, or icon.
+ * Brand logos (like the 44x44 circular header logo) should never be used as story cover photos.
+ */
+export function isLikelyBrandLogo(urlOrTag: string): boolean {
+  if (!urlOrTag) return false;
+  const lower = urlOrTag.toLowerCase();
+  return (
+    lower.includes("logo") ||
+    lower.includes("favicon") ||
+    lower.includes("emblem") ||
+    lower.includes("icon") ||
+    lower.includes("avatar")
+  );
+}
+
+/**
+ * Extracts the first content photo from HTML, intentionally skipping header logos and icons.
  */
 export function extractFirstImage(html: string): string | undefined {
   if (!html) return undefined;
-  // Match standard img src (excluding inline base64 to avoid huge payloads)
-  const match = html.match(/<img[^>]+src=["'](https?:\/\/[^"']+)["']/i);
-  if (match && match[1]) {
-    return match[1];
+  // Match standard img tags
+  const imgTagRegex = /<img[^>]+src=["']([^"']+)["'][^>]*>/gi;
+  let match: RegExpExecArray | null;
+
+  while ((match = imgTagRegex.exec(html)) !== null) {
+    const fullTag = match[0];
+    const src = match[1]?.trim();
+    if (!src || src.startsWith("data:")) continue;
+    if (!src.startsWith("http://") && !src.startsWith("https://") && !src.startsWith("/")) continue;
+
+    // Skip brand logos and icons so the real story photo is extracted
+    if (isLikelyBrandLogo(src) || isLikelyBrandLogo(fullTag)) {
+      continue;
+    }
+
+    return src;
   }
+
   return undefined;
 }
 
 /**
- * Extracts all unique image URLs found in HTML content
+ * Extracts all unique image URLs found in HTML content, placing content photos first.
  */
 export function extractAllImagesFromHtml(html: string): string[] {
   if (!html) return [];
-  const urls: string[] = [];
-  const regex = /<img[^>]+src=["']([^"']+)["']/gi;
+  const contentUrls: string[] = [];
+  const logoUrls: string[] = [];
+  const regex = /<img[^>]+src=["']([^"']+)["'][^>]*>/gi;
   let match: RegExpExecArray | null;
+
   while ((match = regex.exec(html)) !== null) {
+    const fullTag = match[0];
     const src = match[1]?.trim();
-    if (src && !urls.includes(src)) {
-      if (!src.startsWith("data:") || src.length < 50000) {
-        urls.push(src);
-      }
+    if (!src || (src.startsWith("data:") && src.length > 50000)) continue;
+    if (contentUrls.includes(src) || logoUrls.includes(src)) continue;
+
+    if (isLikelyBrandLogo(src) || isLikelyBrandLogo(fullTag)) {
+      logoUrls.push(src);
+    } else {
+      contentUrls.push(src);
     }
   }
-  return urls;
+
+  return [...contentUrls, ...logoUrls];
 }
 
 /**

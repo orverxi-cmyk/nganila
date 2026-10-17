@@ -20,6 +20,7 @@ import {
   extractExcerptFromHtml,
 } from "@/lib/publications";
 import { slugify } from "@/lib/slug";
+import { updateServerPublication } from "@/lib/server-publications-store";
 
 export async function GET(
   request: Request,
@@ -137,12 +138,22 @@ export async function PUT(
       updatePayload.excerpt = extractExcerptFromHtml(body.content);
     }
 
-    await updateDoc(docRef, updatePayload);
+    // Authoritatively persist to server store (.data/publications-store.json)
+    const savedPub = updateServerPublication(id, updatePayload);
+
+    try {
+      if (firestore) {
+        await updateDoc(docRef, updatePayload);
+      }
+    } catch (fsErr: any) {
+      console.warn("[api/publications/[id] PUT] Firestore update warning:", fsErr?.message);
+    }
 
     return NextResponse.json({
       success: true,
       message: "Publication updated successfully",
-      slug: updatePayload.slug,
+      publication: savedPub,
+      slug: updatePayload.slug || savedPub.slug,
     });
   } catch (error: any) {
     console.error("[api/publications/[id] PUT] Error:", error);

@@ -10,10 +10,11 @@ import {
   extractExcerptFromHtml,
   extractFirstImage,
   getCustomDesignedNewsletters,
+  isLikelyBrandLogo,
 } from "@/lib/publications";
 import { slugify } from "@/lib/slug";
 import { initializeFirebase } from "@/firebase/init";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, updateDoc, increment } from "firebase/firestore";
 
 export interface StoredEmailTemplate {
   name: string;
@@ -23,12 +24,17 @@ export interface StoredEmailTemplate {
   blocks: EmailBlock[];
   updatedAt: number;
   updatedBy: string;
+  coverImage?: string;
 }
 
 export interface PublicationsStoreData {
   template: StoredEmailTemplate;
   publications: Publication[];
   lastSavedAt: number;
+  settings?: {
+    showViewsOnFrontend?: boolean;
+  };
+  articleViews?: Record<string, number>;
 }
 
 const DATA_DIR = path.join(process.cwd(), ".data");
@@ -126,6 +132,7 @@ export function saveActiveServerEmailTemplate(templateData: {
   mode?: "html" | "text";
   blocks?: EmailBlock[];
   userEmail?: string;
+  coverImage?: string;
 }): {
   template: StoredEmailTemplate;
   publication: Publication;
@@ -151,6 +158,34 @@ export function saveActiveServerEmailTemplate(templateData: {
     store.template.name ||
     "SANEX Company Ltd: Sustainable Liquid Waste Management & Clean Water Delivery";
 
+  const activeNewsletterIdx = store.publications.findIndex(
+    (p) =>
+      p.id === "pub_custom_sanex_newsletter" ||
+      p.slug === "sustainable-liquid-waste-management-clean-water-rwanda"
+  );
+  const existingPub = activeNewsletterIdx >= 0 ? store.publications[activeNewsletterIdx] : undefined;
+
+  const chosenCover = templateData.coverImage && !isLikelyBrandLogo(templateData.coverImage)
+    ? templateData.coverImage.trim()
+    : undefined;
+
+  const existingValidCover =
+    existingPub?.coverImage && !isLikelyBrandLogo(existingPub.coverImage)
+      ? existingPub.coverImage
+      : undefined;
+
+  const storeTemplateCover =
+    store.template.coverImage && !isLikelyBrandLogo(store.template.coverImage)
+      ? store.template.coverImage
+      : undefined;
+
+  const detectedCover =
+    chosenCover ||
+    existingValidCover ||
+    storeTemplateCover ||
+    extractFirstImage(compiledHtml) ||
+    "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1779722491089_B25A3102.jpg?alt=media&token=e7f97250-ccbd-4a24-a9fa-793f86798a7d";
+
   const newTemplate: StoredEmailTemplate = {
     name: effectiveName,
     subject: templateData.subject?.trim() || effectiveName,
@@ -159,11 +194,8 @@ export function saveActiveServerEmailTemplate(templateData: {
     blocks: effectiveBlocks,
     updatedAt: now,
     updatedBy: templateData.userEmail || "admin@sanex.rw",
+    coverImage: detectedCover,
   };
-
-  const detectedCover =
-    extractFirstImage(compiledHtml) ||
-    "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1779722491089_B25A3102.jpg?alt=media&token=e7f97250-ccbd-4a24-a9fa-793f86798a7d";
 
   const updatedPublication: Publication = {
     id: "pub_custom_sanex_newsletter",
@@ -186,19 +218,13 @@ export function saveActiveServerEmailTemplate(templateData: {
     coverImage: detectedCover,
     thumbnailImg: detectedCover,
     linkedNewsletters: [],
-    viewsCount: 25,
+    viewsCount: existingPub?.viewsCount ?? 25,
   };
 
   // Upsert publication into store publications list
-  const existingPubIndex = store.publications.findIndex(
-    (p) =>
-      p.id === "pub_custom_sanex_newsletter" ||
-      p.slug === "sustainable-liquid-waste-management-clean-water-rwanda"
-  );
-
   const newPublications = [...store.publications];
-  if (existingPubIndex >= 0) {
-    newPublications[existingPubIndex] = updatedPublication;
+  if (activeNewsletterIdx >= 0) {
+    newPublications[activeNewsletterIdx] = updatedPublication;
   } else {
     newPublications.unshift(updatedPublication);
   }
@@ -295,6 +321,92 @@ export function recordServerPublication(pub: Partial<Publication>): Publication 
 }
 
 /**
+ * Updates a publication directly in the authoritative server store (.data/publications-store.json)
+ * and keeps the email template cover image aligned if this is the active custom newsletter.
+ */
+export function updateServerPublication(
+  pubId: string,
+  updates: Partial<Publication>
+): Publication {
+  const store = getPublicationsStore();
+  const now = Date.now();
+
+  const isCustomNewsletter =
+    pubId === "pub_custom_sanex_newsletter" ||
+    updates.slug === "sustainable-liquid-waste-management-clean-water-rwanda" ||
+    updates.isCustom === true;
+
+  const cleanCover = updates.coverImage && !isLikelyBrandLogo(updates.coverImage)
+    ? updates.coverImage.trim()
+    : updates.coverImage;
+
+  if (isCustomNewsletter && cleanCover) {
+    store.template.coverImage = cleanCover;
+  }
+
+  const existingIdx = store.publications.findIndex(
+    (p) => p.id === pubId || (updates.slug && p.slug === updates.slug)
+  );
+
+  let resultPub: Publication;
+  if (existingIdx >= 0) {
+    const prev = store.publications[existingIdx];
+    resultPub = {
+      ...prev,
+      ...updates,
+      id: prev.id,
+      coverImage: cleanCover || prev.coverImage,
+      thumbnailImg: updates.thumbnailImg || cleanCover || prev.thumbnailImg,
+      updatedAt: now,
+    };
+    store.publications[existingIdx] = resultPub;
+  } else {
+    const slug = updates.slug ? slugify(updates.slug) : slugify(updates.title || `pub-${now}`);
+    resultPub = {
+      id: pubId,
+      slug,
+      title: updates.title || "SANEX Official Publication",
+      subject: updates.subject || updates.title || "SANEX Official Publication",
+      excerpt: updates.excerpt || (updates.content ? extractExcerptFromHtml(updates.content) : "SANEX publication"),
+      content: updates.content || "",
+      category: updates.category || "Company Announcements",
+      author: updates.author || "SANEX Communications",
+      publishedAt: updates.publishedAt || now,
+      createdAt: updates.createdAt || now,
+      updatedAt: now,
+      status: updates.status || "published",
+      isCustom: true,
+      coverImage: cleanCover,
+      thumbnailImg: updates.thumbnailImg || cleanCover,
+      linkedNewsletters: (updates.linkedNewsletters as any) || [],
+      recipientCount: updates.recipientCount || 0,
+      viewsCount: updates.viewsCount || 0,
+      ...updates,
+    };
+    store.publications.unshift(resultPub);
+  }
+
+  persistPublicationsStore({
+    template: store.template,
+    publications: store.publications,
+    lastSavedAt: now,
+  });
+
+  // Best-effort Firestore write
+  try {
+    const { firestore } = initializeFirebase();
+    if (firestore) {
+      setDoc(doc(firestore, "publications", resultPub.id), resultPub, { merge: true }).catch(() => {});
+      if (isCustomNewsletter) {
+        setDoc(doc(firestore, "settings", "email_template"), store.template, { merge: true }).catch(() => {});
+      }
+    }
+  } catch {}
+
+  return resultPub;
+}
+
+/**
  * Resolves a publication by slug or id from server store.
  */
 export function getServerPublicationBySlug(slugOrId: string): Publication | null {
@@ -309,3 +421,108 @@ export function getServerPublicationBySlug(slugOrId: string): Publication | null
     }) || null
   );
 }
+
+/**
+ * Gets the current setting for whether views counts are displayed on public pages.
+ * Defaults to true.
+ */
+export function getViewsDisplaySetting(): boolean {
+  const store = getPublicationsStore();
+  return store.settings?.showViewsOnFrontend !== false;
+}
+
+/**
+ * Sets whether view counts should be visible on front-end pages.
+ */
+export function setViewsDisplaySetting(enabled: boolean): boolean {
+  const store = getPublicationsStore();
+  const nextSettings = {
+    ...(store.settings || {}),
+    showViewsOnFrontend: enabled,
+  };
+
+  persistPublicationsStore({
+    ...store,
+    settings: nextSettings,
+    lastSavedAt: Date.now(),
+  });
+
+  try {
+    const { firestore } = initializeFirebase();
+    if (firestore) {
+      setDoc(doc(firestore, "settings", "general"), { showViewsOnFrontend: enabled }, { merge: true }).catch(() => {});
+    }
+  } catch {}
+
+  return enabled;
+}
+
+/**
+ * Increments the view count for a publication and persists it immediately.
+ */
+export function incrementServerPublicationViews(pubIdOrSlug: string): number {
+  const store = getPublicationsStore();
+  const cleanTarget = slugify(pubIdOrSlug.trim());
+
+  const pub = store.publications.find((p) => {
+    if (p.id === pubIdOrSlug) return true;
+    const pSlug = p.slug ? slugify(p.slug) : slugify(p.title || "");
+    return pSlug === cleanTarget || slugify(p.title || "") === cleanTarget;
+  });
+
+  if (!pub) return 0;
+  pub.viewsCount = (pub.viewsCount || 0) + 1;
+  pub.updatedAt = Date.now();
+
+  persistPublicationsStore({
+    ...store,
+    lastSavedAt: Date.now(),
+  });
+
+  try {
+    const { firestore } = initializeFirebase();
+    if (firestore) {
+      updateDoc(doc(firestore, "publications", pub.id), {
+        viewsCount: increment(1),
+      }).catch(() => {});
+    }
+  } catch {}
+
+  return pub.viewsCount;
+}
+
+/**
+ * Retrieves the persisted map of article views.
+ */
+export function getArticleViewsMap(): Record<string, number> {
+  const store = getPublicationsStore();
+  return store.articleViews || {};
+}
+
+/**
+ * Increments the view count for an article in both the local store and Firestore.
+ */
+export function incrementServerArticleViews(idOrSlug: string): number {
+  if (!idOrSlug || !idOrSlug.trim()) return 0;
+  const store = getPublicationsStore();
+  const rawKey = idOrSlug.trim();
+  const cleanSlug = slugify(rawKey);
+
+  const articleViews = { ...(store.articleViews || {}) };
+  const currentCount = articleViews[rawKey] || articleViews[cleanSlug] || 0;
+  const newCount = currentCount + 1;
+
+  articleViews[rawKey] = newCount;
+  if (cleanSlug && cleanSlug !== rawKey) {
+    articleViews[cleanSlug] = newCount;
+  }
+
+  persistPublicationsStore({
+    ...store,
+    articleViews,
+    lastSavedAt: Date.now(),
+  });
+
+  return newCount;
+}
+

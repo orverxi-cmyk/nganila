@@ -73,6 +73,9 @@ import {
 import { SpecialLinkGeneratorModal } from "@/components/admin/SpecialLinkGeneratorModal";
 import { LoadSentNewslettersModal } from "@/components/admin/LoadSentNewslettersModal";
 import { MediaPicker } from "@/components/MediaPicker";
+import { Switch } from "@/components/ui/switch";
+import { useViewsDisplay } from "@/hooks/use-view-tracker";
+import { isLikelyBrandLogo } from "@/lib/publications";
 
 export default function AdminPublicationsPage() {
   const { user, loading: authLoading } = useUser();
@@ -81,6 +84,8 @@ export default function AdminPublicationsPage() {
 
   const userDocRef = useMemo(() => (db && user ? doc(db, "users", user.uid) : null), [db, user]);
   const { data: userProfile, loading: profileLoading } = useDoc(userDocRef);
+  const { showViewsOnFrontend, toggleViewsDisplay } = useViewsDisplay();
+  const [isTogglingViews, setIsTogglingViews] = useState(false);
 
   const isAuthorized =
     userProfile?.role === "admin" ||
@@ -239,7 +244,11 @@ export default function AdminPublicationsPage() {
     setFormContent(pub.content || "");
     setFormAuthor(pub.author || "SANEX Communications");
     setFormStatus(pub.status || "published");
-    setFormCoverImage(pub.coverImage || extractFirstImage(pub.content) || "");
+    const validCover =
+      pub.coverImage && !isLikelyBrandLogo(pub.coverImage)
+        ? pub.coverImage
+        : extractFirstImage(pub.content) || "";
+    setFormCoverImage(validCover);
     setSelectedLinkedIds((pub.linkedNewsletters || []).map((l) => l.id));
     setIsModalOpen(true);
   };
@@ -334,6 +343,24 @@ export default function AdminPublicationsPage() {
         recipientCount: editingPublication?.recipientCount || 0,
       };
 
+      let savedPublication = { ...payload } as Publication;
+
+      // 1. Authoritatively save to backend publications API & disk store
+      try {
+        const apiRes = await fetch("/api/publications", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const apiData = await apiRes.json();
+        if (apiData?.success && apiData?.publication) {
+          savedPublication = apiData.publication;
+        }
+      } catch (apiErr: any) {
+        console.warn("API save error:", apiErr?.message);
+      }
+
+      // 2. Client-side Firestore best-effort sync
       if (db) {
         try {
           await setDoc(doc(db, "publications", pubId), payload, { merge: true });
@@ -346,10 +373,10 @@ export default function AdminPublicationsPage() {
         const matchIdx = prev.findIndex((p) => p.id === pubId);
         if (matchIdx >= 0) {
           const next = [...prev];
-          next[matchIdx] = { ...next[matchIdx], ...payload } as Publication;
+          next[matchIdx] = savedPublication;
           return next;
         }
-        return [{ id: pubId, ...payload } as Publication, ...prev];
+        return [savedPublication, ...prev];
       });
 
       toast({
@@ -480,7 +507,7 @@ export default function AdminPublicationsPage() {
           </div>
 
           {/* KPI Stats Overview */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card className="bg-white border">
               <CardContent className="p-4 space-y-1">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
@@ -505,13 +532,48 @@ export default function AdminPublicationsPage() {
 
             <Card className="bg-white border">
               <CardContent className="p-4 space-y-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                  Audience Reached
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                  <Eye className="h-3 w-3 text-emerald-600" />
+                  <span>Total Views Tracked</span>
                 </span>
                 <div className="text-2xl font-extrabold text-slate-800">
-                  {publications.reduce((sum, p) => sum + (p.recipientCount || 0), 0)}
+                  {publications.reduce((sum, p) => sum + (p.viewsCount || 0), 0)}
                 </div>
-                <p className="text-[11px] text-muted-foreground">Total recipients dispatched across campaigns</p>
+                <p className="text-[11px] text-muted-foreground">Audience article &amp; newsletter opens</p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white border">
+              <CardContent className="p-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                    <Eye className="h-3 w-3 text-emerald-600" />
+                    <span>Public Views Badge</span>
+                  </span>
+                  <Switch
+                    checked={showViewsOnFrontend}
+                    disabled={isTogglingViews}
+                    onCheckedChange={async (val) => {
+                      setIsTogglingViews(true);
+                      await toggleViewsDisplay(val);
+                      setIsTogglingViews(false);
+                      toast({
+                        title: val ? "Public Views Enabled" : "Public Views Hidden",
+                        description: val
+                          ? "View counts are now visible to visitors on the website."
+                          : "View counts are now hidden from public visitors. You can still track them as an admin.",
+                      });
+                    }}
+                  />
+                </div>
+                <div className="text-xs font-bold text-slate-700">
+                  {showViewsOnFrontend ? "Visible on Front End" : "Hidden (Admin Only)"}
+                </div>
+                <p className="text-[10px] text-muted-foreground leading-tight">
+                  {showViewsOnFrontend
+                    ? "Visitors can see views on articles & newsletters"
+                    : "Only admins can see views; hidden from visitors"}
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -572,21 +634,27 @@ export default function AdminPublicationsPage() {
                       {/* Left: Thumbnail & Info */}
                       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-1 min-w-0">
                         {/* Thumbnail Image */}
-                        {pub.coverImage || extractFirstImage(pub.content) ? (
-                          <div className="relative h-18 w-28 sm:h-20 sm:w-32 rounded-lg overflow-hidden bg-slate-100 border border-slate-200 shrink-0 shadow-2xs group">
-                            <img
-                              src={pub.coverImage || extractFirstImage(pub.content)}
-                              alt={pub.title}
-                              className="h-full w-full object-cover group-hover:scale-105 transition-transform"
-                              loading="lazy"
-                            />
-                          </div>
-                        ) : (
-                          <div className="h-16 w-24 sm:h-20 sm:w-28 rounded-lg bg-slate-50 border border-dashed border-slate-300 flex flex-col items-center justify-center text-slate-400 shrink-0">
-                            <ImageIcon className="h-5 w-5 text-slate-400" />
-                            <span className="text-[9px] font-bold mt-1 text-slate-400">No Photo</span>
-                          </div>
-                        )}
+                        {(() => {
+                          const validThumb =
+                            pub.coverImage && !isLikelyBrandLogo(pub.coverImage)
+                              ? pub.coverImage
+                              : extractFirstImage(pub.content);
+                          return validThumb ? (
+                            <div className="relative h-18 w-28 sm:h-20 sm:w-32 rounded-lg overflow-hidden bg-slate-100 border border-slate-200 shrink-0 shadow-2xs group">
+                              <img
+                                src={validThumb}
+                                alt={pub.title}
+                                className="h-full w-full object-cover group-hover:scale-105 transition-transform"
+                                loading="lazy"
+                              />
+                            </div>
+                          ) : (
+                            <div className="h-16 w-24 sm:h-20 sm:w-28 rounded-lg bg-slate-50 border border-dashed border-slate-300 flex flex-col items-center justify-center text-slate-400 shrink-0">
+                              <ImageIcon className="h-5 w-5 text-slate-400" />
+                              <span className="text-[9px] font-bold mt-1 text-slate-400">No Photo</span>
+                            </div>
+                          );
+                        })()}
 
                         {/* Info */}
                         <div className="space-y-1.5 flex-1 min-w-0">
@@ -597,6 +665,10 @@ export default function AdminPublicationsPage() {
                             <span className="text-[11px] text-muted-foreground flex items-center gap-1 font-medium">
                               <Calendar className="h-3 w-3 text-muted-foreground/70" />
                               {publishedDateStr}
+                            </span>
+                            <span className="text-[10px] font-bold text-slate-700 bg-slate-100 dark:bg-slate-800 dark:text-slate-200 px-2 py-0.5 rounded-full flex items-center gap-1 border border-slate-200 dark:border-slate-700">
+                              <Eye className="h-3 w-3 text-emerald-600" />
+                              <span>{pub.viewsCount || 0} views</span>
                             </span>
                             {pub.recipientCount ? (
                               <span className="text-[10px] text-muted-foreground font-semibold">
