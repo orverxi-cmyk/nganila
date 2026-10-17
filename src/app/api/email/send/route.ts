@@ -28,6 +28,11 @@ interface SendRequestBody {
   ctaText?: string;
   ctaUrl?: string;
   clientReference?: string;
+  recipientName?: string;
+  recipientRole?: string;
+  organization?: string;
+  sectorName?: string;
+  unsubscribeUrl?: string;
 }
 
 export async function POST(request: Request) {
@@ -163,12 +168,22 @@ export async function POST(request: Request) {
         message: message.trim(),
         ctaText: ctaText?.trim() || undefined,
         ctaUrl: ctaUrl?.trim() || undefined,
+        recipientName: body.recipientName?.trim() || undefined,
+        recipientRole: body.recipientRole?.trim() || undefined,
+        organization: body.organization?.trim() || undefined,
+        sectorName: body.sectorName?.trim() || undefined,
+        unsubscribeUrl: body.unsubscribeUrl?.trim() || undefined,
       });
       finalText = renderCustomBroadcastText({
         title: (subject || '').trim(),
         message: message.trim(),
         ctaText: ctaText?.trim() || undefined,
         ctaUrl: ctaUrl?.trim() || undefined,
+        recipientName: body.recipientName?.trim() || undefined,
+        recipientRole: body.recipientRole?.trim() || undefined,
+        organization: body.organization?.trim() || undefined,
+        sectorName: body.sectorName?.trim() || undefined,
+        unsubscribeUrl: body.unsubscribeUrl?.trim() || undefined,
       });
     } else {
       finalHtml = `<div style="font-family: sans-serif; line-height: 1.6; color: #1e293b;">${message

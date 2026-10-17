@@ -555,10 +555,12 @@ export interface StatusEmailTemplateData {
   preferredTime?: string | null;
   locationUrl?: string | null;
   phone?: string | null;
+  recipientRole?: string | null;
+  organization?: string | null;
 }
 
 export function renderStatusEmailHtml(data: StatusEmailTemplateData): string {
-  const { bookingId, customerName, serviceType, newStatus, appointmentDate, preferredTime, locationUrl, phone } = data;
+  const { bookingId, customerName, customerEmail, serviceType, newStatus, appointmentDate, preferredTime, locationUrl, phone } = data;
   const s = (newStatus || 'pending').toLowerCase();
 
   let badgeColor = BRAND_COLOR;
@@ -594,7 +596,7 @@ export function renderStatusEmailHtml(data: StatusEmailTemplateData): string {
       <td align="center">
         <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;">
           <tr>
-            <td style="background-color: #0f172a; padding: 28px 32px; text-align: left; border-bottom: 4px solid ${BRAND_COLOR};">
+            <td style="background-color: #0f172a; padding: 24px 32px; text-align: left; border-bottom: 4px solid ${BRAND_COLOR};">
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td>
@@ -612,6 +614,15 @@ export function renderStatusEmailHtml(data: StatusEmailTemplateData): string {
                   </td>
                 </tr>
               </table>
+              <div style="border-top: 1px solid #1e293b; margin-top: 14px; padding-top: 10px; font-size: 11px; color: #94a3b8; line-height: 1.4;">
+                <span style="color: #cbd5e1; font-weight: 600;">📍 KN 3 Rd, Kigali, Rwanda</span>
+                <span style="color: #475569; margin: 0 6px;">·</span>
+                <span>📞 <a href="tel:${COMPANY_PHONE.replace(/\s+/g, '')}" style="color: #cbd5e1; text-decoration: none;">${COMPANY_PHONE}</a></span>
+                <span style="color: #475569; margin: 0 6px;">·</span>
+                <span>✉️ <a href="mailto:${COMPANY_EMAIL}" style="color: ${BRAND_COLOR}; text-decoration: none;">${COMPANY_EMAIL}</a></span>
+                <span style="color: #475569; margin: 0 6px;">·</span>
+                <span>🌐 <a href="https://sanex.rw" target="_blank" style="color: ${BRAND_COLOR}; text-decoration: none;">sanex.rw</a></span>
+              </div>
             </td>
           </tr>
           <tr>
@@ -672,10 +683,20 @@ export function renderStatusEmailHtml(data: StatusEmailTemplateData): string {
             </td>
           </tr>
           <tr>
-            <td style="background-color: #f1f5f9; padding: 24px 32px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b;">
-              <p style="margin: 0 0 6px 0; font-weight: 700; color: #0f172a;">${BRAND_NAME}</p>
-              <p style="margin: 0 0 6px 0;">Leading Liquid Waste Management, Decentralized Wastewater Treatment & Eco-Sanitation.</p>
-              <p style="margin: 0; color: #94a3b8; font-size: 11px;">Kigali, Rwanda · Phone: ${COMPANY_PHONE} · Email: ${COMPANY_EMAIL}</p>
+            <td align="center" style="background-color: #0f172a; padding: 24px 20px; text-align: center; border-top: 1px solid #1e293b; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 11px; line-height: 1.55; color: #94a3b8;">
+              <p style="margin: 0 0 8px 0; font-size: 12px; color: #cbd5e1; line-height: 1.5;">
+                This email was intended for <strong style="color: #ffffff;">${customerName || customerEmail}</strong>${data.organization ? ` <span style="color: #94a3b8;">(${data.organization})</span>` : ''} · <a href="https://sanex.rw/privacy" target="_blank" style="color: ${BRAND_COLOR}; text-decoration: underline;">Learn why we included this</a>.
+              </p>
+              <p style="margin: 0 auto 10px auto; color: #94a3b8; font-size: 11px; max-width: 520px; line-height: 1.55;">
+                You are receiving this real-time transactional update regarding your SANEX service request <strong>#${bookingId}</strong> (${serviceType}).
+              </p>
+              <p style="margin: 0; font-size: 11px;">
+                <a href="https://sanex.rw/contact" target="_blank" style="color: #cbd5e1; text-decoration: underline; margin: 0 6px;">Support Desk</a>
+                <span style="color: #475569;">·</span>
+                <a href="https://sanex.rw/privacy" target="_blank" style="color: #cbd5e1; text-decoration: underline; margin: 0 6px;">Privacy Policy</a>
+                <span style="color: #475569;">·</span>
+                <a href="https://sanex.rw/terms" target="_blank" style="color: #cbd5e1; text-decoration: underline; margin: 0 6px;">Terms of Service</a>
+              </p>
             </td>
           </tr>
         </table>
@@ -700,10 +721,11 @@ export interface BookingConfirmationTemplateData {
   appointmentDate?: string | null;
   preferredTime?: string | null;
   phone?: string | null;
+  organization?: string | null;
 }
 
 export function renderBookingConfirmationHtml(data: BookingConfirmationTemplateData): string {
-  const { bookingId, customerName, serviceType, appointmentDate, preferredTime, phone } = data;
+  const { bookingId, customerName, customerEmail, serviceType, appointmentDate, preferredTime, phone, organization } = data;
   return `
 <!DOCTYPE html>
 <html lang="en">
@@ -718,13 +740,22 @@ export function renderBookingConfirmationHtml(data: BookingConfirmationTemplateD
       <td align="center">
         <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;">
           <tr>
-            <td style="background-color: #0f172a; padding: 28px 32px; text-align: left; border-bottom: 4px solid ${BRAND_COLOR};">
+            <td style="background-color: #0f172a; padding: 24px 32px; text-align: left; border-bottom: 4px solid ${BRAND_COLOR};">
               <h1 style="margin: 0; font-size: 20px; font-weight: 800; color: ${BRAND_COLOR}; letter-spacing: 0.5px; text-transform: uppercase;">
                 SANEX <span style="color: #ffffff; font-weight: 400;">Company Ltd</span>
               </h1>
               <p style="margin: 4px 0 0 0; font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">
                 Booking Request Confirmation
               </p>
+              <div style="border-top: 1px solid #1e293b; margin-top: 14px; padding-top: 10px; font-size: 11px; color: #94a3b8; line-height: 1.4;">
+                <span style="color: #cbd5e1; font-weight: 600;">📍 KN 3 Rd, Kigali, Rwanda</span>
+                <span style="color: #475569; margin: 0 6px;">·</span>
+                <span>📞 <a href="tel:${COMPANY_PHONE.replace(/\s+/g, '')}" style="color: #cbd5e1; text-decoration: none;">${COMPANY_PHONE}</a></span>
+                <span style="color: #475569; margin: 0 6px;">·</span>
+                <span>✉️ <a href="mailto:${COMPANY_EMAIL}" style="color: ${BRAND_COLOR}; text-decoration: none;">${COMPANY_EMAIL}</a></span>
+                <span style="color: #475569; margin: 0 6px;">·</span>
+                <span>🌐 <a href="https://sanex.rw" target="_blank" style="color: ${BRAND_COLOR}; text-decoration: none;">sanex.rw</a></span>
+              </div>
             </td>
           </tr>
           <tr>
@@ -767,9 +798,20 @@ export function renderBookingConfirmationHtml(data: BookingConfirmationTemplateD
             </td>
           </tr>
           <tr>
-            <td style="background-color: #f1f5f9; padding: 24px 32px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b;">
-              <p style="margin: 0 0 6px 0; font-weight: 700; color: #0f172a;">${BRAND_NAME}</p>
-              <p style="margin: 0; color: #94a3b8; font-size: 11px;">Kigali, Rwanda · Phone: ${COMPANY_PHONE} · Email: ${COMPANY_EMAIL}</p>
+            <td align="center" style="background-color: #0f172a; padding: 24px 20px; text-align: center; border-top: 1px solid #1e293b; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 11px; line-height: 1.55; color: #94a3b8;">
+              <p style="margin: 0 0 8px 0; font-size: 12px; color: #cbd5e1; line-height: 1.5;">
+                This email was intended for <strong style="color: #ffffff;">${customerName || customerEmail}</strong>${organization ? ` <span style="color: #94a3b8;">(${organization})</span>` : ''} · <a href="https://sanex.rw/privacy" target="_blank" style="color: ${BRAND_COLOR}; text-decoration: underline;">Learn why we included this</a>.
+              </p>
+              <p style="margin: 0 auto 10px auto; color: #94a3b8; font-size: 11px; max-width: 520px; line-height: 1.55;">
+                You are receiving this booking confirmation notification for service request <strong>#${bookingId}</strong>.
+              </p>
+              <p style="margin: 0; font-size: 11px;">
+                <a href="https://sanex.rw/contact" target="_blank" style="color: #cbd5e1; text-decoration: underline; margin: 0 6px;">Support Desk</a>
+                <span style="color: #475569;">·</span>
+                <a href="https://sanex.rw/privacy" target="_blank" style="color: #cbd5e1; text-decoration: underline; margin: 0 6px;">Privacy Policy</a>
+                <span style="color: #475569;">·</span>
+                <a href="https://sanex.rw/terms" target="_blank" style="color: #cbd5e1; text-decoration: underline; margin: 0 6px;">Terms of Service</a>
+              </p>
             </td>
           </tr>
         </table>
@@ -841,6 +883,13 @@ export interface CustomBroadcastTemplateData {
   ctaText?: string;
   ctaUrl?: string;
   recipientName?: string;
+  recipientEmail?: string;
+  recipientRole?: string;
+  organization?: string;
+  sectorName?: string;
+  unsubscribeUrl?: string;
+  helpUrl?: string;
+  privacyUrl?: string;
 }
 
 /**
@@ -848,7 +897,20 @@ export interface CustomBroadcastTemplateData {
  * client announcements, and broadcast communications.
  */
 export function renderCustomBroadcastHtml(data: CustomBroadcastTemplateData): string {
-  const { title, message, ctaText, ctaUrl, recipientName } = data;
+  const {
+    title,
+    message,
+    ctaText,
+    ctaUrl,
+    recipientName,
+    recipientEmail,
+    recipientRole,
+    organization,
+    sectorName,
+    unsubscribeUrl,
+    helpUrl = "https://sanex.rw/contact",
+    privacyUrl = "https://sanex.rw/privacy",
+  } = data;
 
   // Format paragraphs safely
   const paragraphs = (message || '')
@@ -860,6 +922,11 @@ export function renderCustomBroadcastHtml(data: CustomBroadcastTemplateData): st
         `<p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.6; color: #334155;">${p.replace(/\n/g, '<br/>')}</p>`
     )
     .join('');
+
+  const roleOrgDetails = [recipientRole, organization].filter(Boolean).join(" at ");
+  const effectiveUnsubscribe =
+    unsubscribeUrl ||
+    `https://sanex.rw/newsletter/unsubscribe${recipientEmail ? `?email=${encodeURIComponent(recipientEmail)}` : ''}`;
 
   return `
 <!DOCTYPE html>
@@ -875,7 +942,7 @@ export function renderCustomBroadcastHtml(data: CustomBroadcastTemplateData): st
       <td align="center">
         <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;">
           <tr>
-            <td style="background-color: #0f172a; padding: 28px 32px; text-align: left; border-bottom: 4px solid ${BRAND_COLOR};">
+            <td style="background-color: #0f172a; padding: 24px 32px; text-align: left; border-bottom: 4px solid ${BRAND_COLOR};">
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td>
@@ -888,6 +955,15 @@ export function renderCustomBroadcastHtml(data: CustomBroadcastTemplateData): st
                   </td>
                 </tr>
               </table>
+              <div style="border-top: 1px solid #1e293b; margin-top: 14px; padding-top: 10px; font-size: 11px; color: #94a3b8; line-height: 1.4;">
+                <span style="color: #cbd5e1; font-weight: 600;">📍 KN 3 Rd, Kigali, Rwanda</span>
+                <span style="color: #475569; margin: 0 6px;">·</span>
+                <span>📞 <a href="tel:${COMPANY_PHONE.replace(/\s+/g, '')}" style="color: #cbd5e1; text-decoration: none;">${COMPANY_PHONE}</a></span>
+                <span style="color: #475569; margin: 0 6px;">·</span>
+                <span>✉️ <a href="mailto:${COMPANY_EMAIL}" style="color: ${BRAND_COLOR}; text-decoration: none;">${COMPANY_EMAIL}</a></span>
+                <span style="color: #475569; margin: 0 6px;">·</span>
+                <span>🌐 <a href="https://sanex.rw" target="_blank" style="color: ${BRAND_COLOR}; text-decoration: none;">sanex.rw</a></span>
+              </div>
             </td>
           </tr>
           <tr>
@@ -908,16 +984,26 @@ export function renderCustomBroadcastHtml(data: CustomBroadcastTemplateData): st
               <div style="border-top: 1px solid #e2e8f0; padding-top: 20px; margin-top: 28px; font-size: 13px; color: #64748b;">
                 <p style="margin: 0;">For questions or operational support, contact SANEX at
                   <a href="tel:${COMPANY_PHONE.replace(/\s+/g, '')}" style="color: #0f172a; font-weight: 700; text-decoration: none;">${COMPANY_PHONE}</a> or
-                  <a href="mailto:info@sanex.rw" style="color: #0f172a; font-weight: 700; text-decoration: none;">info@sanex.rw</a>.
+                  <a href="mailto:${COMPANY_EMAIL}" style="color: #0f172a; font-weight: 700; text-decoration: none;">${COMPANY_EMAIL}</a>.
                 </p>
               </div>
             </td>
           </tr>
           <tr>
-            <td style="background-color: #f1f5f9; padding: 24px 32px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b;">
-              <p style="margin: 0 0 6px 0; font-weight: 700; color: #0f172a;">${BRAND_NAME}</p>
-              <p style="margin: 0 0 6px 0;">Leading Liquid Waste Management, Decentralized Wastewater Treatment & Eco-Sanitation.</p>
-              <p style="margin: 0; color: #94a3b8; font-size: 11px;">Kigali, Rwanda · Phone: ${COMPANY_PHONE} · Email: info@sanex.rw</p>
+            <td align="center" style="background-color: #0f172a; padding: 24px 20px; text-align: center; border-top: 1px solid #1e293b; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 11px; line-height: 1.55; color: #94a3b8;">
+              <p style="margin: 0 0 8px 0; font-size: 12px; color: #cbd5e1; line-height: 1.5;">
+                This email was intended for <strong style="color: #ffffff;">${recipientName || recipientEmail || 'Valued Partner'}</strong>${roleOrgDetails ? ` <span style="color: #94a3b8;">(${roleOrgDetails})</span>` : ''} · <a href="${privacyUrl}" target="_blank" style="color: ${BRAND_COLOR}; text-decoration: underline;">Learn why we included this</a>.
+              </p>
+              <p style="margin: 0 auto 10px auto; color: #94a3b8; font-size: 11px; max-width: 520px; line-height: 1.55;">
+                You are receiving this official communication from <strong>${BRAND_NAME}</strong> regarding ${sectorName ? `${sectorName} wastewater and sanitation operations` : 'liquid waste management, decentralized treatment systems, and sanitation operations'} in Rwanda.
+              </p>
+              <p style="margin: 0; font-size: 11px;">
+                <a href="${effectiveUnsubscribe}" target="_blank" style="color: #cbd5e1; text-decoration: underline; margin: 0 6px;">Unsubscribe</a>
+                <span style="color: #475569;">·</span>
+                <a href="${helpUrl}" target="_blank" style="color: #cbd5e1; text-decoration: underline; margin: 0 6px;">Help &amp; Support</a>
+                <span style="color: #475569;">·</span>
+                <a href="${privacyUrl}" target="_blank" style="color: #cbd5e1; text-decoration: underline; margin: 0 6px;">Privacy Policy</a>
+              </p>
             </td>
           </tr>
         </table>
@@ -933,12 +1019,20 @@ export function renderCustomBroadcastHtml(data: CustomBroadcastTemplateData): st
  * Plain text fallback for custom broadcast messages.
  */
 export function renderCustomBroadcastText(data: CustomBroadcastTemplateData): string {
-  const { title, message, ctaText, ctaUrl, recipientName } = data;
-  let text = '';
-  if (recipientName) text += `Dear ${recipientName},\n\n`;
+  const { title, message, ctaText, ctaUrl, recipientName, recipientRole, organization, sectorName, unsubscribeUrl } = data;
+  let text = `${BRAND_NAME} · Sustainable Liquid Waste Management · Rwanda\nKN 3 Rd, Kigali, Rwanda | Phone: ${COMPANY_PHONE} | Email: ${COMPANY_EMAIL}\n\n`;
+  if (recipientName) {
+    const roleOrg = [recipientRole, organization].filter(Boolean).join(" at ");
+    text += `Dear ${recipientName}${roleOrg ? ` (${roleOrg})` : ''},\n\n`;
+  }
   if (title) text += `${title.toUpperCase()}\n\n`;
   text += `${message}\n\n`;
   if (ctaText && ctaUrl) text += `${ctaText}: ${ctaUrl}\n\n`;
-  text += `---\n${BRAND_NAME}\nPhone: ${COMPANY_PHONE}\nEmail: info@sanex.rw\nKigali, Rwanda`;
+  text += `---\n`;
+  text += `This email was intended for ${recipientName || 'Valued Partner'}${organization ? ` (${organization})` : ''}.\n`;
+  text += `Learn why we included this: https://sanex.rw/privacy\n\n`;
+  text += `You are receiving this official communication regarding ${sectorName || 'sanitation operations'} in Rwanda.\n`;
+  if (unsubscribeUrl) text += `Unsubscribe: ${unsubscribeUrl}\n`;
+  text += `Support: https://sanex.rw/contact\n`;
   return text;
 }
