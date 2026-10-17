@@ -26,21 +26,15 @@ import {
   MessageCircle,
   Copy,
   Check,
-  ShieldCheck,
   Mail,
   BookOpen,
   ArrowRight,
   ExternalLink,
-  Smartphone,
-  Monitor,
-  Clock,
-  Sparkles,
   Eye,
 } from "lucide-react";
 import { useUser } from "@/firebase";
 import { useTrackView, useViewsDisplay } from "@/hooks/use-view-tracker";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { slugify } from "@/lib/slug";
 import {
   Publication,
@@ -60,11 +54,9 @@ import {
  */
 function EmailPublicationViewer({
   htmlContent,
-  viewMode,
   title,
 }: {
   htmlContent: string;
-  viewMode: "responsive" | "desktop" | "mobile";
   title: string;
 }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -81,7 +73,7 @@ function EmailPublicationViewer({
           setIframeHeight(maxH + 35);
         }
       } catch {
-        // Cross-origin fallback (not triggered for about:srcdoc)
+        // Cross-origin fallback
       }
     }
   }, []);
@@ -96,29 +88,14 @@ function EmailPublicationViewer({
       clearTimeout(t2);
       clearTimeout(t3);
     };
-  }, [htmlContent, viewMode, updateHeight]);
-
-  const processedHtml = useMemo(() => {
-    if (viewMode === "mobile") {
-      return htmlContent.replace("<html", '<html class="mobile-forced"');
-    }
-    return htmlContent;
-  }, [htmlContent, viewMode]);
+  }, [htmlContent, updateHeight]);
 
   return (
     <div className="w-full flex justify-center items-start">
-      <div
-        className={`w-full transition-all duration-300 ${
-          viewMode === "mobile"
-            ? "max-w-[375px] shadow-2xl rounded-2xl ring-4 ring-slate-800/10"
-            : viewMode === "desktop"
-            ? "max-w-[620px] shadow-xl rounded-2xl"
-            : "max-w-[660px] shadow-xl rounded-2xl"
-        }`}
-      >
+      <div className="w-full max-w-[660px] shadow-xl rounded-2xl">
         <iframe
           ref={iframeRef}
-          srcDoc={processedHtml}
+          srcDoc={htmlContent}
           title={title}
           onLoad={updateHeight}
           scrolling="no"
@@ -146,7 +123,6 @@ export default function PublicationDetailPage() {
   const [publication, setPublication] = useState<Publication | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
-  const [viewMode, setViewMode] = useState<"responsive" | "desktop" | "mobile">("responsive");
 
   // Track page view once per session
   useTrackView("publication", publication?.id, slugParam);
@@ -446,16 +422,28 @@ export default function PublicationDetailPage() {
         <div className="container mx-auto px-4 md:px-8 max-w-5xl">
           {/* Top Bar: Navigation & Social Share Toolbar */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 bg-white p-3 sm:p-4 rounded-2xl border border-slate-200/80 shadow-xs">
-            <Button
-              asChild
-              variant="ghost"
-              size="sm"
-              className="gap-1.5 text-xs font-bold text-slate-700 hover:text-black w-fit -ml-1"
-            >
-              <Link href="/publications">
-                <ChevronLeft className="h-4 w-4" /> All Publications
-              </Link>
-            </Button>
+            <div className="flex items-center gap-3">
+              <Button
+                asChild
+                variant="ghost"
+                size="sm"
+                className="gap-1.5 text-xs font-bold text-slate-700 hover:text-black w-fit -ml-1"
+              >
+                <Link href="/publications">
+                  <ChevronLeft className="h-4 w-4" /> All Publications
+                </Link>
+              </Button>
+
+              {(showViewsOnFrontend || isAuthorized) && (
+                <span className="text-xs font-semibold text-slate-700 bg-slate-100 px-2.5 py-0.5 rounded-full flex items-center gap-1.5 border border-slate-200">
+                  <Eye className="h-3.5 w-3.5 text-emerald-600" />
+                  <span>{publication.viewsCount || 0} views</span>
+                  {!showViewsOnFrontend && isAuthorized && (
+                    <span className="text-[10px] text-amber-600 font-bold">(Admin only)</span>
+                  )}
+                </span>
+              )}
+            </div>
 
             {/* Social Share Bar */}
             <div className="flex items-center gap-1.5 flex-wrap">
@@ -534,94 +522,10 @@ export default function PublicationDetailPage() {
 
           {/* Publication Presentation Container */}
           <div className="bg-white rounded-3xl border border-slate-200 shadow-md overflow-hidden">
-            {/* Header / Meta Banner */}
-            <header className="p-6 sm:p-10 border-b border-slate-100 bg-linear-to-b from-white to-slate-50/50 space-y-4">
-              <div className="flex items-center gap-2 flex-wrap">
-                <Badge className="bg-primary/20 text-black border-primary/30 text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-0.5">
-                  {publication.category || "Official Publication"}
-                </Badge>
-
-                {publishedDateStr && (
-                  <span className="text-xs text-muted-foreground flex items-center gap-1 font-semibold">
-                    <Calendar className="h-3.5 w-3.5 text-muted-foreground/70" />
-                    {publishedDateStr}
-                  </span>
-                )}
-
-                {(showViewsOnFrontend || isAuthorized) && (
-                  <span className="text-xs font-semibold text-slate-700 bg-slate-100 dark:bg-slate-800 dark:text-slate-200 px-2.5 py-0.5 rounded-full flex items-center gap-1.5 border border-slate-200">
-                    <Eye className="h-3.5 w-3.5 text-emerald-600" />
-                    <span>{publication.viewsCount || 0} views</span>
-                    {!showViewsOnFrontend && isAuthorized && (
-                      <span className="text-[10px] text-amber-600 font-bold">(Admin only)</span>
-                    )}
-                  </span>
-                )}
-
-                <span className="text-xs text-muted-foreground font-semibold flex items-center gap-1 ml-auto">
-                  <ShieldCheck className="h-3.5 w-3.5 text-primary" /> Verified Newsletter from info@sanex.rw
-                </span>
-              </div>
-
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold font-headline tracking-tight text-slate-900 leading-tight">
-                {publication.title}
-              </h1>
-
-              {publication.excerpt && (
-                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                  {publication.excerpt}
-                </p>
-              )}
-
-              {/* Viewport Width Mode Toggles */}
-              <div className="pt-2 flex items-center justify-between border-t border-slate-200/60 text-xs">
-                <span className="text-[11px] text-muted-foreground font-medium flex items-center gap-1.5">
-                  <Sparkles className="h-3.5 w-3.5 text-primary" /> Authentic Custom Email View
-                </span>
-
-                <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg border">
-                  <button
-                    type="button"
-                    onClick={() => setViewMode("responsive")}
-                    className={`px-2.5 py-1 text-[11px] font-bold rounded transition-colors ${
-                      viewMode === "responsive"
-                        ? "bg-white text-slate-900 shadow-xs"
-                        : "text-slate-600 hover:text-slate-900"
-                    }`}
-                  >
-                    Full Width
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setViewMode("desktop")}
-                    className={`px-2.5 py-1 text-[11px] font-bold rounded flex items-center gap-1 transition-colors ${
-                      viewMode === "desktop"
-                        ? "bg-white text-slate-900 shadow-xs"
-                        : "text-slate-600 hover:text-slate-900"
-                    }`}
-                  >
-                    <Monitor className="h-3 w-3" /> 620px Email
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setViewMode("mobile")}
-                    className={`px-2.5 py-1 text-[11px] font-bold rounded flex items-center gap-1 transition-colors ${
-                      viewMode === "mobile"
-                        ? "bg-white text-slate-900 shadow-xs"
-                        : "text-slate-600 hover:text-slate-900"
-                    }`}
-                  >
-                    <Smartphone className="h-3 w-3" /> Mobile
-                  </button>
-                </div>
-              </div>
-            </header>
-
-            {/* Email Body Rendering - 100% faithful to the email preview */}
+            {/* Email Body Rendering */}
             <div className="p-3 sm:p-8 bg-slate-50/70 flex justify-center items-start min-h-[500px]">
               <EmailPublicationViewer
                 htmlContent={publication.content}
-                viewMode={viewMode}
                 title={publication.title}
               />
             </div>
