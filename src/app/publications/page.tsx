@@ -19,7 +19,6 @@ import {
   MessageCircle,
   Copy,
   Mail,
-  Sparkles,
   ExternalLink,
   Eye,
 } from "lucide-react";
@@ -123,11 +122,6 @@ export default function PublicationsPage() {
         <div className="container mx-auto px-4 md:px-16 max-w-7xl">
           {/* Clean Simple Page Header */}
           <div className="text-center mb-10 md:mb-12 space-y-3 max-w-2xl mx-auto">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/15 text-slate-900 border border-primary/30 text-xs font-extrabold uppercase tracking-widest shadow-xs">
-              <Sparkles className="h-3.5 w-3.5 text-primary" />
-              Official Newsletters &amp; Insights
-            </div>
-
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold font-headline tracking-tight text-slate-900">
               SANEX Publications
             </h1>
