@@ -467,9 +467,10 @@ export function compileBlocksToHtml(blocks: EmailBlock[] = INITIAL_SANEX_BLOCKS)
           return `
             <tr>
               <td style="background-color:${bgColor}; padding:22px 24px 18px; border-bottom:3px solid #8DB833; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                <!-- DESKTOP HEADER (Brand Left, Socials Right - hidden on mobile <= 600px) -->
+                <table class="sanex-desktop-col" border="0" cellpadding="0" cellspacing="0" width="100%">
                   <tr>
-                    <td class="sanex-header-brand-cell" valign="middle">
+                    <td valign="middle">
                       <table border="0" cellpadding="0" cellspacing="0">
                         <tr>
                           <td style="padding-right:12px;" valign="middle">
@@ -495,13 +496,51 @@ export function compileBlocksToHtml(blocks: EmailBlock[] = INITIAL_SANEX_BLOCKS)
                     ${
                       links.length > 0
                         ? `
-                    <td class="sanex-header-socials-cell" align="right" valign="middle">
-                      <table border="0" cellpadding="0" cellspacing="0" class="sanex-header-socials-table" style="display:inline-block;"><tr>${socialCells}</tr></table>
+                    <td align="right" valign="middle">
+                      <table border="0" cellpadding="0" cellspacing="0" style="display:inline-block;"><tr>${socialCells}</tr></table>
                     </td>`
                         : ""
                     }
                   </tr>
                 </table>
+
+                <!-- MOBILE HEADER: STACKED VERTICALLY (Hidden on Desktop, Active on Mobile <= 600px) -->
+                <!--[if !mso]><!-->
+                <div class="sanex-mobile-col" style="display:none; max-height:0; overflow:hidden; mso-hide:all;">
+                  <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                      <td style="padding-right:12px;" valign="middle">
+                        ${
+                          block.logoUrl
+                            ? `<img src="${block.logoUrl}" alt="${companyName} Logo" width="44" height="44" style="width:44px; height:44px; border-radius:50%; object-fit:cover; border:2px solid #8DB833; display:block;" />`
+                            : `<div style="display:inline-block; width:44px; height:44px; border-radius:50%; border:2px solid #8DB833; background-color:#1e293b; text-align:center; line-height:40px; font-size:20px;">
+                          🚛
+                        </div>`
+                        }
+                      </td>
+                      <td valign="middle">
+                        <h1 style="margin:0; font-size:16px; font-weight:900; color:#8DB833; letter-spacing:1px; text-transform:uppercase;">
+                          ${companyName}
+                        </h1>
+                        <p style="margin:2px 0 0 0; font-size:9px; color:#94a3b8; text-transform:uppercase; letter-spacing:0.8px;">
+                          ${tagline}
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
+                  ${
+                    links.length > 0
+                      ? `
+                  <div style="padding-top:10px; text-align:right;">
+                    <table border="0" cellpadding="0" cellspacing="0" align="right" style="margin:0 0 0 auto;">
+                      <tr>${socialCells}</tr>
+                    </table>
+                    <div style="clear:both;"></div>
+                  </div>`
+                      : ""
+                  }
+                </div>
+                <!--<![endif]-->
                 <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-top:1px solid #1e293b; margin-top:14px; padding-top:10px;">
                   <tr>
                     <td style="font-size:11px; color:#94a3b8; line-height:1.4;">
@@ -951,14 +990,14 @@ export function compileBlocksToHtml(blocks: EmailBlock[] = INITIAL_SANEX_BLOCKS)
       .sanex-header-socials-cell {
         display: block !important;
         width: 100% !important;
-        text-align: left !important;
-        padding-top: 2px !important;
+        text-align: right !important;
+        padding-top: 4px !important;
         padding-bottom: 6px !important;
       }
       .sanex-header-socials-table {
-        margin: 0 !important;
-        text-align: left !important;
-        display: block !important;
+        margin: 0 0 0 auto !important;
+        text-align: right !important;
+        display: inline-block !important;
       }
       .sanex-col-cell {
         padding: 20px 16px !important;
@@ -987,14 +1026,14 @@ export function compileBlocksToHtml(blocks: EmailBlock[] = INITIAL_SANEX_BLOCKS)
     .mobile-forced .sanex-header-socials-cell {
       display: block !important;
       width: 100% !important;
-      text-align: left !important;
-      padding-top: 2px !important;
+      text-align: right !important;
+      padding-top: 4px !important;
       padding-bottom: 6px !important;
     }
     .mobile-forced .sanex-header-socials-table {
-      margin: 0 !important;
-      text-align: left !important;
-      display: block !important;
+      margin: 0 0 0 auto !important;
+      text-align: right !important;
+      display: inline-block !important;
     }
     .mobile-forced .sanex-col-cell {
       padding: 20px 16px !important;
@@ -3105,7 +3144,7 @@ export function EmailStudioBuilder({
                           onClick={() => setActiveBlockId(block.id)}
                           className="p-4 sm:p-5 bg-[#0f172a] text-white border-b-4 border-[#8DB833] space-y-3 cursor-pointer group hover:ring-2 hover:ring-[#8DB833]/60 transition-all"
                         >
-                          <div className={isMobile ? "flex flex-col items-start gap-2.5" : "flex flex-col sm:flex-row sm:items-center justify-between gap-3"}>
+                          <div className={isMobile ? "flex flex-col items-stretch gap-2.5" : "flex flex-col sm:flex-row sm:items-center justify-between gap-3"}>
                             <div className="flex items-center gap-3">
                               <div
                                 onClick={(e) => {
@@ -3148,7 +3187,7 @@ export function EmailStudioBuilder({
 
                             {/* Social Icons */}
                             {links.length > 0 && (
-                              <div className={isMobile ? "flex items-center gap-1.5 self-start pt-1" : "flex items-center gap-1.5 self-end sm:self-auto"}>
+                              <div className={isMobile ? "flex items-center gap-1.5 self-end pt-1" : "flex items-center gap-1.5 self-end sm:self-auto"}>
                                 {links.map((link) => {
                                   const meta = getSocialPlatformMeta(link.platform);
                                   return (

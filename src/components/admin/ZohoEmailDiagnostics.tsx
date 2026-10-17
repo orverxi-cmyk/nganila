@@ -1495,8 +1495,9 @@ export function ZohoEmailHub() {
                         <div className="w-full overflow-hidden rounded-md border border-slate-100">
                           <iframe
                             srcDoc={
-                              customMessage ||
-                              "<!DOCTYPE html><html><body style='font-family:sans-serif; text-align:center; padding:40px 20px; color:#94a3b8;'><p>Paste HTML/CSS code or design email in Email Studio...</p></body></html>"
+                              customMessage
+                                ? (previewDevice === "mobile" ? customMessage.replace("<html", '<html class="mobile-forced"') : customMessage)
+                                : "<!DOCTYPE html><html><body style='font-family:sans-serif; text-align:center; padding:40px 20px; color:#94a3b8;'><p>Paste HTML/CSS code or design email in Email Studio...</p></body></html>"
                             }
                             title="Custom Email Preview"
                             className="w-full min-h-[580px] bg-white border-0"
