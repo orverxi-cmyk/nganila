@@ -39,6 +39,7 @@ export function Footer() {
     { name: "About Us", href: "/about" },
     { name: "Solutions", href: "/services" },
     { name: "Impact", href: "/articles" },
+    { name: "Publications", href: "/publications" },
     { name: "Contact", href: "/contact" },
   ];
 
@@ -153,7 +154,7 @@ export function Footer() {
             <p className="text-[14px] text-white/70">
               Subscribe to get the latest news and updates directly to your inbox.
             </p>
-            <div>
+            <div className="flex flex-col gap-2 items-center md:items-start">
               <a
                 href="https://eepurl.com/2gm-Vewnrw"
                 target="_blank"
@@ -162,6 +163,12 @@ export function Footer() {
               >
                 Subscribe to Newsletter
               </a>
+              <Link
+                href="/publications"
+                className="text-xs text-primary/80 hover:text-primary transition-colors underline"
+              >
+                Browse Sent Newsletters &rarr;
+              </Link>
             </div>
           </div>
         </div>

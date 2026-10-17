@@ -299,7 +299,7 @@ export interface EmailBlock {
   text?: string;
   buttonText?: string;
   buttonUrl?: string;
-  buttonVariant?: "solid" | "outline";
+  buttonVariant?: "solid" | "outline" | "filled";
   buttonColor?: string;
   buttonTextColor?: string;
   imageUrl?: string;
@@ -317,6 +317,7 @@ export interface EmailBlock {
   col1ButtonText?: string;
   col1ButtonUrl?: string;
   col2Heading?: string;
+  col2HeadingColor?: string;
   col2Text?: string;
   col2ButtonText?: string;
   col2ButtonUrl?: string;
@@ -358,6 +359,7 @@ export interface EmailBlock {
 interface EmailStudioBuilderProps {
   initialHtml?: string;
   initialBlocks?: EmailBlock[];
+  onChange?: (blocks: EmailBlock[], compiledHtml: string) => void;
   onSaveAndProceed: (compiledHtml: string, blocks: EmailBlock[]) => void;
   onBackToSending: (blocks?: EmailBlock[]) => void;
   onSaveToCloud?: (compiledHtml: string, blocks: EmailBlock[]) => Promise<any>;
@@ -366,62 +368,96 @@ interface EmailStudioBuilderProps {
   lastSyncTime?: Date | null;
 }
 
-const INITIAL_SANEX_BLOCKS: EmailBlock[] = [
+export const INITIAL_SANEX_BLOCKS: EmailBlock[] = [
   {
     id: "header-1",
     type: "header",
     companyName: "SANEX COMPANY LTD",
     companyTagline: "Sustainable Liquid Waste Management · Rwanda",
     companyAddress: "KN 3 Rd, Kigali, Rwanda",
-    companyPhone: "+250 788 385 838",
+    companyPhone: "+250 788 322 428",
     companyEmail: "info@sanex.rw",
     websiteUrl: "https://sanex.rw",
-    logoUrl: "",
+    logoUrl: "/images/logo.png",
     bgColor: "#0f172a",
     socialLinks: [...DEFAULT_HEADER_SOCIALS],
   },
   {
     id: "hero-1",
     type: "hero",
-    heading: "WHO ARE WE?",
-    text: "We are a Rwandan company specializing in liquid waste management, emptying services, and clean water delivery.",
-    buttonText: "Learn More",
-    buttonUrl: "https://sanex.rw/about",
-    buttonVariant: "outline",
-    bgColor: "#000000",
+    heading: "",
+    text: "Sanex Company LTD is a Rwandan company specializing in liquid waste management, emptying services, and clean water delivery.",
+    buttonText: "BOOK SERVICE NOW >>",
+    buttonUrl: "https://sanex.rw/book",
+    buttonVariant: "filled",
+    buttonColor: "#8DB833",
+    buttonTextColor: "#000000",
+    bgColor: "#ffffff",
   },
   {
-    id: "col2-1",
+    id: "col2-dwts",
     type: "columns_2",
     col1Width: 46,
     col2Width: 54,
     col1Image:
-      "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=600&q=80",
+      "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1779722491089_B25A3102.jpg?alt=media&token=e7f97250-ccbd-4a24-a9fa-793f86798a7d",
+    col1ImageWidth: 260,
+    col2Heading:
+      "Installation and Management of Decentralized Wastewater Treatment Systems (DWTS)",
+    col2HeadingColor: "#8DB833",
+    col2Text:
+      "We provide comprehensive DWTS solutions, from initial construction to ongoing management, designed to address the unique needs of communities and businesses lacking access to centralized wastewater infrastructure.",
+    col2ButtonText: "Read More >>",
+    col2ButtonUrl: "https://sanex.rw/services",
+    col2ButtonColor: "#8DB833",
+    col2ButtonTextColor: "#000000",
+  },
+  {
+    id: "col2-clean-water",
+    type: "columns_2",
+    col1Width: 46,
+    col2Width: 54,
+    col1Image:
+      "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1779722938429_WhatsApp%20Image%202025-04-19%20at%2020.13.41.jpeg?alt=media&token=3f2a420d-9624-4356-be91-cf8fea746965",
     col1ImageWidth: 260,
     col2Heading: "Clean Water Delivery at You Doorstep",
+    col2HeadingColor: "#8DB833",
     col2Text:
       "Our portfolio also includes modern, clean water tank trucks. During water scarcity, we are a trusted partner for delivering clean water to your doorstep.",
-    col2ButtonText: "Read More",
+    col2ButtonText: "Read More >>",
     col2ButtonUrl: "https://sanex.rw/services",
     col2ButtonColor: "#000000",
     col2ButtonTextColor: "#8DB833",
   },
   {
-    id: "col2-2",
+    id: "col2-liquid-waste",
     type: "columns_2",
     col1Width: 46,
     col2Width: 54,
     col1Image:
-      "https://images.unsplash.com/photo-1541888946425-d0fbb186c5f7?auto=format&fit=crop&w=600&q=80",
+      "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1779723894783_vlcsnap-2025-04-19-16h01m39s409.png?alt=media&token=40440145-c8f7-4e34-a3cb-a21f4565d9c0",
     col1ImageWidth: 260,
-    col2Heading:
-      "Installation and Management of Decentralized Wastewater Treatment Systems (DWTS)",
+    col2Heading: "Liquid Waste Collection and Transport",
+    col2HeadingColor: "#8DB833",
     col2Text:
-      "At SANEX Company Ltd, we provide comprehensive DWTS solutions—from initial construction to ongoing management—ensuring eco-friendly sanitation for institutions, hotels, and communities across Rwanda.",
-    col2ButtonText: "Explore DWTS",
+      "Modern vacuum trucks for efficient waste collection, serving schools, hospitals, hotels, and commercial buildings.",
+    col2ButtonText: "Read More >>",
     col2ButtonUrl: "https://sanex.rw/services",
-    col2ButtonColor: "#8DB833",
-    col2ButtonTextColor: "#000000",
+    col2ButtonColor: "#000000",
+    col2ButtonTextColor: "#8DB833",
+  },
+  {
+    id: "video-highlights",
+    type: "video",
+    videoTitle: "SANEX in Action: Operational Highlights",
+    videoCaption:
+      "Watch our specialized vacuum trucks and decentralized treatment systems providing essential sanitation services across Rwanda.",
+    videoButtonText: "Watch Video",
+    videoUrl: "https://sanex.rw/gallery",
+    videoWatchUrl: "https://sanex.rw/gallery",
+    videoThumbnail:
+      "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media&token=d3048d2c-2d02-4fdb-8eaa-f741686a4401",
+    videoPlayButtonColor: "#8DB833",
   },
   {
     id: "footer-1",
@@ -429,7 +465,8 @@ const INITIAL_SANEX_BLOCKS: EmailBlock[] = [
     recipientName: "{{email}}",
     recipientRole: "",
     organization: "",
-    disclaimerContext: "You are receiving this official communication from SANEX Company Ltd regarding environmental sanitation, liquid waste operations, and wastewater management in Rwanda.",
+    disclaimerContext:
+      "You are receiving this official communication from SANEX Company Ltd regarding environmental sanitation, liquid waste operations, and wastewater management in Rwanda.",
     showDisclaimer: true,
     unsubscribeUrl: "https://sanex.rw/unsubscribe",
     helpUrl: "https://sanex.rw/contact",
@@ -612,19 +649,31 @@ export function compileBlocksToHtml(blocks: EmailBlock[] = INITIAL_SANEX_BLOCKS)
             </tr>
           `;
 
-        case "hero":
+        case "hero": {
+          const showHeading = Boolean(block.heading && block.heading.trim());
+          const isButtonFilled = block.buttonVariant === "filled" || block.buttonColor === "#8DB833" || Boolean(block.buttonColor);
+          const btnBg = block.buttonColor || (isButtonFilled ? "#8DB833" : "transparent");
+          const btnTextCol = block.buttonTextColor || (isButtonFilled ? "#000000" : "#ffffff");
+          const btnBorder = isButtonFilled ? "none" : "1.5px solid #ffffff";
+          const isWhiteBg = block.bgColor === "#ffffff" || block.bgColor === "#fff";
+          const textColor = isWhiteBg ? "#334155" : "#cbd5e1";
+
           return `
             <tr>
-              <td align="center" style="background-color:${block.bgColor || "#000000"}; color:#ffffff; padding:36px 28px; text-align:center;">
-                <h1 style="color:#ffffff; font-size:20px; font-weight:900; letter-spacing:1.5px; text-transform:uppercase; margin:0 0 12px 0;">
-                  ${block.heading || "WHO ARE WE?"}
-                </h1>
-                <p style="color:#cbd5e1; font-size:13px; line-height:1.6; max-width:480px; margin:0 auto 20px auto;">
+              <td align="center" style="background-color:${block.bgColor || "#000000"}; padding:${showHeading ? "36px 28px" : "28px 24px"}; text-align:center;">
+                ${
+                  showHeading
+                    ? `<h1 style="color:${isWhiteBg ? "#0f172a" : "#ffffff"}; font-size:20px; font-weight:900; letter-spacing:1.5px; text-transform:uppercase; margin:0 0 12px 0;">
+                        ${block.heading}
+                      </h1>`
+                    : ""
+                }
+                <p style="color:${textColor}; font-size:14px; line-height:1.6; max-width:540px; margin:0 auto 20px auto; font-weight:500;">
                   ${block.text || ""}
                 </p>
                 ${
                   block.buttonText
-                    ? `<a href="${block.buttonUrl || "#"}" target="_blank" style="display:inline-block; border:1.5px solid #ffffff; color:#ffffff; font-size:12px; font-weight:700; text-decoration:none; padding:10px 28px; border-radius:6px; letter-spacing:0.5px; text-transform:uppercase;">
+                    ? `<a href="${block.buttonUrl || "#"}" target="_blank" style="display:inline-block; background-color:${btnBg}; border:${btnBorder}; color:${btnTextCol}; font-size:13px; font-weight:800; text-decoration:none; padding:12px 32px; border-radius:6px; letter-spacing:0.5px; text-transform:uppercase;">
                         ${block.buttonText}
                       </a>`
                     : ""
@@ -632,6 +681,7 @@ export function compileBlocksToHtml(blocks: EmailBlock[] = INITIAL_SANEX_BLOCKS)
               </td>
             </tr>
           `;
+        }
 
         case "columns_2":
           const leftW = block.col1Width || 48;
@@ -779,12 +829,6 @@ export function compileBlocksToHtml(blocks: EmailBlock[] = INITIAL_SANEX_BLOCKS)
           `;
 
         case "footer": {
-          const rawName = (block.recipientName || "").trim();
-          const recName = (!rawName || rawName === "{{name}}" || rawName === "{{email}}")
-            ? "{{email}}"
-            : rawName;
-          const recRole = block.recipientRole || "";
-          const org = block.organization || "";
           const showDisc = block.showDisclaimer !== false;
           const contextText =
             block.disclaimerContext ||
@@ -792,7 +836,6 @@ export function compileBlocksToHtml(blocks: EmailBlock[] = INITIAL_SANEX_BLOCKS)
           const unsubsUrl = block.unsubscribeUrl || "https://sanex.rw/unsubscribe";
           const helpUrl = block.helpUrl || "https://sanex.rw/contact";
           const privacyUrl = block.privacyUrl || "https://sanex.rw/privacy";
-          const roleOrgDetails = [recRole, org].filter(Boolean).join(" at ");
 
           return `
             <tr>
@@ -800,13 +843,6 @@ export function compileBlocksToHtml(blocks: EmailBlock[] = INITIAL_SANEX_BLOCKS)
                 ${
                   showDisc
                     ? `
-                <!-- Recipient Security Verification (LinkedIn Pattern) -->
-                <p style="margin:0 0 8px 0; font-size:12px; color:#cbd5e1; line-height:1.5;">
-                  This email was intended for <strong style="color:#ffffff;">${recName}</strong>${
-                        roleOrgDetails ? ` <span style="color:#94a3b8;">(${roleOrgDetails})</span>` : ""
-                      } · <a href="${privacyUrl}" target="_blank" rel="noopener noreferrer" style="color:#8DB833; text-decoration:underline;">Learn why we included this</a>.
-                </p>
-
                 <!-- Communication & Campaign Context -->
                 <p style="margin:0 auto 10px auto; color:#94a3b8; font-size:11px; max-width:520px; line-height:1.55;">
                   ${contextText}
@@ -1164,6 +1200,7 @@ export async function uploadBlobToFirebaseStorage(
 export function EmailStudioBuilder({
   initialHtml,
   initialBlocks,
+  onChange,
   onSaveAndProceed,
   onBackToSending,
   onSaveToCloud,
@@ -1174,6 +1211,18 @@ export function EmailStudioBuilder({
   const [blocks, setBlocks] = useState<EmailBlock[]>(() =>
     initialBlocks && initialBlocks.length > 0 ? initialBlocks : INITIAL_SANEX_BLOCKS
   );
+
+  // Authoritative continuous sync to parent: whenever blocks change in builder, notify parent immediately
+  const isFirstMountRef = useRef(true);
+  useEffect(() => {
+    if (isFirstMountRef.current) {
+      isFirstMountRef.current = false;
+      return;
+    }
+    const html = compileBlocksToHtml(blocks);
+    onChange?.(blocks, html);
+  }, [blocks, onChange]);
+
   const [history, setHistory] = useState<EmailBlock[][]>(() => [
     initialBlocks && initialBlocks.length > 0 ? initialBlocks : INITIAL_SANEX_BLOCKS,
   ]);
@@ -1183,6 +1232,7 @@ export function EmailStudioBuilder({
   const [previewDevice, setPreviewDevice] = useState<"desktop" | "mobile">("desktop");
   const [modalPreviewDevice, setModalPreviewDevice] = useState<"desktop" | "mobile">("desktop");
   const [activeBlockId, setActiveBlockId] = useState<string | null>("col2-1");
+
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);
 
@@ -1848,9 +1898,7 @@ export function EmailStudioBuilder({
       case "footer":
         return {
           title: "Disclaimer Footer",
-          desc: block.recipientName && block.recipientName !== "{{email}}" && block.recipientName !== "{{name}}"
-            ? `Intended for ${block.recipientName}`
-            : "Intended for recipient email",
+          desc: "Legal & compliance disclaimer",
           icon: PanelBottom,
         };
       case "logo":
@@ -1992,8 +2040,8 @@ export function EmailStudioBuilder({
               }`}
               title={
                 lastSyncTime
-                  ? `Synced with Cloud & Live Site at ${lastSyncTime.toLocaleTimeString()}`
-                  : "Sync template to Cloud & Live Site"
+                  ? `Saved to Cloud & Published at ${lastSyncTime.toLocaleTimeString()}`
+                  : "Save this custom email design to Cloud and update the live website publication"
               }
             >
               <Cloud
@@ -2007,12 +2055,13 @@ export function EmailStudioBuilder({
               />
               <span>
                 {cloudSyncStatus === "saving" || isOptimizingImages
-                  ? "Syncing..."
+                  ? "Saving to Cloud..."
                   : cloudSyncStatus === "synced"
-                  ? "Synced"
-                  : "Sync Cloud"}
+                  ? "Saved to Cloud"
+                  : "Save & Sync Cloud"}
               </span>
             </Button>
+
           )}
 
           {onOpenCloudTransfer && (
@@ -3862,18 +3911,10 @@ export function EmailStudioBuilder({
                     })()}
 
                     {block.type === "footer" && (() => {
-                      const rawName = (block.recipientName || "").trim();
-                      const recName = (!rawName || rawName === "{{name}}" || rawName === "{{email}}")
-                        ? "{{email}}"
-                        : rawName;
-                      const recRole = block.recipientRole || "";
-                      const org = block.organization || "";
-                      const roleOrgDetails = [recRole, org].filter(Boolean).join(" at ");
                       const showDisc = block.showDisclaimer !== false;
                       const contextText =
                         block.disclaimerContext ||
                         "You are receiving this official communication from SANEX Company Ltd regarding environmental sanitation, liquid waste operations, and wastewater management in Rwanda.";
-                      const unsubsUrl = block.unsubscribeUrl || "https://sanex.rw/unsubscribe";
 
                       return (
                         <div
@@ -3882,25 +3923,11 @@ export function EmailStudioBuilder({
                         >
                           <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300 text-[10px] font-bold group-hover:border-[#8DB833] transition-colors">
                             <ShieldCheck className="h-3 w-3 text-[#8DB833]" />
-                            <span>Enterprise Security &amp; Recipient Disclaimer (LinkedIn Pattern)</span>
+                            <span>Legal &amp; Compliance Disclaimer Footer</span>
                           </div>
 
                           {showDisc && (
                             <div className="space-y-2 max-w-lg mx-auto">
-                              <p className="m-0 text-slate-200 text-xs">
-                                This email was intended for{" "}
-                                <strong className="text-white underline decoration-slate-600 underline-offset-2">
-                                  {recName}
-                                </strong>
-                                {roleOrgDetails && (
-                                  <span className="text-slate-400"> ({roleOrgDetails})</span>
-                                )}{" "}
-                                ·{" "}
-                                <span className="text-[#8DB833] underline hover:text-[#8DB833]/80">
-                                  Learn why we included this
-                                </span>
-                              </p>
-
                               <p className="m-0 text-slate-400 text-[11px] leading-relaxed">
                                 {contextText}
                               </p>
@@ -3991,6 +4018,7 @@ export function EmailStudioBuilder({
                   <div className="flex flex-wrap gap-1.5">
                     {[
                       { label: "🌐 Homepage", url: "https://sanex.rw" },
+                      { label: "📰 Publications Archive", url: "https://sanex.rw/publications" },
                       { label: "📅 Book Service", url: "https://sanex.rw/booking" },
                       { label: "🛠️ Services", url: "https://sanex.rw/services" },
                       { label: "🏢 About Us", url: "https://sanex.rw/about" },
@@ -4878,16 +4906,9 @@ export function EmailStudioBuilder({
                   <span className="text-[9px] font-extrabold uppercase text-[#8DB833] tracking-wider block">
                     Live Disclaimer Preview:
                   </span>
-                  <p className="m-0 text-slate-300">
-                    This email was intended for{" "}
-                    <strong className="text-white">
-                      {(!block.recipientName || block.recipientName === "{{name}}" || block.recipientName === "{{email}}")
-                        ? "{{email}}"
-                        : block.recipientName}
-                    </strong>
-                    {(block.recipientRole || block.organization) && (
-                      <span className="text-slate-400"> ({[block.recipientRole, block.organization].filter(Boolean).join(" at ")})</span>
-                    )} · <span className="text-[#8DB833] underline">Learn why we included this</span>.
+                  <p className="m-0 text-slate-300 leading-relaxed">
+                    {block.disclaimerContext ||
+                      "You are receiving this official communication from SANEX Company Ltd regarding environmental sanitation, liquid waste operations, and wastewater management in Rwanda."}
                   </p>
                   <p className="m-0 text-slate-400">
                     Unsubscribe · Help &amp; Support · Privacy Policy

@@ -13,6 +13,11 @@ import {
   checkRateLimit,
   getClientIp,
 } from '@/lib/api-auth';
+import { initializeFirebase } from '@/firebase/init';
+import { doc, setDoc } from 'firebase/firestore';
+import { extractFirstImage, extractExcerptFromHtml, Publication } from '@/lib/publications';
+import { slugify } from '@/lib/slug';
+import { recordServerPublication } from '@/lib/server-publications-store';
 
 interface SendRequestBody {
   to: string | string[];
@@ -34,6 +39,75 @@ interface SendRequestBody {
   organization?: string;
   sectorName?: string;
   unsubscribeUrl?: string;
+}
+
+async function recordSentPublication(
+  subject?: string,
+  finalHtml?: string,
+  recipientCount?: number,
+  sectorName?: string
+): Promise<{ publicationUrl?: string; publicationSlug?: string }> {
+  if (!finalHtml || !finalHtml.trim()) return {};
+  try {
+    const { firestore } = initializeFirebase();
+    if (!firestore) return {};
+
+    const effectiveSlug = slugify(subject || 'sanitation-newsletter');
+    const detectedCover =
+      extractFirstImage(finalHtml) ||
+      'https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1779722491089_B25A3102.jpg?alt=media&token=e7f97250-ccbd-4a24-a9fa-793f86798a7d';
+
+    const pubId = `pub_${Date.now()}`;
+    const pubRecord: Partial<Publication> = {
+      id: pubId,
+      slug: effectiveSlug,
+      title: subject || 'SANEX Company Ltd Official Newsletter',
+      subject: subject || 'SANEX Official Newsletter',
+      excerpt: extractExcerptFromHtml(finalHtml),
+      content: finalHtml,
+      category: sectorName || 'Company Announcements',
+      author: 'SANEX Communications',
+      publishedAt: Date.now(),
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      recipientCount: recipientCount || 1,
+      status: 'published',
+      isCustom: true,
+      coverImage: detectedCover,
+      thumbnailImg: detectedCover,
+      viewsCount: 0,
+    };
+
+    // Save to authoritative server store
+    recordServerPublication(pubRecord);
+
+    if (firestore) {
+      try {
+        await setDoc(doc(firestore, 'publications', pubId), pubRecord, { merge: true });
+        // Also sync canonical pub_custom_sanex_newsletter so live and localhost share it
+        await setDoc(
+          doc(firestore, 'publications', 'pub_custom_sanex_newsletter'),
+          {
+            ...pubRecord,
+            id: 'pub_custom_sanex_newsletter',
+            slug: 'sustainable-liquid-waste-management-clean-water-rwanda',
+          },
+          { merge: true }
+        );
+      } catch {
+        // Handled gracefully
+      }
+    }
+
+    return {
+      publicationUrl: `/publications/${effectiveSlug}`,
+      publicationSlug: effectiveSlug,
+    };
+  } catch (err) {
+    console.warn('[api/email/send] Skipping auto-publication recording:', err);
+    return {};
+  }
+
 }
 
 export async function POST(request: Request) {
@@ -312,6 +386,7 @@ export async function POST(request: Request) {
     }
 
     if (successCount > 0) {
+      const pubMeta = await recordSentPublication(subject, finalHtml, successCount, body.sectorName);
       return NextResponse.json({
         success: true,
         status: 'accepted',
@@ -321,6 +396,8 @@ export async function POST(request: Request) {
         recipientCount: successCount,
         batchCount: Math.ceil(cleanedRecipients.length / CONCURRENCY),
         clientReference,
+        publicationUrl: pubMeta.publicationUrl,
+        publicationSlug: pubMeta.publicationSlug,
         warnings: errors.length > 0 ? errors : undefined,
       });
     }
@@ -364,6 +441,7 @@ export async function POST(request: Request) {
   });
 
   if (result.success) {
+    const pubMeta = await recordSentPublication(subject, finalHtml, cleanedRecipients.length, body.sectorName);
     return NextResponse.json({
       success: true,
       status: 'accepted',
@@ -373,6 +451,8 @@ export async function POST(request: Request) {
       recipientCount: cleanedRecipients.length,
       batchCount: result.batchCount || 1,
       clientReference: result.clientReference,
+      publicationUrl: pubMeta.publicationUrl,
+      publicationSlug: pubMeta.publicationSlug,
     });
   }
 

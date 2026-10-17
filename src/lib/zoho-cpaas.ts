@@ -684,9 +684,6 @@ export function renderStatusEmailHtml(data: StatusEmailTemplateData): string {
           </tr>
           <tr>
             <td align="center" style="background-color: #0f172a; padding: 24px 20px; text-align: center; border-top: 1px solid #1e293b; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 11px; line-height: 1.55; color: #94a3b8;">
-              <p style="margin: 0 0 8px 0; font-size: 12px; color: #cbd5e1; line-height: 1.5;">
-                This email was intended for <strong style="color: #ffffff;">${customerName || customerEmail}</strong>${data.organization ? ` <span style="color: #94a3b8;">(${data.organization})</span>` : ''} · <a href="https://sanex.rw/privacy" target="_blank" style="color: ${BRAND_COLOR}; text-decoration: underline;">Learn why we included this</a>.
-              </p>
               <p style="margin: 0 auto 10px auto; color: #94a3b8; font-size: 11px; max-width: 520px; line-height: 1.55;">
                 You are receiving this real-time transactional update regarding your SANEX service request <strong>#${bookingId}</strong> (${serviceType}).
               </p>
@@ -799,9 +796,6 @@ export function renderBookingConfirmationHtml(data: BookingConfirmationTemplateD
           </tr>
           <tr>
             <td align="center" style="background-color: #0f172a; padding: 24px 20px; text-align: center; border-top: 1px solid #1e293b; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 11px; line-height: 1.55; color: #94a3b8;">
-              <p style="margin: 0 0 8px 0; font-size: 12px; color: #cbd5e1; line-height: 1.5;">
-                This email was intended for <strong style="color: #ffffff;">${customerName || customerEmail}</strong>${organization ? ` <span style="color: #94a3b8;">(${organization})</span>` : ''} · <a href="https://sanex.rw/privacy" target="_blank" style="color: ${BRAND_COLOR}; text-decoration: underline;">Learn why we included this</a>.
-              </p>
               <p style="margin: 0 auto 10px auto; color: #94a3b8; font-size: 11px; max-width: 520px; line-height: 1.55;">
                 You are receiving this booking confirmation notification for service request <strong>#${bookingId}</strong>.
               </p>
@@ -928,7 +922,6 @@ export function renderCustomBroadcastHtml(data: CustomBroadcastTemplateData): st
     )
     .join('');
 
-  const roleOrgDetails = [recipientRole, organization].filter(Boolean).join(" at ");
   const effectiveUnsubscribe =
     unsubscribeUrl ||
     `https://sanex.rw/newsletter/unsubscribe${recipientEmail ? `?email=${encodeURIComponent(recipientEmail)}` : ''}`;
@@ -996,9 +989,6 @@ export function renderCustomBroadcastHtml(data: CustomBroadcastTemplateData): st
           </tr>
           <tr>
             <td align="center" style="background-color: #0f172a; padding: 24px 20px; text-align: center; border-top: 1px solid #1e293b; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 11px; line-height: 1.55; color: #94a3b8;">
-              <p style="margin: 0 0 8px 0; font-size: 12px; color: #cbd5e1; line-height: 1.5;">
-                This email was intended for <strong style="color: #ffffff;">${effectiveRecipient}</strong>${roleOrgDetails ? ` <span style="color: #94a3b8;">(${roleOrgDetails})</span>` : ''} · <a href="${privacyUrl}" target="_blank" style="color: ${BRAND_COLOR}; text-decoration: underline;">Learn why we included this</a>.
-              </p>
               <p style="margin: 0 auto 10px auto; color: #94a3b8; font-size: 11px; max-width: 520px; line-height: 1.55;">
                 You are receiving this official communication from <strong>${BRAND_NAME}</strong> regarding ${sectorName ? `${sectorName} wastewater and sanitation operations` : 'liquid waste management, decentralized treatment systems, and sanitation operations'} in Rwanda.
               </p>
@@ -1039,8 +1029,6 @@ export function renderCustomBroadcastText(data: CustomBroadcastTemplateData): st
   text += `${message}\n\n`;
   if (ctaText && ctaUrl) text += `${ctaText}: ${ctaUrl}\n\n`;
   text += `---\n`;
-  text += `This email was intended for ${effectiveRecipient}${organization ? ` (${organization})` : ''}.\n`;
-  text += `Learn why we included this: https://sanex.rw/privacy\n\n`;
   text += `You are receiving this official communication regarding ${sectorName || 'sanitation operations'} in Rwanda.\n`;
   if (unsubscribeUrl) text += `Unsubscribe: ${unsubscribeUrl}\n`;
   text += `Support: https://sanex.rw/contact\n`;

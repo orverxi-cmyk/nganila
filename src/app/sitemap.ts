@@ -37,6 +37,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     },
     {
+      url: `${baseUrl}/publications`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
       url: `${baseUrl}/gallery`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
@@ -75,7 +81,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       };
     });
 
-    return [...staticRoutes, ...dynamicArticles];
+    // Also include published newsletters/publications in sitemap
+    let dynamicPublications: MetadataRoute.Sitemap = [];
+    try {
+      const pubSnap = await getDocs(collection(firestore, 'publications'));
+      dynamicPublications = pubSnap.docs
+        .filter(doc => (doc.data().status || 'published') === 'published')
+        .map(doc => {
+          const data = doc.data();
+          const slug = data.slug || doc.id;
+          return {
+            url: `${baseUrl}/publications/${slug}`,
+            lastModified: data.updatedAt ? new Date(data.updatedAt) : (data.publishedAt ? new Date(data.publishedAt) : new Date()),
+            changeFrequency: 'weekly' as const,
+            priority: 0.75,
+            images: data.coverImage ? [data.coverImage] : undefined,
+          };
+        });
+    } catch (pubErr) {
+      console.warn('Failed to fetch publications for dynamic sitemap:', pubErr);
+    }
+
+    return [...staticRoutes, ...dynamicArticles, ...dynamicPublications];
   } catch (error) {
     console.warn('Failed to fetch articles for dynamic sitemap:', error);
     return staticRoutes;

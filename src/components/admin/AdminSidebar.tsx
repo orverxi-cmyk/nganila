@@ -17,7 +17,8 @@ import {
   ExternalLink,
   UserCheck,
   Mail,
-  BookUser
+  BookUser,
+  BookOpen
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -56,6 +57,7 @@ export function AdminSidebar({ activeTab, onSelectTab, pendingRequestsCount }: A
   const isClientsActive = pathname.startsWith("/admin/clients");
   const isContactsActive = pathname.startsWith("/admin/contacts");
   const isEmailsActive = pathname.startsWith("/admin/emails");
+  const isPublicationsActive = pathname.startsWith("/admin/publications");
   const isAnalyticsActive = pathname.startsWith("/admin/analytics") || (pathname === "/admin" && (activeTab === "platforms" || currentTab === "platforms"));
   const isRequestsActive = pathname === "/admin" && (activeTab === "requests" || currentTab === "requests");
   const isOperationsActive = pathname === "/admin" && !currentTab && (activeTab === "operations" || !activeTab);
@@ -205,6 +207,28 @@ export function AdminSidebar({ activeTab, onSelectTab, pendingRequestsCount }: A
               </div>
             </div>
             {isEmailsActive && <ChevronRight className="h-4 w-4 shrink-0" />}
+          </Link>
+
+          {/* Publications & Newsletters */}
+          <Link
+            href="/admin/publications"
+            className={cn(
+              "w-full flex items-center justify-between p-3 rounded-xl font-bold text-xs transition-all text-left",
+              isPublicationsActive
+                ? "bg-primary text-black shadow-sm"
+                : "hover:bg-muted text-foreground"
+            )}
+          >
+            <div className="flex items-center gap-3">
+              <BookOpen className="h-4 w-4 shrink-0 text-black" />
+              <div>
+                <div className="font-bold">Publications</div>
+                <div className={cn("text-[10px] font-normal", isPublicationsActive ? "text-black/80" : "text-muted-foreground")}>
+                  Newsletters &amp; Special Links
+                </div>
+              </div>
+            </div>
+            {isPublicationsActive && <ChevronRight className="h-4 w-4 shrink-0" />}
           </Link>
 
           {/* Divider between primary modules and operational tabs */}

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
+import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,7 +23,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useUser, useFirestore, useCollection } from "@/firebase";
-import { collection } from "firebase/firestore";
+import { collection, query, orderBy, limit, doc, setDoc } from "firebase/firestore";
 import { 
   Mail, 
   Send, 
@@ -59,6 +60,12 @@ import {
   Copy,
   ExternalLink,
   Database,
+  BookOpen,
+  Twitter,
+  Linkedin,
+  Facebook,
+  MessageCircle,
+  Share2,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ZohoContactsImporter } from "./ZohoContactsImporter";
@@ -66,6 +73,18 @@ import { useContactGroups } from "@/hooks/use-contact-groups";
 import { RichTextEditor } from "@/components/RichTextEditor";
 import { EmailStudioBuilder, type EmailBlock } from "./EmailStudioBuilder";
 import { useEmailTemplates } from "@/hooks/use-email-templates";
+import {
+  Publication,
+  PUBLICATION_CATEGORIES,
+  getPublicationSlug,
+  getPublicationUrl,
+  injectWebVersionHeader,
+  getSocialShareLinks,
+  extractExcerptFromHtml,
+  extractFirstImage,
+} from "@/lib/publications";
+import { slugify } from "@/lib/slug";
+import { SpecialLinkGeneratorModal } from "./SpecialLinkGeneratorModal";
 
 export interface CampaignTemplate {
   id: string;
@@ -79,6 +98,15 @@ export interface CampaignTemplate {
 }
 
 export const CAMPAIGN_TEMPLATES: CampaignTemplate[] = [
+  {
+    id: "custom",
+    title: "Custom Designed Newsletter",
+    sector: "Tailored Communication",
+    subject: "WHO ARE WE? Modern Liquid Waste & Wastewater Solutions in Rwanda",
+    isCustom: true,
+    description: "Official SANEX custom newsletter designed in Email Studio.",
+    icon: PenTool,
+  },
   {
     id: "hotel",
     title: "Hotels & Hospitality",
@@ -124,15 +152,6 @@ export const CAMPAIGN_TEMPLATES: CampaignTemplate[] = [
     description: "Designed for corporate office complexes, commercial estates, and public buildings.",
     icon: Building2,
   },
-  {
-    id: "custom",
-    title: "Custom Message",
-    sector: "Tailored Communication",
-    subject: "",
-    isCustom: true,
-    description: "Compose a personalized announcement, follow-up, or custom email from scratch.",
-    icon: PenTool,
-  },
 ];
 
 const EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
@@ -143,8 +162,8 @@ export function ZohoEmailHub() {
   const { toast } = useToast();
   const { groups } = useContactGroups();
 
-  // Selected Campaign / Template (defaults to Hotels)
-  const [selectedCampaignId, setSelectedCampaignId] = useState<string>("hotel");
+  // Selected Campaign / Template (defaults to Custom Designed Newsletter)
+  const [selectedCampaignId, setSelectedCampaignId] = useState<string>("custom");
   const selectedCampaign = useMemo(
     () => CAMPAIGN_TEMPLATES.find((c) => c.id === selectedCampaignId) || CAMPAIGN_TEMPLATES[0],
     [selectedCampaignId]
@@ -174,6 +193,23 @@ export function ZohoEmailHub() {
   } | null>(null);
   const [isImporterOpen, setIsImporterOpen] = useState(false);
 
+  // Online Publications & Special SEO Links
+  const [publishToArchive, setPublishToArchive] = useState(true);
+  const [publicationSlug, setPublicationSlug] = useState("");
+  const [publicationCategory, setPublicationCategory] = useState<string>("Company Announcements");
+  const [includeWebVersionLink, setIncludeWebVersionLink] = useState(true);
+  const [selectedLinkedPubIds, setSelectedLinkedPubIds] = useState<string[]>([]);
+  const [createdPublicationResult, setCreatedPublicationResult] = useState<{
+    title: string;
+    slug: string;
+    url: string;
+    count: number;
+  } | null>(null);
+  const [copiedPubLink, setCopiedPubLink] = useState(false);
+  const [isLinkGenModalOpen, setIsLinkGenModalOpen] = useState(false);
+  const [selectedModalPublication, setSelectedModalPublication] = useState<Publication | null>(null);
+  const [isPublishingDirectly, setIsPublishingDirectly] = useState(false);
+
   // Cloud Sync & Email Templates Engine
   const {
     cloudTemplate,
@@ -191,6 +227,7 @@ export function ZohoEmailHub() {
   const [isImporting, setIsImporting] = useState(false);
   const [copiedScript, setCopiedScript] = useState(false);
   const lastAppliedCloudTimeRef = React.useRef<number>(0);
+  const userHasEditedRef = React.useRef<boolean>(false);
 
   // 1. Restore from local storage draft if available immediately on mount
   useEffect(() => {
@@ -204,9 +241,11 @@ export function ZohoEmailHub() {
     }
   }, [getLocalDraft]);
 
-  // 2. Real-time Firestore Cloud listener: when settings/email_template updates, hydrate active state
+  // 2. Real-time Firestore Cloud listener: hydrate active state ONLY on initial load before user edits.
+  // CRITICAL: Once the user begins editing in the custom email studio, background cloud snapshots MUST NEVER overwrite their active design!
   useEffect(() => {
     if (!cloudTemplate) return;
+    if (userHasEditedRef.current) return;
     if (cloudTemplate.updatedAt && cloudTemplate.updatedAt > lastAppliedCloudTimeRef.current) {
       lastAppliedCloudTimeRef.current = cloudTemplate.updatedAt;
       if (cloudTemplate.blocks && Array.isArray(cloudTemplate.blocks) && cloudTemplate.blocks.length > 0) {
@@ -220,6 +259,7 @@ export function ZohoEmailHub() {
       }
     }
   }, [cloudTemplate]);
+
 
   // 3. Persist local draft as offline/tab cache
   useEffect(() => {
@@ -240,12 +280,29 @@ export function ZohoEmailHub() {
     if (campaign) {
       if (!campaign.isCustom) {
         setSubject(campaign.subject);
+        setPublicationSlug(slugify(campaign.subject));
+        setPublicationCategory(campaign.title);
       } else {
         setSubject("");
+        setPublicationSlug("");
+        setPublicationCategory("Company Announcements");
         setCustomStep("design");
       }
     }
   };
+
+  // Query existing publications for cross-referencing and linking via API
+  const [existingPublications, setExistingPublications] = useState<Publication[]>([]);
+  useEffect(() => {
+    fetch("/api/publications")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.success && Array.isArray(data.publications)) {
+          setExistingPublications(data.publications);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // Query saved contacts from address book (client_contacts)
   const contactsQuery = useMemo(() => {
@@ -427,9 +484,21 @@ export function ZohoEmailHub() {
 
     setIsSending(true);
     setLastDispatchSuccess(null);
+    setCreatedPublicationResult(null);
 
     try {
       const token = user ? await user.getIdToken() : "";
+      const origin = typeof window !== "undefined" ? window.location.origin : "https://sanex.rw";
+      const finalSlug = slugify(publicationSlug || subject || `newsletter-${Date.now()}`);
+      const specialPublicationUrl = `${origin}/publications/${finalSlug}`;
+
+      let htmlToSend = customMessage.trim();
+      if (selectedCampaign.isCustom && publishToArchive && includeWebVersionLink) {
+        if (editorMode === "html" || htmlToSend.includes("<")) {
+          htmlToSend = injectWebVersionHeader(htmlToSend, specialPublicationUrl, subject.trim());
+        }
+      }
+
       const payload: any = {
         to: parsedRecipients.valid,
         cc: ccInput.trim() ? ccInput.trim().split(/[\s,;\n\r]+/).filter(Boolean) : undefined,
@@ -450,8 +519,8 @@ export function ZohoEmailHub() {
       } else {
         // Custom Message
         payload.subject = subject.trim();
-        if (editorMode === "html" || customMessage.includes("<")) {
-          payload.html = customMessage.trim();
+        if (editorMode === "html" || htmlToSend.includes("<")) {
+          payload.html = htmlToSend;
         }
         payload.message = customMessage.trim();
         payload.useBrandedTemplate = useBrandedDesign;
@@ -471,13 +540,110 @@ export function ZohoEmailHub() {
       const data = await res.json();
 
       if (res.ok && data.success) {
+        const sentCount = data.recipientCount || parsedRecipients.valid.length;
         setLastDispatchSuccess({
-          count: data.recipientCount || parsedRecipients.valid.length,
+          count: sentCount,
           title: selectedCampaign.title,
         });
+
+        // If publishToArchive is active, host this custom email on the website as a publication
+        if (publishToArchive) {
+          try {
+            const pubId = `pub_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+            const finalCompiledHtml = (editorMode === "html" || customMessage.includes("<"))
+              ? htmlToSend
+              : `<div style="font-family:sans-serif;line-height:1.6;color:#1e293b;">${customMessage.trim().replace(/\n/g, "<br/>")}</div>`;
+
+            // Resolve linked newsletters
+            const resolvedLinked = selectedLinkedPubIds
+              .map((id) => {
+                const match = existingPublications.find((p) => p.id === id);
+                if (!match) return null;
+                return {
+                  id: match.id,
+                  title: match.title,
+                  slug: getPublicationSlug(match),
+                  category: match.category,
+                  publishedAt: match.publishedAt,
+                };
+              })
+              .filter(Boolean);
+
+            const detectedCover = extractFirstImage(finalCompiledHtml);
+
+            const newPublication: Publication = {
+              id: pubId,
+              slug: finalSlug,
+              title: subject.trim(),
+              subject: subject.trim(),
+              excerpt: extractExcerptFromHtml(finalCompiledHtml),
+              content: finalCompiledHtml,
+              plainText: customMessage.trim(),
+              category: publicationCategory,
+              sector: selectedCampaign.sector || publicationCategory,
+              author: "SANEX Communications",
+              publishedAt: Date.now(),
+              createdAt: Date.now(),
+              updatedAt: Date.now(),
+              recipientCount: sentCount,
+              status: "published",
+              isCustom: true,
+              coverImage: detectedCover,
+              thumbnailImg: detectedCover,
+              linkedNewsletters: resolvedLinked as any,
+              viewsCount: 0,
+            };
+
+            // 1. Reliably save to server publications store & settings/email_template via API
+            try {
+              await fetch("/api/email/template", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  name: subject.trim(),
+                  subject: subject.trim(),
+                  message: finalCompiledHtml,
+                  blocks: customEmailBlocks,
+                  mode: editorMode,
+                  userEmail: user?.email || "admin@sanex.rw",
+                }),
+              });
+            } catch {
+              // Handled gracefully
+            }
+
+            // 2. Client-side Firestore best-effort write
+            if (db) {
+              try {
+                await setDoc(doc(db, "publications", pubId), newPublication, { merge: true });
+                await setDoc(
+                  doc(db, "publications", "pub_custom_sanex_newsletter"),
+                  { ...newPublication, id: "pub_custom_sanex_newsletter" },
+                  { merge: true }
+                );
+              } catch {
+                // Handled gracefully
+              }
+            }
+
+            setCreatedPublicationResult({
+              title: subject.trim(),
+              slug: finalSlug,
+              url: specialPublicationUrl,
+              count: sentCount,
+            });
+
+            setSelectedModalPublication(newPublication);
+            setIsLinkGenModalOpen(true);
+          } catch (pubErr: any) {
+            console.warn("Failed recording publication:", pubErr);
+          }
+        }
+
+
         toast({
           title: "Emails Dispatched Successfully",
-          description: `Delivered to ${data.recipientCount || parsedRecipients.valid.length} recipient(s) from info@sanex.rw.`,
+          description: `Delivered to ${sentCount} recipient(s) from info@sanex.rw.${publishToArchive ? " Special publication link generated!" : ""}`,
         });
       } else {
         toast({
@@ -494,6 +660,124 @@ export function ZohoEmailHub() {
       });
     } finally {
       setIsSending(false);
+    }
+  };
+
+  const handlePublishCurrentEmailToWebsite = async () => {
+    const effectiveSubject = subject.trim() || selectedCampaign.title || "SANEX Official Email Broadcast";
+    if (!effectiveSubject) {
+      toast({
+        variant: "destructive",
+        title: "Subject Required",
+        description: "Please specify an email subject/title to generate the online publication link.",
+      });
+      return;
+    }
+
+    if (!db) return;
+    setIsPublishingDirectly(true);
+
+    try {
+      let finalCompiledHtml = "";
+      if (selectedCampaign.isCustom) {
+        if (editorMode === "html") {
+          finalCompiledHtml = customMessage;
+        } else {
+          finalCompiledHtml = customMessage.replace(/\n/g, "<br/>");
+        }
+      } else {
+        finalCompiledHtml = `<div style="font-family:sans-serif;line-height:1.6;color:#1e293b;"><h2 style="color:#0f172a;">${effectiveSubject}</h2><p>${selectedCampaign.description}</p></div>`;
+      }
+
+      const finalSlug = slugify(publicationSlug || effectiveSubject);
+      const pubId = `pub_${Date.now()}`;
+      const origin = typeof window !== "undefined" ? window.location.origin : "https://sanex.rw";
+      const specialPublicationUrl = `${origin}/publications/${finalSlug}`;
+
+      const resolvedLinked = selectedLinkedPubIds
+        .map((id) => {
+          const match = existingPublications.find((p) => p.id === id);
+          if (!match) return null;
+          return {
+            id: match.id,
+            title: match.title,
+            slug: getPublicationSlug(match),
+            category: match.category,
+            publishedAt: match.publishedAt,
+          };
+        })
+        .filter(Boolean);
+
+      const newPub: Publication = {
+        id: pubId,
+        slug: finalSlug,
+        title: effectiveSubject,
+        subject: effectiveSubject,
+        excerpt: extractExcerptFromHtml(finalCompiledHtml) || effectiveSubject,
+        content: finalCompiledHtml || `<p>${effectiveSubject}</p>`,
+        plainText: customMessage.trim() || effectiveSubject,
+        category: publicationCategory,
+        sector: selectedCampaign.sector || publicationCategory,
+        author: "SANEX Communications",
+        publishedAt: Date.now(),
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        recipientCount: 0,
+        status: "published",
+        linkedNewsletters: resolvedLinked as any,
+        viewsCount: 0,
+      };
+
+      // 1. Reliably save to server publications store & settings/email_template via API
+      try {
+        await fetch("/api/email/template", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: effectiveSubject,
+            subject: effectiveSubject,
+            message: finalCompiledHtml,
+            blocks: customEmailBlocks,
+            mode: editorMode,
+            userEmail: user?.email || "admin@sanex.rw",
+          }),
+        });
+      } catch {
+        // Handled gracefully
+      }
+
+      // 2. Best effort client-side Firestore write
+      if (db) {
+        try {
+          await setDoc(doc(db, "publications", pubId), newPub, { merge: true });
+        } catch {
+          // Handled gracefully
+        }
+      }
+
+
+      setCreatedPublicationResult({
+        title: effectiveSubject,
+        slug: finalSlug,
+        url: specialPublicationUrl,
+        count: 0,
+      });
+
+      setSelectedModalPublication(newPub);
+      setIsLinkGenModalOpen(true);
+
+      toast({
+        title: "Published Online & Link Generated!",
+        description: `Live SEO Link: ${specialPublicationUrl}`,
+      });
+    } catch (err: any) {
+      toast({
+        variant: "destructive",
+        title: "Publish Failed",
+        description: err.message || "Failed to save publication to database.",
+      });
+    } finally {
+      setIsPublishingDirectly(false);
     }
   };
 
@@ -740,23 +1024,41 @@ export function ZohoEmailHub() {
                     </button>
                   </div>
 
-                  <Button
-                    type="submit"
-                    disabled={isSending || parsedRecipients.valid.length === 0}
-                    className="w-full sm:w-auto h-10 px-6 text-xs font-extrabold bg-primary text-black hover:bg-primary/90 gap-2 shadow-sm"
-                  >
-                    {isSending ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Sending Emails...
-                      </>
-                    ) : (
-                      <>
-                        <SendHorizontal className="h-4 w-4" />
-                        Send Campaign to {parsedRecipients.valid.length} Recipient{parsedRecipients.valid.length === 1 ? "" : "s"}
-                      </>
-                    )}
-                  </Button>
+                  <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap w-full sm:w-auto">
+                    {/* Direct Publish Online & Link Generator Button */}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handlePublishCurrentEmailToWebsite}
+                      disabled={isPublishingDirectly || isSending || (!subject.trim() && !customMessage.trim())}
+                      className="h-10 px-4 text-xs font-extrabold bg-primary/10 border-primary/30 text-slate-900 hover:bg-primary/20 gap-1.5 shadow-2xs"
+                    >
+                      {isPublishingDirectly ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Sparkles className="h-3.5 w-3.5 text-primary" />
+                      )}
+                      <span>Publish Online &amp; Get Link</span>
+                    </Button>
+
+                    <Button
+                      type="submit"
+                      disabled={isSending || parsedRecipients.valid.length === 0}
+                      className="w-full sm:w-auto h-10 px-6 text-xs font-extrabold bg-primary text-black hover:bg-primary/90 gap-2 shadow-sm"
+                    >
+                      {isSending ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Sending Emails...
+                        </>
+                      ) : (
+                        <>
+                          <SendHorizontal className="h-4 w-4" />
+                          Send Campaign to {parsedRecipients.valid.length} Recipient{parsedRecipients.valid.length === 1 ? "" : "s"}
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </div>
               );
 
@@ -767,25 +1069,35 @@ export function ZohoEmailHub() {
                       <EmailStudioBuilder
                         initialHtml={customMessage}
                         initialBlocks={customEmailBlocks || undefined}
-                        onSaveAndProceed={(compiledHtml, savedBlocks) => {
+                        onChange={(updatedBlocks, compiledHtml) => {
+                          userHasEditedRef.current = true;
+                          setCustomEmailBlocks(updatedBlocks);
+                          setCustomMessage(compiledHtml);
+                          setEditorMode("html");
+                        }}
+                        onSaveAndProceed={async (compiledHtml, savedBlocks) => {
+                          userHasEditedRef.current = true;
                           setCustomMessage(compiledHtml);
                           setCustomEmailBlocks(savedBlocks);
                           setEditorMode("html");
                           setCustomStep("send");
-                          saveActiveTemplateToCloud({
+                          await saveActiveTemplateToCloud({
+                            name: subject.trim() || "SANEX Official Custom Email Broadcast",
                             message: compiledHtml,
                             blocks: savedBlocks,
                             mode: "html",
                           });
                           toast({
-                            title: "Template Saved & Synced",
-                            description: "Your custom email design is synchronized across localhost and live website.",
+                            title: "Custom Email Saved",
+                            description: "Your design changes are saved and ready to send. Recipient selection is open below.",
                           });
                         }}
                         onBackToSending={(currentBlocks) => {
                           if (currentBlocks) {
+                            userHasEditedRef.current = true;
                             setCustomEmailBlocks(currentBlocks);
                             saveActiveTemplateToCloud({
+                              name: subject.trim() || "SANEX Official Custom Email Broadcast",
                               message: customMessage,
                               blocks: currentBlocks,
                               mode: editorMode,
@@ -794,17 +1106,19 @@ export function ZohoEmailHub() {
                           setCustomStep("send");
                         }}
                         onSaveToCloud={async (compiledHtml, savedBlocks) => {
+                          userHasEditedRef.current = true;
                           setCustomMessage(compiledHtml);
                           setCustomEmailBlocks(savedBlocks);
                           const res = await saveActiveTemplateToCloud({
+                            name: subject.trim() || "SANEX Official Custom Email Broadcast",
                             message: compiledHtml,
                             blocks: savedBlocks,
                             mode: "html",
                           });
                           if (res.success) {
                             toast({
-                              title: "Cloud Synced",
-                              description: "Template saved to Firestore and synchronized with live website.",
+                              title: "Custom Email Saved & Published",
+                              description: "Your custom email design is saved to Cloud and live website publication.",
                             });
                           } else {
                             toast({
@@ -819,480 +1133,7 @@ export function ZohoEmailHub() {
                         cloudSyncStatus={syncStatus}
                         lastSyncTime={lastSyncTime}
                       />
-                    </div>
-                  );
-                }
 
-                if (false as any) {
-                  return (
-                    <div className="space-y-4 pt-1">
-                      {/* Design Stage Top Navigation Bar */}
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b">
-                        <div className="flex items-center gap-2.5">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setCustomStep("send")}
-                            className="h-8 text-xs font-bold gap-1.5 text-slate-700 bg-white hover:bg-slate-50"
-                          >
-                            <ArrowLeft className="h-3.5 w-3.5" /> Back to Sending
-                          </Button>
-                          <div>
-                            <h2 className="text-sm font-extrabold text-slate-900 flex items-center gap-1.5 m-0">
-                              <PenTool className="h-4 w-4 text-primary" /> Custom Email Design Studio
-                            </h2>
-                            <p className="text-[10px] text-muted-foreground m-0">
-                              Layout building blocks & live preview. When finished, proceed to sending.
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setShowPreview(true)}
-                            className="h-8 text-xs font-bold gap-1 border-primary text-black bg-primary/20 hover:bg-primary/30"
-                          >
-                            <Eye className="h-3.5 w-3.5 text-black" /> Preview
-                          </Button>
-                          <Button
-                            type="button"
-                            onClick={() => setCustomStep("send")}
-                            className="h-8 text-xs font-extrabold bg-primary text-black hover:bg-primary/90 gap-1.5 shadow-sm"
-                          >
-                            <span>Save & Send</span>
-                            <ArrowRight className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      </div>
-
-                      {/* Design Studio Split Grid: Building Blocks on Left + Live Canvas on Right */}
-                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                        {/* Left Sidebar: Building Blocks & Design Options */}
-                        <div className="lg:col-span-5 xl:col-span-4 space-y-4">
-                          {/* Editor Mode & Layout Shortcuts */}
-                          <div className="p-3.5 rounded-lg border bg-slate-50 space-y-3">
-                            <div className="flex items-center justify-between">
-                              <Label className="text-xs font-bold text-foreground">
-                                Editor Mode
-                              </Label>
-                              <div className="flex items-center gap-1 border rounded-lg p-0.5 bg-white">
-                                <button
-                                  type="button"
-                                  onClick={() => setEditorMode("text")}
-                                  className={`px-2.5 py-1 text-[10px] font-bold rounded flex items-center gap-1 ${
-                                    editorMode === "text" ? "bg-slate-900 text-white shadow-xs" : "text-slate-600 hover:text-slate-900"
-                                  }`}
-                                >
-                                  <PenTool className="h-3 w-3" /> Visual Editor
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => setEditorMode("html")}
-                                  className={`px-2.5 py-1 text-[10px] font-bold rounded flex items-center gap-1 ${
-                                    editorMode === "html" ? "bg-slate-900 text-white shadow-xs" : "text-slate-600 hover:text-slate-900"
-                                  }`}
-                                >
-                                  <Code className="h-3 w-3" /> HTML / CSS
-                                </button>
-                              </div>
-                            </div>
-
-                            {/* Quick Layout Snippets */}
-                            <div className="space-y-1.5 pt-2 border-t border-slate-200">
-                              <span className="text-[11px] text-muted-foreground font-bold flex items-center gap-1">
-                                <Columns className="h-3.5 w-3.5" /> Layout Building Blocks:
-                              </span>
-                              <div className="flex items-center gap-1.5 flex-wrap">
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() =>
-                                    setCustomMessage((prev) =>
-                                      prev +
-                                      `\n<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:16px 0; border-collapse:collapse;"><tr><td width="48%" valign="top" style="padding-right:4%;"><h3 style="margin-top:0; color:#1e293b;">Column 1</h3><p style="color:#475569; font-size:14px; line-height:1.5;">First column text or image...</p></td><td width="48%" valign="top"><h3 style="margin-top:0; color:#1e293b;">Column 2</h3><p style="color:#475569; font-size:14px; line-height:1.5;">Second column text or image...</p></td></tr></table>`
-                                    )
-                                  }
-                                  className="h-6 text-[10px] px-2 gap-1 bg-white"
-                                  title="Insert 2-column email table"
-                                >
-                                  2 Columns
-                                </Button>
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() =>
-                                    setCustomMessage((prev) =>
-                                      prev +
-                                      `\n<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:16px 0; border-collapse:collapse;"><tr><td width="30%" valign="top" style="padding-right:3%;"><h4 style="margin-top:0; color:#1e293b;">Col 1</h4><p style="color:#475569; font-size:13px; line-height:1.4;">Column 1 content...</p></td><td width="30%" valign="top" style="padding-right:3%;"><h4 style="margin-top:0; color:#1e293b;">Col 2</h4><p style="color:#475569; font-size:13px; line-height:1.4;">Column 2 content...</p></td><td width="30%" valign="top"><h4 style="margin-top:0; color:#1e293b;">Col 3</h4><p style="color:#475569; font-size:13px; line-height:1.4;">Column 3 content...</p></td></tr></table>`
-                                    )
-                                  }
-                                  className="h-6 text-[10px] px-2 gap-1 bg-white"
-                                  title="Insert 3-column email table"
-                                >
-                                  3 Columns
-                                </Button>
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() =>
-                                    setCustomMessage((prev) =>
-                                      prev +
-                                      `\n<img src="https://sanex.rw/images/sanitation.jpg" alt="SANEX Sanitation" style="width:240px; max-width:45%; float:left; margin:0 16px 12px 0; border-radius:8px;" />`
-                                    )
-                                  }
-                                  className="h-6 text-[10px] px-2 bg-white"
-                                  title="Float Left (text wraps around right)"
-                                >
-                                  Photo Left
-                                </Button>
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() =>
-                                    setCustomMessage((prev) =>
-                                      prev +
-                                      `\n<img src="https://sanex.rw/images/sanitation.jpg" alt="SANEX Sanitation" style="width:240px; max-width:45%; float:right; margin:0 0 12px 16px; border-radius:8px;" />`
-                                    )
-                                  }
-                                  className="h-6 text-[10px] px-2 bg-white"
-                                  title="Float Right (text wraps around right)"
-                                >
-                                  Photo Right
-                                </Button>
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() =>
-                                    setCustomMessage((prev) =>
-                                      prev +
-                                      `\n<div style="text-align:center; margin:16px 0;"><img src="https://sanex.rw/images/sanitation.jpg" alt="SANEX Sanitation" style="width:50%; max-width:320px; height:auto; border-radius:8px; display:inline-block;" /></div>`
-                                    )
-                                  }
-                                  className="h-6 text-[10px] px-2 bg-white"
-                                  title="Centered 50% width"
-                                >
-                                  50% Ctr
-                                </Button>
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() =>
-                                    setCustomMessage((prev) =>
-                                      prev +
-                                      `\n<img src="https://sanex.rw/images/sanitation.jpg" alt="SANEX Sanitation" style="width:100%; height:auto; border-radius:8px; margin:16px 0; display:block;" />`
-                                    )
-                                  }
-                                  className="h-6 text-[10px] px-2 bg-white"
-                                  title="Full width 100%"
-                                >
-                                  Full 100%
-                                </Button>
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() =>
-                                    setCustomMessage((prev) =>
-                                      prev +
-                                      `\n<div style="text-align:center; margin:16px 0;"><a href="https://sanex.rw/book" style="background-color:#8DB833; color:#000000; font-weight:bold; padding:12px 24px; border-radius:8px; text-decoration:none; display:inline-block;">Book Service Now</a></div>`
-                                    )
-                                  }
-                                  className="h-6 text-[10px] px-2 gap-1 bg-white"
-                                >
-                                  Button
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Apply SANEX Official Design Switch */}
-                          <div className="flex items-center justify-between p-3.5 rounded-lg border bg-slate-50">
-                            <div>
-                              <div className="text-xs font-bold text-foreground">Apply SANEX Official Design</div>
-                              <div className="text-[10px] text-muted-foreground">
-                                Wraps canvas with SANEX header banner, contact info, and footer
-                              </div>
-                            </div>
-                            <Switch
-                              checked={useBrandedDesign}
-                              onCheckedChange={setUseBrandedDesign}
-                              disabled={isSending}
-                            />
-                          </div>
-
-                          {useBrandedDesign && (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 rounded-lg border bg-slate-50/50">
-                              <div className="space-y-1">
-                                <Label htmlFor="cta-text" className="text-[10px] uppercase font-bold text-muted-foreground">
-                                  Action Button Text
-                                </Label>
-                                <Input
-                                  id="cta-text"
-                                  type="text"
-                                  value={ctaText}
-                                  onChange={(e) => setCtaText(e.target.value)}
-                                  placeholder="e.g. Book Service Now, Learn More"
-                                  className="h-8 text-xs bg-white"
-                                  disabled={isSending}
-                                />
-                              </div>
-                              <div className="space-y-1">
-                                <Label htmlFor="cta-url" className="text-[10px] uppercase font-bold text-muted-foreground">
-                                  Button Web URL
-                                </Label>
-                                <Input
-                                  id="cta-url"
-                                  type="url"
-                                  value={ctaUrl}
-                                  onChange={(e) => setCtaUrl(e.target.value)}
-                                  placeholder="https://sanex.rw/book"
-                                  className="h-8 text-xs bg-white"
-                                  disabled={isSending}
-                                />
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Proceed to Send Action Button */}
-                          <div className="pt-1">
-                            <Button
-                              type="button"
-                              onClick={() => setCustomStep("send")}
-                              className="w-full h-11 text-xs font-extrabold bg-primary text-black hover:bg-primary/90 gap-2 shadow-sm"
-                            >
-                              <span>Save & Send</span>
-                              <ArrowRight className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-
-                        {/* Right Column: Full-Height Interactive Mailchimp-Style Canvas */}
-                        <div className="lg:col-span-7 xl:col-span-8 sticky top-4 flex flex-col h-[calc(100vh-140px)] min-h-[680px] bg-slate-100 rounded-xl border border-slate-200 overflow-hidden shadow-xs">
-                          {/* Canvas Header */}
-                          <div className="p-3 bg-white border-b flex items-center justify-between gap-2 shrink-0">
-                            <div className="flex items-center gap-2">
-                              <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                              <span className="text-xs font-bold text-slate-800">Email Canvas (Live Editor)</span>
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                              {/* Desktop & Mobile View switcher */}
-                              <div className="flex items-center border rounded-md overflow-hidden bg-slate-50 p-0.5">
-                                <button
-                                  type="button"
-                                  onClick={() => setPreviewDevice("desktop")}
-                                  className={`px-2.5 py-1 text-[11px] font-bold flex items-center gap-1 rounded transition-colors ${
-                                    previewDevice === "desktop"
-                                      ? "bg-slate-900 text-white shadow-xs"
-                                      : "text-slate-600 hover:text-slate-900"
-                                  }`}
-                                >
-                                  <Monitor className="h-3 w-3" /> Desktop (600px)
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => setPreviewDevice("mobile")}
-                                  className={`px-2.5 py-1 text-[11px] font-bold flex items-center gap-1 rounded transition-colors ${
-                                    previewDevice === "mobile"
-                                      ? "bg-slate-900 text-white shadow-xs"
-                                      : "text-slate-600 hover:text-slate-900"
-                                  }`}
-                                >
-                                  <Smartphone className="h-3 w-3" /> Mobile (375px)
-                                </button>
-                              </div>
-
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setShowPreview(true)}
-                                className="h-7 text-xs font-bold gap-1 border-primary text-black bg-primary/20 hover:bg-primary/30"
-                              >
-                                <Eye className="h-3.5 w-3.5 text-black" /> Preview
-                              </Button>
-
-                              <Button
-                                type="button"
-                                onClick={() => setCustomStep("send")}
-                                size="sm"
-                                className="h-7 text-xs font-extrabold bg-primary text-black hover:bg-primary/90 gap-1 shadow-xs"
-                              >
-                                <span>Done</span>
-                                <ArrowRight className="h-3.5 w-3.5" />
-                              </Button>
-                            </div>
-                          </div>
-
-                          {/* Scrollable Canvas Sheet */}
-                          <div className="flex-1 overflow-y-auto p-4 sm:p-6 flex justify-center items-start">
-                            <div
-                              className={`w-full transition-all duration-300 ${
-                                previewDevice === "mobile" ? "max-w-[375px]" : "max-w-[600px]"
-                              }`}
-                            >
-                              {useBrandedDesign ? (
-                                <div className="bg-white rounded-xl overflow-hidden shadow-md border border-slate-200">
-                                  {/* Official SANEX Header Banner */}
-                                  <div className="bg-[#0f172a] p-5 sm:p-6 text-left border-b-4 border-[#8DB833]">
-                                    <h1 className="m-0 text-base sm:text-lg font-extrabold text-[#8DB833] tracking-wide uppercase">
-                                      SANEX <span className="text-white font-normal">Company Ltd</span>
-                                    </h1>
-                                    <p className="mt-1 mb-0 text-[10px] text-slate-400 uppercase tracking-widest font-semibold">
-                                      Sustainable Liquid Waste Management · Rwanda
-                                    </p>
-                                  </div>
-
-                                  {/* Email Body with Live Embedded Editor */}
-                                  <div className="p-5 sm:p-6 space-y-4 text-xs leading-relaxed text-slate-800">
-                                    {subject && (
-                                      <h2 className="text-base font-extrabold text-slate-900 border-b pb-2 m-0">
-                                        {subject}
-                                      </h2>
-                                    )}
-                                    {recipientOrgName && (
-                                      <p className="font-bold text-slate-900 text-xs m-0">
-                                        Dear {recipientOrgName},
-                                      </p>
-                                    )}
-
-                                    {/* Live Editor Embedded Inside the Email Body */}
-                                    <div className="pt-1">
-                                      {editorMode === "text" ? (
-                                        <RichTextEditor
-                                          value={customMessage}
-                                          onChange={(content) => setCustomMessage(content)}
-                                          placeholder="Type or format your message directly inside the email here..."
-                                        />
-                                      ) : (
-                                        <Textarea
-                                          id="custom-message-html"
-                                          value={customMessage}
-                                          onChange={(e) => setCustomMessage(e.target.value)}
-                                          placeholder="Paste your HTML/CSS code directly here..."
-                                          rows={14}
-                                          className="text-xs leading-relaxed bg-white font-mono text-[11px]"
-                                          disabled={isSending}
-                                        />
-                                      )}
-                                    </div>
-
-                                    {/* CTA Button */}
-                                    {ctaText && ctaUrl && (
-                                      <div className="pt-3 text-center">
-                                        <a
-                                          href={ctaUrl}
-                                          target="_blank"
-                                          rel="noreferrer"
-                                          style={{
-                                            backgroundColor: "#8DB833",
-                                            color: "#000000",
-                                            fontWeight: 800,
-                                            fontSize: "13px",
-                                            textDecoration: "none",
-                                            padding: "10px 24px",
-                                            borderRadius: "8px",
-                                            display: "inline-block",
-                                            letterSpacing: "0.5px",
-                                            textTransform: "uppercase",
-                                          }}
-                                        >
-                                          {ctaText}
-                                        </a>
-                                      </div>
-                                    )}
-
-                                    {/* Support Contact */}
-                                    <div className="border-t border-slate-200 pt-3 mt-4 text-[11px] text-slate-500">
-                                      For operational inquiries or bookings, contact SANEX at{" "}
-                                      <strong className="text-slate-800">+250 788 384 000</strong> or{" "}
-                                      <strong className="text-slate-800">info@sanex.rw</strong>.
-                                    </div>
-                                  </div>
-
-                                  {/* Official SANEX Footer */}
-                                  <div className="bg-slate-50 p-4 text-center border-t border-slate-200 text-[11px] text-slate-500 space-y-1">
-                                    <p className="m-0 font-bold text-slate-800">SANEX Company Ltd</p>
-                                    <p className="m-0 text-[10px]">
-                                      Leading Liquid Waste Management, Decentralized Wastewater Treatment & Eco-Sanitation.
-                                    </p>
-                                    <p className="m-0 text-[10px] text-slate-400">
-                                      Kigali, Rwanda · Phone: +250 788 384 000 · Email: info@sanex.rw
-                                    </p>
-                                  </div>
-                                </div>
-                              ) : (
-                                /* Raw Unbranded Custom Email Canvas */
-                                <div className="bg-white rounded-xl shadow-md border border-slate-200 p-5 sm:p-6 space-y-4 text-xs leading-relaxed text-slate-800">
-                                  {subject && (
-                                    <h2 className="text-base font-extrabold text-slate-900 border-b pb-2 m-0">
-                                      {subject}
-                                    </h2>
-                                  )}
-                                  {recipientOrgName && (
-                                    <p className="font-bold text-slate-900 text-xs m-0">
-                                      Dear {recipientOrgName},
-                                    </p>
-                                  )}
-
-                                  {/* Live Editor Embedded Directly */}
-                                  <div className="pt-1">
-                                    {editorMode === "text" ? (
-                                      <RichTextEditor
-                                        value={customMessage}
-                                        onChange={(content) => setCustomMessage(content)}
-                                        placeholder="Type your unbranded message directly inside the email here..."
-                                      />
-                                    ) : (
-                                      <Textarea
-                                        id="custom-message-html"
-                                        value={customMessage}
-                                        onChange={(e) => setCustomMessage(e.target.value)}
-                                        placeholder="Paste your HTML/CSS code directly here..."
-                                        rows={14}
-                                        className="text-xs leading-relaxed bg-white font-mono text-[11px]"
-                                        disabled={isSending}
-                                      />
-                                    )}
-                                  </div>
-
-                                  {ctaText && ctaUrl && (
-                                    <div className="pt-3 text-center">
-                                      <a
-                                        href={ctaUrl}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        style={{
-                                          backgroundColor: "#8DB833",
-                                          color: "#000000",
-                                          fontWeight: 800,
-                                          fontSize: "13px",
-                                          textDecoration: "none",
-                                          padding: "10px 24px",
-                                          borderRadius: "8px",
-                                          display: "inline-block",
-                                        }}
-                                      >
-                                        {ctaText}
-                                      </a>
-                                    </div>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
                     </div>
                   );
                 }
@@ -1387,6 +1228,152 @@ export function ZohoEmailHub() {
                         className="h-9 text-xs bg-white"
                         disabled={isSending}
                       />
+                    </div>
+
+                    {/* Online Publication & Special Link Settings */}
+                    <div className="p-4 rounded-xl border border-primary/30 bg-primary/5 space-y-3.5">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-2 font-extrabold text-xs text-foreground">
+                            <BookOpen className="h-4 w-4 text-primary" />
+                            <span>Host as Public Web Publication &amp; Generate Special SEO Link</span>
+                          </div>
+                          <p className="text-[11px] text-muted-foreground m-0">
+                            Hosts this sent custom email on the website and generates a special shareable SEO link for social media.
+                          </p>
+                        </div>
+                        <Switch
+                          checked={publishToArchive}
+                          onCheckedChange={setPublishToArchive}
+                        />
+                      </div>
+
+                      {publishToArchive && (
+                        <div className="space-y-3 pt-2 border-t border-primary/20">
+                          {/* Live Special SEO Link Preview */}
+                          <div className="p-3 rounded-lg bg-white border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-2xs">
+                            <div className="min-w-0 flex-1">
+                              <span className="text-[10px] uppercase font-bold text-muted-foreground block">
+                                Generated Special SEO Link:
+                              </span>
+                              <span className="text-xs font-mono font-bold text-primary truncate block">
+                                {typeof window !== "undefined" ? window.location.origin : "https://sanex.rw"}/publications/{slugify(publicationSlug || subject || "custom-email")}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <Badge className="bg-primary/20 text-black border-primary/30 text-[9px] font-bold uppercase tracking-wider">
+                                Special Link
+                              </Badge>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {/* Customizable Slug Input */}
+                            <div className="space-y-1">
+                              <div className="flex items-center justify-between">
+                                <Label className="text-[10px] uppercase font-bold text-muted-foreground">
+                                  Custom SEO Keywords (Slug)
+                                </Label>
+                                <span className="text-[9px] text-muted-foreground">sanex.rw/publications/...</span>
+                              </div>
+                              <Input
+                                value={publicationSlug}
+                                onChange={(e) => setPublicationSlug(slugify(e.target.value))}
+                                placeholder={slugify(subject) || "sanitation-updates-october-2026"}
+                                className="h-8 text-xs font-mono bg-white"
+                                disabled={isSending}
+                              />
+                            </div>
+
+                            {/* Category Selector */}
+                            <div className="space-y-1">
+                              <Label className="text-[10px] uppercase font-bold text-muted-foreground">
+                                Publication Category / Sector
+                              </Label>
+                              <Select
+                                value={publicationCategory}
+                                onValueChange={setPublicationCategory}
+                                disabled={isSending}
+                              >
+                                <SelectTrigger className="h-8 text-xs bg-white">
+                                  <SelectValue placeholder="Category..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {PUBLICATION_CATEGORIES.map((cat) => (
+                                    <SelectItem key={cat} value={cat} className="text-xs">
+                                      {cat}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+
+                          {/* Link to Various Newsletters */}
+                          <div className="space-y-1.5 pt-1">
+                            <div className="flex items-center justify-between">
+                              <Label className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1">
+                                <Link2 className="h-3 w-3 text-primary" /> Link to other newsletters:
+                              </Label>
+                              {selectedLinkedPubIds.length > 0 && (
+                                <span className="text-[10px] font-bold text-primary">
+                                  {selectedLinkedPubIds.length} newsletter{selectedLinkedPubIds.length === 1 ? "" : "s"} linked
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[10px] text-muted-foreground m-0">
+                              Select existing newsletters to link to this publication. Readers can explore related past issues.
+                            </p>
+
+                            {existingPublications.length > 0 ? (
+                              <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto p-2 rounded-lg border bg-white">
+                                {existingPublications.map((p) => {
+                                  const isSelected = selectedLinkedPubIds.includes(p.id);
+                                  return (
+                                    <button
+                                      key={p.id}
+                                      type="button"
+                                      onClick={() => {
+                                        if (isSelected) {
+                                          setSelectedLinkedPubIds(selectedLinkedPubIds.filter((id) => id !== p.id));
+                                        } else {
+                                          setSelectedLinkedPubIds([...selectedLinkedPubIds, p.id]);
+                                        }
+                                      }}
+                                      className={`text-[10px] px-2 py-0.5 rounded-full border transition-all flex items-center gap-1 ${
+                                        isSelected
+                                          ? "bg-primary text-black border-primary font-bold shadow-2xs"
+                                          : "bg-slate-50 text-slate-700 border-slate-200 hover:border-slate-300"
+                                      }`}
+                                    >
+                                      {isSelected && <Check className="h-2.5 w-2.5" />}
+                                      <span className="truncate max-w-[170px]">{p.title}</span>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            ) : (
+                              <p className="text-[11px] text-muted-foreground italic">
+                                No previous newsletters yet. This custom email will become your first publication!
+                              </p>
+                            )}
+                          </div>
+
+                          {/* View in Browser Header Checkbox */}
+                          <div className="flex items-center gap-2 pt-1 border-t border-primary/20">
+                            <input
+                              type="checkbox"
+                              id="include-web-link-toggle"
+                              checked={includeWebVersionLink}
+                              onChange={(e) => setIncludeWebVersionLink(e.target.checked)}
+                              className="h-3.5 w-3.5 rounded border-slate-300 text-primary focus:ring-primary cursor-pointer"
+                            />
+                            <label htmlFor="include-web-link-toggle" className="text-xs text-slate-700 cursor-pointer select-none">
+                              Include <span className="font-bold text-slate-900">&quot;View this email in your browser&quot;</span> header bar in dispatched email
+                            </label>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* Audience Section */}
@@ -1521,18 +1508,174 @@ export function ZohoEmailHub() {
               </Dialog>
             )}
 
-            {/* Success Card */}
+            {/* Success Card with Special Publication Link & Social Share */}
             {lastDispatchSuccess && (
-              <div className="p-4 rounded-xl border border-[#8DB833]/40 bg-[#8DB833]/10 text-[#0f172a] space-y-1">
-                <div className="font-extrabold text-sm flex items-center gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-[#8DB833]" />
-                  Campaign Dispatched Successfully
+              <div className="p-5 rounded-2xl border border-emerald-500/30 bg-emerald-50/70 text-slate-900 space-y-4 shadow-xs">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-emerald-200/60 pb-3">
+                  <div className="font-extrabold text-sm flex items-center gap-2 text-emerald-900">
+                    <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
+                    <span>
+                      {createdPublicationResult
+                        ? "Campaign Dispatched & Published Online!"
+                        : "Campaign Dispatched Successfully"}
+                    </span>
+                  </div>
+                  <span className="text-xs text-emerald-800 font-semibold">
+                    {lastDispatchSuccess.count} recipient{lastDispatchSuccess.count === 1 ? "" : "s"} reached
+                  </span>
                 </div>
-                <p className="text-xs text-slate-700">
-                  <strong>{lastDispatchSuccess.title}</strong> was successfully dispatched to{" "}
-                  <strong>{lastDispatchSuccess.count} recipient(s)</strong> from{" "}
-                  <strong>info@sanex.rw</strong>.
+
+                <p className="text-xs text-slate-700 m-0 leading-relaxed">
+                  <strong>{lastDispatchSuccess.title}</strong> was successfully dispatched from{" "}
+                  <strong className="font-mono text-slate-900">info@sanex.rw</strong>.
                 </p>
+
+                {createdPublicationResult && (
+                  <div className="space-y-3 p-4 bg-white rounded-xl border border-emerald-200/80 shadow-2xs">
+                    {/* Special SEO Link Preview */}
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] uppercase font-bold text-slate-500 flex items-center gap-1">
+                          <BookOpen className="h-3 w-3 text-primary" /> Special SEO Publication Link (Live Web Version):
+                        </span>
+                        <Badge className="bg-primary/20 text-black border-primary/30 text-[9px] font-bold">
+                          Live On Website
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                        <span className="text-xs font-mono font-bold text-primary truncate max-w-full bg-slate-50 px-3 py-1.5 rounded-lg border flex-1">
+                          {createdPublicationResult.url}
+                        </span>
+
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={() => {
+                            if (navigator.clipboard) {
+                              navigator.clipboard.writeText(createdPublicationResult.url);
+                              setCopiedPubLink(true);
+                              setTimeout(() => setCopiedPubLink(false), 2500);
+                              toast({
+                                title: "Special Link Copied",
+                                description: createdPublicationResult.url,
+                              });
+                            }
+                          }}
+                          className={`h-8 text-xs font-bold gap-1.5 shrink-0 transition-all ${
+                            copiedPubLink
+                              ? "bg-emerald-600 text-white hover:bg-emerald-700"
+                              : "bg-slate-900 text-white hover:bg-black"
+                          }`}
+                        >
+                          {copiedPubLink ? (
+                            <>
+                              <Check className="h-3.5 w-3.5" />
+                              <span>Copied!</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="h-3.5 w-3.5" />
+                              <span>Copy Link</span>
+                            </>
+                          )}
+                        </Button>
+
+                        <Button
+                          asChild
+                          size="sm"
+                          variant="outline"
+                          className="h-8 text-xs font-bold gap-1 bg-white hover:bg-slate-50 shrink-0"
+                        >
+                          <Link href={createdPublicationResult.url} target="_blank">
+                            <ExternalLink className="h-3.5 w-3.5 text-primary" /> View Live
+                          </Link>
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Social Media Sharing */}
+                    <div className="pt-2 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <span className="text-[11px] font-bold text-slate-700 flex items-center gap-1.5">
+                        <Share2 className="h-3.5 w-3.5 text-primary" /> Share this newsletter on social media:
+                      </span>
+
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            const links = getSocialShareLinks(
+                              createdPublicationResult.title,
+                              createdPublicationResult.url
+                            );
+                            window.open(links.linkedin, "_blank", "width=600,height=480");
+                          }}
+                          className="h-7 px-2.5 text-xs font-bold gap-1 bg-white hover:bg-slate-50 text-slate-800"
+                        >
+                          <Linkedin className="h-3 w-3 text-[#0A66C2]" /> LinkedIn
+                        </Button>
+
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            const links = getSocialShareLinks(
+                              createdPublicationResult.title,
+                              createdPublicationResult.url
+                            );
+                            window.open(links.twitter, "_blank", "width=600,height=480");
+                          }}
+                          className="h-7 px-2.5 text-xs font-bold gap-1 bg-white hover:bg-slate-50 text-slate-800"
+                        >
+                          <Twitter className="h-3 w-3 text-[#1DA1F2]" /> Twitter / X
+                        </Button>
+
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            const links = getSocialShareLinks(
+                              createdPublicationResult.title,
+                              createdPublicationResult.url
+                            );
+                            window.open(links.whatsapp, "_blank", "width=600,height=480");
+                          }}
+                          className="h-7 px-2.5 text-xs font-bold gap-1 bg-white hover:bg-slate-50 text-slate-800"
+                        >
+                          <MessageCircle className="h-3 w-3 text-emerald-600" /> WhatsApp
+                        </Button>
+
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            const links = getSocialShareLinks(
+                              createdPublicationResult.title,
+                              createdPublicationResult.url
+                            );
+                            window.open(links.facebook, "_blank", "width=600,height=480");
+                          }}
+                          className="h-7 px-2.5 text-xs font-bold gap-1 bg-white hover:bg-slate-50 text-slate-800"
+                        >
+                          <Facebook className="h-3 w-3 text-[#1877F2]" /> Facebook
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="pt-2 text-right">
+                      <Link
+                        href="/admin/publications"
+                        className="text-[11px] font-bold text-primary hover:underline inline-flex items-center gap-1"
+                      >
+                        Manage All Publications in Admin Portal &rarr;
+                      </Link>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </form>
@@ -1635,13 +1778,57 @@ export function ZohoEmailHub() {
               )}
 
               {/* Push / Pull Quick Action Buttons */}
-              <div className="flex items-center gap-2 pt-1">
+              <div className="flex items-center gap-2 pt-1 flex-wrap">
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={async () => {
+                    setIsImporting(true);
+                    const res = await saveActiveTemplateToCloud({
+                      name: subject.trim() || "SANEX Official Custom Email Broadcast",
+                      message: customMessage,
+                      blocks: customEmailBlocks || undefined,
+                      mode: editorMode,
+                    });
+                    setIsImporting(false);
+                    if (res.success) {
+                      toast({
+                        title: "Custom Email Saved & Synced",
+                        description:
+                          "Your custom email design is saved to Cloud and live website publication.",
+                      });
+                      setIsCloudSyncModalOpen(false);
+                    } else {
+                      toast({
+                        title: "Save Failed",
+                        description: res.error,
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                  disabled={isImporting}
+                  className="h-8 text-xs font-bold gap-1.5 bg-[#8DB833] text-black hover:bg-[#8DB833]/90 shadow-xs"
+                >
+                  {isImporting ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <UploadCloud className="h-3.5 w-3.5" />
+                  )}
+                  Push Active Custom Email to Cloud &amp; Live Site
+                </Button>
+
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={() => {
                     if (cloudTemplate) {
+                      const confirmed = window.confirm(
+                        "Are you sure you want to load the template from Cloud? Any unsaved edits in your current designer will be replaced."
+                      );
+                      if (!confirmed) return;
+
+                      userHasEditedRef.current = false;
                       if (cloudTemplate.blocks && Array.isArray(cloudTemplate.blocks)) {
                         setCustomEmailBlocks(cloudTemplate.blocks);
                       }
@@ -1649,7 +1836,7 @@ export function ZohoEmailHub() {
                       if (cloudTemplate.mode) setEditorMode(cloudTemplate.mode);
                       toast({
                         title: "Template Loaded from Cloud",
-                        description: "Your local editor now has the latest cloud template.",
+                        description: "Your local editor now has the cloud template.",
                       });
                       setIsCloudSyncModalOpen(false);
                     } else {
@@ -1661,48 +1848,13 @@ export function ZohoEmailHub() {
                     }
                   }}
                   disabled={!cloudTemplate || cloudLoading}
-                  className="h-8 text-xs font-bold gap-1.5 bg-white text-slate-700 hover:bg-slate-50"
+                  className="h-8 text-xs font-bold gap-1.5 bg-white text-slate-700 hover:bg-slate-50 border-slate-300"
                 >
                   <DownloadCloud className="h-3.5 w-3.5 text-sky-600" />
-                  Pull Latest from Cloud
-                </Button>
-
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={async () => {
-                    setIsImporting(true);
-                    const res = await saveActiveTemplateToCloud({
-                      message: customMessage,
-                      blocks: customEmailBlocks || undefined,
-                      mode: editorMode,
-                    });
-                    setIsImporting(false);
-                    if (res.success) {
-                      toast({
-                        title: "Pushed to Cloud",
-                        description:
-                          "Current template is now saved in Firestore for both localhost and live website.",
-                      });
-                    } else {
-                      toast({
-                        title: "Save Failed",
-                        description: res.error,
-                        variant: "destructive",
-                      });
-                    }
-                  }}
-                  disabled={isImporting}
-                  className="h-8 text-xs font-bold gap-1.5 bg-slate-900 text-white hover:bg-slate-800"
-                >
-                  {isImporting ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  ) : (
-                    <UploadCloud className="h-3.5 w-3.5" />
-                  )}
-                  Push Local to Cloud
+                  Pull from Cloud (Replaces Editor)
                 </Button>
               </div>
+
             </div>
 
             {/* Quick Transfer from Live Website */}
@@ -1841,6 +1993,15 @@ export function ZohoEmailHub() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Special Link Generator & Sharing Hub Modal */}
+      <SpecialLinkGeneratorModal
+        open={isLinkGenModalOpen}
+        onOpenChange={setIsLinkGenModalOpen}
+        initialPublication={selectedModalPublication}
+        publications={existingPublications}
+        onPublicationUpdated={(updated) => setSelectedModalPublication(updated)}
+      />
     </div>
   );
 }
