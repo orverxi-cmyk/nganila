@@ -616,11 +616,6 @@ export function ZohoEmailHub() {
             if (db) {
               try {
                 await setDoc(doc(db, "publications", pubId), newPublication, { merge: true });
-                await setDoc(
-                  doc(db, "publications", "pub_custom_sanex_newsletter"),
-                  { ...newPublication, id: "pub_custom_sanex_newsletter" },
-                  { merge: true }
-                );
               } catch {
                 // Handled gracefully
               }

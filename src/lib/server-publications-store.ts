@@ -221,17 +221,9 @@ export function saveActiveServerEmailTemplate(templateData: {
     viewsCount: existingPub?.viewsCount ?? 25,
   };
 
-  // Upsert publication into store publications list
-  const newPublications = [...store.publications];
-  if (activeNewsletterIdx >= 0) {
-    newPublications[activeNewsletterIdx] = updatedPublication;
-  } else {
-    newPublications.unshift(updatedPublication);
-  }
-
   persistPublicationsStore({
+    ...store,
     template: newTemplate,
-    publications: newPublications,
     lastSavedAt: now,
   });
 
@@ -240,9 +232,6 @@ export function saveActiveServerEmailTemplate(templateData: {
     const { firestore } = initializeFirebase();
     if (firestore) {
       setDoc(doc(firestore, "settings", "email_template"), newTemplate, { merge: true }).catch(() => {});
-      setDoc(doc(firestore, "publications", "pub_custom_sanex_newsletter"), updatedPublication, {
-        merge: true,
-      }).catch(() => {});
     }
   } catch {
     // Gracefully ignore Firestore connectivity delays

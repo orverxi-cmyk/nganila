@@ -1212,6 +1212,23 @@ export function EmailStudioBuilder({
     initialBlocks && initialBlocks.length > 0 ? initialBlocks : INITIAL_SANEX_BLOCKS
   );
 
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+
+  // Sync blocks state when new external initialBlocks is loaded/hydrated
+  const lastInitialBlocksRef = useRef<EmailBlock[] | undefined>(initialBlocks);
+  useEffect(() => {
+    if (
+      initialBlocks &&
+      initialBlocks.length > 0 &&
+      initialBlocks !== lastInitialBlocksRef.current &&
+      initialBlocks !== blocks
+    ) {
+      lastInitialBlocksRef.current = initialBlocks;
+      setBlocks(initialBlocks);
+    }
+  }, [initialBlocks, blocks]);
+
   // Authoritative continuous sync to parent: whenever blocks change in builder, notify parent immediately
   const isFirstMountRef = useRef(true);
   useEffect(() => {
@@ -1220,8 +1237,8 @@ export function EmailStudioBuilder({
       return;
     }
     const html = compileBlocksToHtml(blocks);
-    onChange?.(blocks, html);
-  }, [blocks, onChange]);
+    onChangeRef.current?.(blocks, html);
+  }, [blocks]);
 
   const [history, setHistory] = useState<EmailBlock[][]>(() => [
     initialBlocks && initialBlocks.length > 0 ? initialBlocks : INITIAL_SANEX_BLOCKS,

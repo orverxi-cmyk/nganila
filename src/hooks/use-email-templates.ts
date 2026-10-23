@@ -86,7 +86,14 @@ export function useEmailTemplates() {
       .catch(() => {});
   }, []);
 
-  const cloudTemplate = (rawCloudTemplate as CloudEmailTemplate | null) || apiTemplate;
+  const cloudTemplate = useMemo(() => {
+    if (apiTemplate && rawCloudTemplate) {
+      return (apiTemplate.updatedAt || 0) >= ((rawCloudTemplate as any).updatedAt || 0)
+        ? apiTemplate
+        : (rawCloudTemplate as CloudEmailTemplate);
+    }
+    return apiTemplate || (rawCloudTemplate as CloudEmailTemplate | null);
+  }, [apiTemplate, rawCloudTemplate]);
   const savedTemplates = useMemo<SavedTemplateItem[]>(() => {
     if (rawTemplatesList && Array.isArray((rawTemplatesList as any).templates)) {
       return (rawTemplatesList as any).templates;
