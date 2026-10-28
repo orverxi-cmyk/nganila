@@ -25,55 +25,31 @@ headers:
         value: "public, max-age=0, must-revalidate"
 
 env:
-  - variable: SMTP_HOST
-    value: smtp.zeptomail.com
-  - variable: SMTP_PORT
-    value: "587"
-  - variable: SMTP_USER
-    value: emailapikey
-  - variable: SMTP_PASS
-    secret: ZOHO_CPAAS_SEND_MAIL_TOKEN
-    availability:
-      - RUNTIME
-  - variable: EMAIL_FROM
-    value: '"SANEX Company Ltd" <info@sanex.rw>'
-  - variable: COMPANY_EMAIL
-    value: info@sanex.rw
-  - variable: MASTER_ADMIN_EMAIL
-    value: orverxi@gmail.com
-  - variable: SMTP_CLIENT_ID
-    value: 1049365258999-eopv3fgo0nahhr5ra1ln2tdjqedosefg.apps.googleusercontent.com
-  - variable: SMTP_CLIENT_SECRET
-    secret: SMTP_CLIENT_SECRET
-    availability:
-      - RUNTIME
-  - variable: SMTP_REFRESH_TOKEN
-    secret: SMTP_REFRESH_TOKEN
-    availability:
-      - RUNTIME
-  - variable: MAILCHIMP_API_KEY
-    secret: MailChimp
-    availability:
-      - RUNTIME
-  - variable: MAILCHIMP_AUDIENCE_ID
-    value: "53b5c0a743"
-  - variable: MAILCHIMP_API_SERVER
-    value: "us22"
-  - variable: ZOHO_CPAAS_API_URL
-    value: https://cpaas.zoho.com/v1.1/email
-  - variable: ZOHO_CPAAS_FROM_EMAIL
-    value: info@sanex.rw
-  - variable: ZOHO_CPAAS_FROM_NAME
-    value: "SANEX Company Ltd"
-  - variable: ZOHO_CPAAS_AGENT_ALIAS
-    value: "7c6dc6fcbb934ccb"
-  - variable: ZOHO_CPAAS_SEND_MAIL_TOKEN
-    secret: ZOHO_CPAAS_SEND_MAIL_TOKEN
-    availability:
-      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: nganila-f3948
 
-
-
-
-
-
+  # Optional Email & Service Configs
+  # Note: Secret parameters require the secret to exist in Google Cloud Secret Manager for project nganila-f3948.
+  # Once you create the secret in Google Cloud Secret Manager or via `firebase apphosting:secrets:set`,
+  # you can uncomment the corresponding secret blocks below:
+  #
+  # - variable: ZOHO_CPAAS_SEND_MAIL_TOKEN
+  #   secret: ZOHO_CPAAS_SEND_MAIL_TOKEN
+  #   availability:
+  #     - RUNTIME
+  # - variable: SMTP_PASS
+  #   secret: ZOHO_CPAAS_SEND_MAIL_TOKEN
+  #   availability:
+  #     - RUNTIME
+  # - variable: SMTP_CLIENT_SECRET
+  #   secret: SMTP_CLIENT_SECRET
+  #   availability:
+  #     - RUNTIME
+  # - variable: SMTP_REFRESH_TOKEN
+  #   secret: SMTP_REFRESH_TOKEN
+  #   availability:
+  #     - RUNTIME
+  # - variable: MAILCHIMP_API_KEY
+  #   secret: MailChimp
+  #   availability:
+  #     - RUNTIME
