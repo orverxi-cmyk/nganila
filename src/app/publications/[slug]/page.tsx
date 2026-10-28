@@ -7,13 +7,13 @@ interface PageProps {
 }
 
 const DEFAULT_FALLBACK_IMAGE =
-  "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1779722491089_B25A3102.jpg?alt=media&token=e7f97250-ccbd-4a24-a9fa-793f86798a7d";
+  "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1779722491089_B25A3102.jpg?alt=media";
 
 function toAbsoluteUrl(url?: string): string {
   if (!url) return DEFAULT_FALLBACK_IMAGE;
   if (url.startsWith("http://") || url.startsWith("https://")) return url;
-  if (url.startsWith("/")) return `https://sanex.rw${url}`;
-  return `https://sanex.rw/${url}`;
+  if (url.startsWith("/")) return `https://nganila.rw${url}`;
+  return `https://nganila.rw/${url}`;
 }
 
 /**
@@ -27,14 +27,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const pub = await getServerPublicationBySlug(rawSlug);
 
   const title = pub?.title
-    ? `${pub.title} | SANEX Publications`
-    : "Official Newsletter & Broadcast | SANEX Rwanda";
+    ? `${pub.title} | Nganila Publications`
+    : "Official Newsletter & Broadcast | Nganila Rwanda";
 
   const description =
     pub?.excerpt?.trim() ||
-    "Official publication and newsletter from SANEX Company Ltd, leading modern liquid waste management in Rwanda.";
+    "Official publication and newsletter from Nganila Co LTD, leading modern liquid waste management in Rwanda.";
 
-  const canonicalUrl = `https://sanex.rw/publications/${rawSlug}`;
+  const canonicalUrl = `https://nganila.rw/publications/${rawSlug}`;
   const imageUrl = toAbsoluteUrl(pub?.coverImage || pub?.thumbnailImg);
 
   return {

@@ -55,18 +55,18 @@ async function recordSentPublication(
     const effectiveSlug = slugify(subject || 'sanitation-newsletter');
     const detectedCover =
       extractFirstImage(finalHtml) ||
-      'https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1779722491089_B25A3102.jpg?alt=media&token=e7f97250-ccbd-4a24-a9fa-793f86798a7d';
+      'https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1779722491089_B25A3102.jpg?alt=media';
 
     const pubId = `pub_${Date.now()}`;
     const pubRecord: Partial<Publication> = {
       id: pubId,
       slug: effectiveSlug,
-      title: subject || 'SANEX Company Ltd Official Newsletter',
-      subject: subject || 'SANEX Official Newsletter',
+      title: subject || 'Nganila Co LTD Official Newsletter',
+      subject: subject || 'Nganila Official Newsletter',
       excerpt: extractExcerptFromHtml(finalHtml),
       content: finalHtml,
       category: sectorName || 'Company Announcements',
-      author: 'SANEX Communications',
+      author: 'Nganila Communications',
       publishedAt: Date.now(),
       createdAt: Date.now(),
       updatedAt: Date.now(),

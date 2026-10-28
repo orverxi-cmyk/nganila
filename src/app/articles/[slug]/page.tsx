@@ -7,13 +7,13 @@ interface PageProps {
 }
 
 const DEFAULT_FALLBACK_IMAGE =
-  "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media&token=d3048d2c-2d02-4fdb-8eaa-f741686a4401";
+  "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media";
 
 function toAbsoluteUrl(url?: string): string {
   if (!url) return DEFAULT_FALLBACK_IMAGE;
   if (url.startsWith("http://") || url.startsWith("https://")) return url;
-  if (url.startsWith("/")) return `https://sanex.rw${url}`;
-  return `https://sanex.rw/${url}`;
+  if (url.startsWith("/")) return `https://nganila.rw${url}`;
+  return `https://nganila.rw/${url}`;
 }
 
 /**
@@ -27,14 +27,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const article = await getArticleForMetadata(rawSlug);
 
   const title = article?.title
-    ? `${article.title} | SANEX Rwanda`
-    : "Article | SANEX Company Ltd Rwanda";
+    ? `${article.title} | Nganila Rwanda`
+    : "Article | Nganila Co LTD Rwanda";
 
   const description =
     article?.excerpt?.trim() ||
-    "Read modern liquid waste management, septic draining, and environmental solutions by SANEX Company Ltd in Rwanda.";
+    "Read modern liquid waste management, septic draining, and environmental solutions by Nganila Co LTD in Rwanda.";
 
-  const canonicalUrl = `https://sanex.rw/articles/${rawSlug}`;
+  const canonicalUrl = `https://nganila.rw/articles/${rawSlug}`;
   const imageUrl = toAbsoluteUrl(article?.imageUrl);
 
   return {

@@ -80,20 +80,18 @@ exports.adminSeedInitialData = (0, https_1.onCall)({ cors: true }, async (reques
     await assertAdmin(request);
     const batch = db.batch();
     batch.set(db.collection('settings').doc('general'), {
-        siteName: "SANEX Company Ltd",
+        siteName: "Nganila Co LTD",
         logoUrl: "/logo.png",
         logoWidth: 160,
         logoHeight: 40,
         logoSpacing: 8,
-        phone: "+250 788303628",
-        phones: ["+250 788303628"],
-        email: "sanexcompany@gmail.com",
-        emails: ["sanexcompany@gmail.com"],
+        phone: "+250 788 450 120",
+        phones: ["+250 788 450 120", "+250 788 668 855"],
+        email: "info@nganila.com",
+        emails: ["info@nganila.com"],
         socials: {
-            twitter: "https://twitter.com/sanex_rw",
-            linkedin: "https://linkedin.com/company/sanex-rw",
-            facebook: "https://facebook.com/sanex.rw",
-            instagram: "https://instagram.com/sanex_rw"
+            twitter: "https://asserwa.rw",
+            linkedin: "https://asserwa.rw"
         },
         navLinks: [
             { name: "Home", href: "/" },
@@ -109,11 +107,11 @@ exports.adminSeedInitialData = (0, https_1.onCall)({ cors: true }, async (reques
         title: "Our Services",
         excerpt: "At SANEX Company Ltd, we pride ourselves on offering a comprehensive suite of liquid waste management services tailored to meet the diverse needs of our clients.",
         content: "Detailed story about our services and wastewater management across Rwanda...",
-        imageUrl: "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1779810108618_ifoto15.jpg?alt=media&token=80beb761-c45a-4f47-9c7c-2013fea44f65",
+        imageUrl: "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1779810108618_ifoto15.jpg?alt=media",
         imageWidth: 1200,
         imageHeight: 600,
         category: "Impact",
-        author: "SANEX Editorial",
+        author: "Nganila Editorial",
         createdAt: Date.now(),
         updatedAt: Date.now()
     });
@@ -122,7 +120,7 @@ exports.adminSeedInitialData = (0, https_1.onCall)({ cors: true }, async (reques
             {
                 title: "Liquid Waste Collection",
                 description: "<p>Modern vacuum trucks serving schools, hospitals, and hotels across Rwanda.</p>",
-                imageUrl: "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media&token=d3048d2c-2d02-4fdb-8eaa-f741686a4401",
+                imageUrl: "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media",
                 width: 1200,
                 height: 600,
                 link: "/services",
@@ -135,7 +133,7 @@ exports.adminSeedInitialData = (0, https_1.onCall)({ cors: true }, async (reques
         title: "Transforming",
         titleAccent: "Waste Into Opportunity",
         description: "Leading Liquid Waste Management Solutions in Rwanda.",
-        imageUrl: "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1779799776154_B25A3083.jpg?alt=media&token=f390e684-ab5b-4ff1-aa5d-fd95f4512e93",
+        imageUrl: "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1779799776154_B25A3083.jpg?alt=media",
         imageWidth: 1200,
         imageHeight: 800,
         ctaText: "Book a Service",

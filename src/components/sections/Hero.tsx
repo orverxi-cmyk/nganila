@@ -24,7 +24,7 @@ export function Hero() {
     title: heroData?.title || "Nganila Co LTD",
     titleAccent: heroData?.titleAccent || "Waste Management & Sanitation",
     description: heroData?.description || "Professional waste management and sanitation company in Kicukiro, Kigali, Rwanda. Operating a fleet of 5 vacuum tankers for septic tank emptying, pit latrine draining (kuvidura), and decentralized wastewater treatment.",
-    imageUrl: heroData?.imageUrl || "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1779799776154_B25A3083.jpg?alt=media&token=f390e684-ab5b-4ff1-aa5d-fd95f4512e93",
+    imageUrl: heroData?.imageUrl || "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1779799776154_B25A3083.jpg?alt=media",
     imageWidth: heroData?.imageWidth || 800,
     imageHeight: heroData?.imageHeight || 600,
     ctaText: heroData?.ctaText || "Book an Exhauster Truck",

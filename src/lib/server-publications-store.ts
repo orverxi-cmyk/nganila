@@ -184,7 +184,7 @@ export function saveActiveServerEmailTemplate(templateData: {
     existingValidCover ||
     storeTemplateCover ||
     extractFirstImage(compiledHtml) ||
-    "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1779722491089_B25A3102.jpg?alt=media&token=e7f97250-ccbd-4a24-a9fa-793f86798a7d";
+    "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1779722491089_B25A3102.jpg?alt=media";
 
   const newTemplate: StoredEmailTemplate = {
     name: effectiveName,
@@ -541,7 +541,7 @@ export async function getServerPublicationBySlug(
       recipientCount: 85,
       status: "published",
       isCustom: true,
-      coverImage: tpl.coverImage || extractFirstImage(tpl.message) || "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1779722491089_B25A3102.jpg?alt=media&token=e7f97250-ccbd-4a24-a9fa-793f86798a7d",
+      coverImage: tpl.coverImage || extractFirstImage(tpl.message) || "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1779722491089_B25A3102.jpg?alt=media",
     };
   }
 

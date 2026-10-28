@@ -305,9 +305,9 @@ export function getCustomDesignedNewsletters(): Publication[] {
       status: "published",
       isCustom: true,
       coverImage:
-        "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1779722491089_B25A3102.jpg?alt=media&token=e7f97250-ccbd-4a24-a9fa-793f86798a7d",
+        "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1779722491089_B25A3102.jpg?alt=media",
       thumbnailImg:
-        "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1779722491089_B25A3102.jpg?alt=media&token=e7f97250-ccbd-4a24-a9fa-793f86798a7d",
+        "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1779722491089_B25A3102.jpg?alt=media",
       excerpt:
         "Sanex Company LTD is a Rwandan company specializing in liquid waste management, emptying services, and clean water delivery.",
       content: newsletterHtml,

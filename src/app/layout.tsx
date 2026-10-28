@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     description: 'Professional liquid waste evacuation, vacuum tankers, and decentralized wastewater treatment in Kicukiro, Kigali. Verified member of ASSERWA.',
     images: [
       {
-        url: 'https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media&token=d3048d2c-2d02-4fdb-8eaa-f741686a4401',
+        url: 'https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media',
         width: 1200,
         height: 630,
         alt: 'Nganila Co LTD - Waste Management & Sanitation in Rwanda',
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     description: 'Professional liquid waste evacuation, vacuum tankers, and wastewater treatment in Kigali. Verified ASSERWA member.',
     creator: '@nganila_rw',
     images: [
-      'https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media&token=d3048d2c-2d02-4fdb-8eaa-f741686a4401',
+      'https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media',
     ],
   },
   manifest: '/manifest.webmanifest',

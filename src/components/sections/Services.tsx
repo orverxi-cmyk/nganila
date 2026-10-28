@@ -26,25 +26,25 @@ export function Services() {
     { 
       title: "Decentralized Wastewater Treatment", 
       description: "Managing localized wastewater systems and treatment units for residential, commercial, and institutional clients.", 
-      imageUrl: "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1779722491089_B25A3102.jpg?alt=media&token=e7f97250-ccbd-4a24-a9fa-793f86798a7d", 
+      imageUrl: "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1779722491089_B25A3102.jpg?alt=media", 
       icon: "droplets" 
     },
     { 
       title: "Liquid Waste Evacuation", 
       description: "Providing professional septic tank emptying, pit latrine draining (kuvidura), and vacuum tanker services across Kigali and Rwanda.", 
-      imageUrl: "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1779723894783_vlcsnap-2025-04-19-16h01m39s409.png?alt=media&token=40440145-c8f7-4e34-a3cb-a21f4565d9c0", 
+      imageUrl: "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1779723894783_vlcsnap-2025-04-19-16h01m39s409.png?alt=media", 
       icon: "truck" 
     },
     { 
       title: "Wastewater Transportation", 
       description: "Operating a dedicated fleet of 5 modern vacuum tankers to transport liquid waste safely and responsibly to treatment facilities.", 
-      imageUrl: "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media&token=d3048d2c-2d02-4fdb-8eaa-f741686a4401", 
+      imageUrl: "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media", 
       icon: "truck" 
     },
     { 
       title: "Verified ASSERWA Member", 
       description: "Proud member of ASSERWA (the Forum of Sewage Emptiers in Rwanda), certified for professional standards and public hygiene.", 
-      imageUrl: "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1779722938429_WhatsApp%20Image%202025-04-19%20at%2020.13.41.jpeg?alt=media&token=3f2a420d-9624-4356-be91-cf8fea746965", 
+      imageUrl: "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1779722938429_WhatsApp%20Image%202025-04-19%20at%2020.13.41.jpeg?alt=media", 
       icon: "shield" 
     }
   ];

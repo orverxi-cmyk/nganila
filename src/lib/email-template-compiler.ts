@@ -138,7 +138,7 @@ export function parseVideoUrl(rawUrl?: string): {
     return {
       source: "website",
       thumbnailUrl:
-        "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media&token=d3048d2c-2d02-4fdb-8eaa-f741686a4401",
+        "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media",
       watchUrl: "https://sanex.rw/gallery",
     };
   }
@@ -161,7 +161,7 @@ export function parseVideoUrl(rawUrl?: string): {
     return {
       source: "mp4",
       thumbnailUrl:
-        "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media&token=d3048d2c-2d02-4fdb-8eaa-f741686a4401",
+        "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media",
       watchUrl: "https://sanex.rw/gallery",
     };
   }
@@ -169,7 +169,7 @@ export function parseVideoUrl(rawUrl?: string): {
   return {
     source: "custom",
     thumbnailUrl:
-      "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media&token=d3048d2c-2d02-4fdb-8eaa-f741686a4401",
+      "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media",
     watchUrl: clean.startsWith("http") ? clean : `https://sanex.rw${clean}`,
   };
 }
@@ -278,7 +278,7 @@ export const INITIAL_SANEX_BLOCKS: EmailBlock[] = [
     col1Width: 46,
     col2Width: 54,
     col1Image:
-      "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1779722491089_B25A3102.jpg?alt=media&token=e7f97250-ccbd-4a24-a9fa-793f86798a7d",
+      "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1779722491089_B25A3102.jpg?alt=media",
     col1ImageWidth: 260,
     col2Heading:
       "Installation and Management of Decentralized Wastewater Treatment Systems (DWTS)",
@@ -296,7 +296,7 @@ export const INITIAL_SANEX_BLOCKS: EmailBlock[] = [
     col1Width: 46,
     col2Width: 54,
     col1Image:
-      "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1779722938429_WhatsApp%20Image%202025-04-19%20at%2020.13.41.jpeg?alt=media&token=3f2a420d-9624-4356-be91-cf8fea746965",
+      "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1779722938429_WhatsApp%20Image%202025-04-19%20at%2020.13.41.jpeg?alt=media",
     col1ImageWidth: 260,
     col2Heading: "Clean Water Delivery at You Doorstep",
     col2HeadingColor: "#8DB833",
@@ -313,7 +313,7 @@ export const INITIAL_SANEX_BLOCKS: EmailBlock[] = [
     col1Width: 46,
     col2Width: 54,
     col1Image:
-      "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1779723894783_vlcsnap-2025-04-19-16h01m39s409.png?alt=media&token=40440145-c8f7-4e34-a3cb-a21f4565d9c0",
+      "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1779723894783_vlcsnap-2025-04-19-16h01m39s409.png?alt=media",
     col1ImageWidth: 260,
     col2Heading: "Liquid Waste Collection and Transport",
     col2HeadingColor: "#8DB833",
@@ -334,7 +334,7 @@ export const INITIAL_SANEX_BLOCKS: EmailBlock[] = [
     videoUrl: "https://sanex.rw/gallery",
     videoWatchUrl: "https://sanex.rw/gallery",
     videoThumbnail:
-      "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media&token=d3048d2c-2d02-4fdb-8eaa-f741686a4401",
+      "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media",
     videoPlayButtonColor: "#8DB833",
   },
   {
@@ -718,7 +718,7 @@ export function compileBlocksToHtml(blocks: EmailBlock[] = INITIAL_SANEX_BLOCKS)
           const thumbnailUrl =
             block.videoThumbnail ||
             parsed.thumbnailUrl ||
-            "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media&token=d3048d2c-2d02-4fdb-8eaa-f741686a4401";
+            "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media";
           const title = block.videoTitle || "SANEX in Action: Operational Highlights";
           const caption = block.videoCaption || "";
           const btnText = block.videoButtonText || "Watch Video";
