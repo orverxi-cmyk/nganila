@@ -223,8 +223,7 @@ export default function ClientLifecyclePage() {
   const { data: userProfile, loading: profileLoading } = useDoc(userDocRef);
   const isAuthorized = userProfile?.role === "admin" || (user as any)?.admin === true
     || user?.email?.toLowerCase() === "tharushyamagara@gmail.com"
-    || user?.email?.toLowerCase() === "orverxi@gmail.com"
-    || user?.email?.toLowerCase() === "sanexcompany@gmail.com";
+    || user?.email?.toLowerCase() === "orverxi@gmail.com";
   const bookingsQuery = React.useMemo(() => {
     if (!db || !user || !isAuthorized) return null;
     return collection(db, "bookings");

@@ -179,8 +179,8 @@ export function MediaPicker({ value, onChange, label, folder = "uploads", accept
           )}
 
           {error && (
-            <div className="text-xs text-foreground bg-[#8DB833]/20 px-2 py-1 rounded flex items-center gap-1.5 font-medium">
-              <AlertCircle className="h-3 w-3 text-[#8DB833]" /> {error}
+            <div className="text-xs text-white bg-primary px-2.5 py-1.5 rounded flex items-center gap-1.5 font-medium">
+              <AlertCircle className="h-3 w-3 text-white shrink-0" /> {error}
             </div>
           )}
         </TabsContent>

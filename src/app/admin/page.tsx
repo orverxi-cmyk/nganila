@@ -119,8 +119,7 @@ export default function AdminDashboard() {
     userProfile?.role === "admin" || 
     (user as any)?.admin === true || 
     user?.email?.toLowerCase() === "tharushyamagara@gmail.com" ||
-    user?.email?.toLowerCase() === "orverxi@gmail.com" ||
-    user?.email?.toLowerCase() === "sanexcompany@gmail.com";
+    user?.email?.toLowerCase() === "orverxi@gmail.com";
 
   const bookingsQuery = React.useMemo(() => {
     if (!db || !user || !isAuthorized) return null;
@@ -756,7 +755,7 @@ export default function AdminDashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent className="text-center space-y-4">
-              <p className="text-xs text-muted-foreground">Please request administrative status from the master admin at sanexcompany@gmail.com.</p>
+              <p className="text-xs text-muted-foreground">Please request administrative status from an authorized system administrator.</p>
               <div className="flex flex-wrap gap-x-[5px] gap-y-[20px] w-full">
                 <Button asChild variant="secondary" className="flex-grow h-12 font-bold uppercase tracking-widest text-[10px]">
                   <Link href="/">Back to Home</Link>

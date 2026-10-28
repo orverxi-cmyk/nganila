@@ -39,7 +39,6 @@ const admin = __importStar(require("firebase-admin"));
 const db = admin.firestore();
 const MASTER_ADMIN_EMAILS = [
     'tharushyamagara@gmail.com',
-    'sanexcompany@gmail.com',
     'orverxi@gmail.com',
 ];
 /**

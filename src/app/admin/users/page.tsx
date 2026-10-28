@@ -70,8 +70,7 @@ export default function UserManagementPage() {
     userProfile?.role === "admin" || 
     (user as any)?.admin === true || 
     user?.email?.toLowerCase() === "tharushyamagara@gmail.com" ||
-    user?.email?.toLowerCase() === "orverxi@gmail.com" ||
-    user?.email?.toLowerCase() === "sanexcompany@gmail.com";
+    user?.email?.toLowerCase() === "orverxi@gmail.com";
 
   // Only query Firestore once user authorization is confirmed
   const usersQuery = React.useMemo(() => {
@@ -125,6 +124,17 @@ export default function UserManagementPage() {
     setCurrentPage(1);
   }, [searchTerm]);
 
+  // Ensure sanexcompany@gmail.com is cleanly demoted from root/master in Firestore
+  React.useEffect(() => {
+    if (!db || !filteredUsers) return;
+    const sanexUser = filteredUsers.find(
+      (u: any) => u.email?.toLowerCase() === "sanexcompany@gmail.com" && (u.isMaster || u.role === "master")
+    );
+    if (sanexUser) {
+      updateDoc(doc(db, "users", sanexUser.id), { isMaster: false }).catch(() => {});
+    }
+  }, [db, filteredUsers]);
+
   const paginatedUsers = React.useMemo(() => {
     const start = (currentPage - 1) * PAGE_SIZE;
     return filteredUsers.slice(start, start + PAGE_SIZE);
@@ -150,13 +160,13 @@ export default function UserManagementPage() {
         } catch (funcErr: any) {
           console.warn("Function update failed, attempting direct Firestore update:", funcErr);
           if (db) {
-            await updateDoc(doc(db, "users", targetUser.id), { role: newRole });
+            await updateDoc(doc(db, "users", targetUser.id), { role: newRole, isMaster: false });
           } else {
             throw funcErr;
           }
         }
       } else if (db) {
-        await updateDoc(doc(db, "users", targetUser.id), { role: newRole });
+        await updateDoc(doc(db, "users", targetUser.id), { role: newRole, isMaster: false });
       }
       
       if (backupUsers) {
@@ -436,8 +446,8 @@ export default function UserManagementPage() {
                     ) : filteredUsers.length > 0 ? (
                       paginatedUsers.map((u) => {
                         const isMaster = Boolean(
-                          u.isMaster || 
-                          (u.email && ["tharushyamagara@gmail.com", "orverxi@gmail.com", "sanexcompany@gmail.com"].includes(u.email.toLowerCase()))
+                          (u.isMaster || (u.email && ["tharushyamagara@gmail.com", "orverxi@gmail.com"].includes(u.email.toLowerCase()))) &&
+                          u.email?.toLowerCase() !== "sanexcompany@gmail.com"
                         );
                         return (
                         <tr key={u.id} className="hover:bg-muted/10 transition-colors">

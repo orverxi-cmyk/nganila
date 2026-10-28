@@ -55,8 +55,7 @@ export default function BookingsManagementPage() {
     userProfile?.role === "admin" || 
     (user as any)?.admin === true || 
     user?.email?.toLowerCase() === "tharushyamagara@gmail.com" ||
-    user?.email?.toLowerCase() === "orverxi@gmail.com" ||
-    user?.email?.toLowerCase() === "sanexcompany@gmail.com";
+    user?.email?.toLowerCase() === "orverxi@gmail.com";
 
   // Only create Firestore query once user authorization is confirmed
   const bookingsQuery = React.useMemo(() => {

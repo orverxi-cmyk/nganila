@@ -89,10 +89,10 @@ export function Navbar({ isAdmin }: NavbarProps = {}) {
               <div className="flex items-center gap-3">
                 <Button
                   asChild
-                  className="bg-[#636679] hover:bg-[#545667] text-white font-bold uppercase tracking-wider text-[12px] h-10 px-4 md:px-5 gap-2 rounded-xl shadow-sm"
+                  className="bg-[#006400] hover:bg-[#005000] text-white font-bold uppercase tracking-wider text-[12px] h-10 px-4 md:px-5 gap-2 rounded-xl shadow-sm"
                 >
                   <Link href="/">
-                    <Globe className="h-4 w-4 text-[#006400]" />
+                    <Globe className="h-4 w-4 text-white" />
                     <span className="hidden sm:inline">Go to </span>
                     <span>Public Portal</span>
                   </Link>

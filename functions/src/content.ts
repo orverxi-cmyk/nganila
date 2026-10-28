@@ -18,7 +18,6 @@ function setCorsHeaders(req: any, res: any) {
 
 const MASTER_ADMIN_EMAILS = [
   'tharushyamagara@gmail.com',
-  'sanexcompany@gmail.com',
   'orverxi@gmail.com',
 ];
 
