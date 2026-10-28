@@ -168,7 +168,9 @@ function BookingPageContent() {
       if (!response.ok) {
         // Graceful fallback to direct Cloud Function if API route is not available
         try {
-          const directRes = await fetch('https://us-central1-studio-9595184890-5bb3c.cloudfunctions.net/createBooking', {
+          const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'nganila-f3948';
+          const cloudFunctionUrl = process.env.NEXT_PUBLIC_FIREBASE_CREATE_BOOKING_URL || `https://us-central1-${projectId}.cloudfunctions.net/createBooking`;
+          const directRes = await fetch(cloudFunctionUrl, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

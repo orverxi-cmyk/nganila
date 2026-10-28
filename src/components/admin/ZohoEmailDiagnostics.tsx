@@ -23,6 +23,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useUser, useFirestore, useCollection } from "@/firebase";
+import { firebaseConfig } from "@/firebase/config";
 import { collection, query, orderBy, limit, doc, setDoc } from "firebase/firestore";
 import { 
   Mail, 
@@ -1703,7 +1704,7 @@ export function ZohoEmailHub() {
                     Firebase Firestore
                   </Badge>
                   <span className="font-extrabold text-slate-900">
-                    Project: studio-9595184890-5bb3c
+                    Project: {firebaseConfig.projectId}
                   </span>
                 </div>
                 <p className="text-slate-600 text-[11px] m-0">

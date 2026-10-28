@@ -5,7 +5,9 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    const response = await fetch('https://us-central1-studio-9595184890-5bb3c.cloudfunctions.net/createBooking', {
+    const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'nganila-f3948';
+    const cloudFunctionUrl = process.env.NEXT_PUBLIC_FIREBASE_CREATE_BOOKING_URL || `https://us-central1-${projectId}.cloudfunctions.net/createBooking`;
+    const response = await fetch(cloudFunctionUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

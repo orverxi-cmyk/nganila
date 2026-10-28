@@ -6,6 +6,7 @@ import { Firestore } from 'firebase/firestore';
 import { Auth } from 'firebase/auth';
 import { Functions } from 'firebase/functions';
 import { FirebaseStorage } from 'firebase/storage';
+import { Analytics } from 'firebase/analytics';
 
 interface FirebaseContextProps {
   firebaseApp: FirebaseApp | null;
@@ -13,6 +14,7 @@ interface FirebaseContextProps {
   auth: Auth | null;
   functions: Functions | null;
   storage: FirebaseStorage | null;
+  analytics?: Analytics | null;
 }
 
 const FirebaseContext = createContext<FirebaseContextProps>({
@@ -21,6 +23,7 @@ const FirebaseContext = createContext<FirebaseContextProps>({
   auth: null,
   functions: null,
   storage: null,
+  analytics: null,
 });
 
 export const FirebaseProvider: React.FC<{
@@ -29,10 +32,11 @@ export const FirebaseProvider: React.FC<{
   auth: Auth;
   functions: Functions;
   storage: FirebaseStorage;
+  analytics?: Analytics | null;
   children: React.ReactNode;
-}> = ({ firebaseApp, firestore, auth, functions, storage, children }) => {
+}> = ({ firebaseApp, firestore, auth, functions, storage, analytics, children }) => {
   return (
-    <FirebaseContext.Provider value={{ firebaseApp, firestore, auth, functions, storage }}>
+    <FirebaseContext.Provider value={{ firebaseApp, firestore, auth, functions, storage, analytics }}>
       {children}
     </FirebaseContext.Provider>
   );
@@ -65,4 +69,9 @@ export const useFunctions = () => {
 export const useStorage = () => {
   const context = useContext(FirebaseContext);
   return context.storage;
+};
+
+export const useAnalytics = () => {
+  const context = useContext(FirebaseContext);
+  return context.analytics;
 };
