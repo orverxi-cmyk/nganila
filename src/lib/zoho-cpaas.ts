@@ -206,11 +206,11 @@ export function getZohoConfig() {
 
   const fromEmail =
     process.env.ZOHO_CPAAS_FROM_EMAIL ||
-    'info@nganila.rw';
+    'info@nganira.rw';
 
   const fromName =
     process.env.ZOHO_CPAAS_FROM_NAME ||
-    'Nganila Co LTD';
+    'Nganira Company LTD';
 
   const agentAlias =
     process.env.ZOHO_CPAAS_AGENT_ALIAS ||
@@ -540,11 +540,12 @@ export async function sendZohoEmailBatch(
 // REUSABLE BRAND TEMPLATES
 // ============================================================================
 
-const BRAND_COLOR = "#8DB833";
-const BRAND_NAME = "Nganila Co LTD";
-const COMPANY_PHONE = "+250 788 450 120";
+const BRAND_COLOR = "#636679";
+const BRAND_ACCENT = "#d9eaa4";
+const BRAND_NAME = "Nganira Company LTD";
+const COMPANY_PHONE = "+250 788 840 000";
 const COMPANY_PHONE_ALT = "+250 788 668 855";
-const COMPANY_EMAIL = "info@nganila.rw";
+const COMPANY_EMAIL = "info@nganira.rw";
 
 export interface StatusEmailTemplateData {
   bookingId: string;
@@ -564,7 +565,7 @@ export function renderStatusEmailHtml(data: StatusEmailTemplateData): string {
   const { bookingId, customerName, customerEmail, serviceType, newStatus, appointmentDate, preferredTime, locationUrl, phone } = data;
   const s = (newStatus || 'pending').toLowerCase();
 
-  let badgeColor = BRAND_COLOR;
+  let badgeColor = BRAND_ACCENT;
   let statusMessage = "Your service request status has been updated.";
   let nextStep = "Our operations desk will keep you updated.";
 
@@ -576,7 +577,7 @@ export function renderStatusEmailHtml(data: StatusEmailTemplateData): string {
     nextStep = "Our supervisor on-site will coordinate with you to ensure quality completion.";
   } else if (s === 'completed') {
     statusMessage = "Your liquid waste management service has been successfully completed.";
-    nextStep = "Thank you for partnering with Nganila Co LTD. If you require invoicing or waste disposal certification, please contact us.";
+    nextStep = "Thank you for partnering with Nganira Company LTD. If you require invoicing or waste disposal certification, please contact us.";
   } else if (s === 'cancelled') {
     badgeColor = "#64748b";
     statusMessage = "Your service request has been cancelled or could not be scheduled at this time.";
@@ -597,32 +598,32 @@ export function renderStatusEmailHtml(data: StatusEmailTemplateData): string {
       <td align="center">
         <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;">
           <tr>
-            <td style="background-color: #0f172a; padding: 24px 32px; text-align: left; border-bottom: 4px solid ${BRAND_COLOR};">
+            <td style="background-color: #636679; padding: 24px 32px; text-align: left; border-bottom: 4px solid ${BRAND_ACCENT};">
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td>
-                    <h1 style="margin: 0; font-size: 20px; font-weight: 800; color: ${BRAND_COLOR}; letter-spacing: 0.5px; text-transform: uppercase;">
-                      NGANILA <span style="color: #ffffff; font-weight: 400;">Co LTD</span>
+                    <h1 style="margin: 0; font-size: 20px; font-weight: 800; color: #ffffff; letter-spacing: 0.5px; text-transform: uppercase;">
+                      NGANIRA <span style="color: ${BRAND_ACCENT}; font-weight: 600;">COMPANY LTD</span>
                     </h1>
-                    <p style="margin: 4px 0 0 0; font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">
+                    <p style="margin: 4px 0 0 0; font-size: 12px; color: #e2e8f0; text-transform: uppercase; letter-spacing: 1px;">
                       Sustainable Liquid Waste Management · Kigali, Rwanda
                     </p>
                   </td>
                   <td align="right">
-                    <span style="display: inline-block; background-color: ${badgeColor}; color: #000000; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; padding: 6px 14px; border-radius: 20px;">
+                    <span style="display: inline-block; background-color: ${badgeColor}; color: #26272e; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; padding: 6px 14px; border-radius: 20px;">
                       ${newStatus.toUpperCase()}
                     </span>
                   </td>
                 </tr>
               </table>
-              <div style="border-top: 1px solid #1e293b; margin-top: 14px; padding-top: 10px; font-size: 11px; color: #94a3b8; line-height: 1.4;">
-                <span style="color: #cbd5e1; font-weight: 600;">📍 Kicukiro, Kigali, Rwanda</span>
-                <span style="color: #475569; margin: 0 6px;">·</span>
-                <span>📞 <a href="tel:${COMPANY_PHONE.replace(/\s+/g, '')}" style="color: #cbd5e1; text-decoration: none;">${COMPANY_PHONE}</a></span>
-                <span style="color: #475569; margin: 0 6px;">·</span>
-                <span>✉️ <a href="mailto:${COMPANY_EMAIL}" style="color: ${BRAND_COLOR}; text-decoration: none;">${COMPANY_EMAIL}</a></span>
-                <span style="color: #475569; margin: 0 6px;">·</span>
-                <span>🌐 <a href="https://nganila.rw" target="_blank" style="color: ${BRAND_COLOR}; text-decoration: none;">nganila.rw</a></span>
+              <div style="border-top: 1px solid rgba(255,255,255,0.2); margin-top: 14px; padding-top: 10px; font-size: 11px; color: #e2e8f0; line-height: 1.4;">
+                <span style="color: #ffffff; font-weight: 600;">📍 Kicukiro, Kigali, Rwanda</span>
+                <span style="color: rgba(255,255,255,0.4); margin: 0 6px;">·</span>
+                <span>📞 <a href="tel:${COMPANY_PHONE.replace(/\s+/g, '')}" style="color: #ffffff; text-decoration: none;">${COMPANY_PHONE}</a></span>
+                <span style="color: rgba(255,255,255,0.4); margin: 0 6px;">·</span>
+                <span>✉️ <a href="mailto:${COMPANY_EMAIL}" style="color: ${BRAND_ACCENT}; text-decoration: none;">${COMPANY_EMAIL}</a></span>
+                <span style="color: rgba(255,255,255,0.4); margin: 0 6px;">·</span>
+                <span>🌐 <a href="https://nganira.rw" target="_blank" style="color: ${BRAND_ACCENT}; text-decoration: none;">nganira.rw</a></span>
               </div>
             </td>
           </tr>
@@ -684,16 +685,16 @@ export function renderStatusEmailHtml(data: StatusEmailTemplateData): string {
             </td>
           </tr>
           <tr>
-            <td align="center" style="background-color: #0f172a; padding: 24px 20px; text-align: center; border-top: 1px solid #1e293b; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 11px; line-height: 1.55; color: #94a3b8;">
-              <p style="margin: 0 auto 10px auto; color: #94a3b8; font-size: 11px; max-width: 520px; line-height: 1.55;">
-                You are receiving this real-time transactional update regarding your Nganila service request <strong>#${bookingId}</strong> (${serviceType}).
+            <td align="center" style="background-color: #26272e; padding: 24px 20px; text-align: center; border-top: 1px solid #636679; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 11px; line-height: 1.55; color: #94a3b8;">
+              <p style="margin: 0 auto 10px auto; color: #cbd5e1; font-size: 11px; max-width: 520px; line-height: 1.55;">
+                You are receiving this real-time transactional update regarding your Nganira service request <strong>#${bookingId}</strong> (${serviceType}).
               </p>
               <p style="margin: 0; font-size: 11px;">
-                <a href="https://nganila.rw/contact" target="_blank" style="color: #cbd5e1; text-decoration: underline; margin: 0 6px;">Support Desk</a>
-                <span style="color: #475569;">·</span>
-                <a href="https://nganila.rw/privacy" target="_blank" style="color: #cbd5e1; text-decoration: underline; margin: 0 6px;">Privacy Policy</a>
-                <span style="color: #475569;">·</span>
-                <a href="https://nganila.rw/terms" target="_blank" style="color: #cbd5e1; text-decoration: underline; margin: 0 6px;">Terms of Service</a>
+                <a href="https://nganira.rw/contact" target="_blank" style="color: #cbd5e1; text-decoration: underline; margin: 0 6px;">Support Desk</a>
+                <span style="color: #636679;">·</span>
+                <a href="https://nganira.rw/privacy" target="_blank" style="color: #cbd5e1; text-decoration: underline; margin: 0 6px;">Privacy Policy</a>
+                <span style="color: #636679;">·</span>
+                <a href="https://nganira.rw/terms" target="_blank" style="color: #cbd5e1; text-decoration: underline; margin: 0 6px;">Terms of Service</a>
               </p>
             </td>
           </tr>
@@ -708,7 +709,7 @@ export function renderStatusEmailHtml(data: StatusEmailTemplateData): string {
 
 export function renderStatusEmailText(data: StatusEmailTemplateData): string {
   const { customerName, serviceType, newStatus, bookingId } = data;
-  return `Hello ${customerName || 'Customer'},\n\nYour service request (${serviceType}) [Ref: #${bookingId}] status has been updated to: ${newStatus.toUpperCase()}.\n\nFor questions, contact Nganila Co LTD at ${COMPANY_PHONE} or ${COMPANY_EMAIL}.\n\nThank you,\n${BRAND_NAME}`;
+  return `Hello ${customerName || 'Customer'},\n\nYour service request (${serviceType}) [Ref: #${bookingId}] status has been updated to: ${newStatus.toUpperCase()}.\n\nFor questions, contact Nganira Company LTD at ${COMPANY_PHONE} or ${COMPANY_EMAIL}.\n\nThank you,\n${BRAND_NAME}`;
 }
 
 export interface BookingConfirmationTemplateData {
@@ -738,21 +739,21 @@ export function renderBookingConfirmationHtml(data: BookingConfirmationTemplateD
       <td align="center">
         <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;">
           <tr>
-            <td style="background-color: #0f172a; padding: 24px 32px; text-align: left; border-bottom: 4px solid ${BRAND_COLOR};">
-              <h1 style="margin: 0; font-size: 20px; font-weight: 800; color: ${BRAND_COLOR}; letter-spacing: 0.5px; text-transform: uppercase;">
-                NGANILA <span style="color: #ffffff; font-weight: 400;">Co LTD</span>
+            <td style="background-color: #636679; padding: 24px 32px; text-align: left; border-bottom: 4px solid ${BRAND_ACCENT};">
+              <h1 style="margin: 0; font-size: 20px; font-weight: 800; color: #ffffff; letter-spacing: 0.5px; text-transform: uppercase;">
+                NGANIRA <span style="color: ${BRAND_ACCENT}; font-weight: 600;">COMPANY LTD</span>
               </h1>
-              <p style="margin: 4px 0 0 0; font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">
+              <p style="margin: 4px 0 0 0; font-size: 12px; color: #e2e8f0; text-transform: uppercase; letter-spacing: 1px;">
                 Booking Request Confirmation
               </p>
-              <div style="border-top: 1px solid #1e293b; margin-top: 14px; padding-top: 10px; font-size: 11px; color: #94a3b8; line-height: 1.4;">
-                <span style="color: #cbd5e1; font-weight: 600;">📍 Kicukiro, Kigali, Rwanda</span>
-                <span style="color: #475569; margin: 0 6px;">·</span>
-                <span>📞 <a href="tel:${COMPANY_PHONE.replace(/\s+/g, '')}" style="color: #cbd5e1; text-decoration: none;">${COMPANY_PHONE}</a></span>
-                <span style="color: #475569; margin: 0 6px;">·</span>
-                <span>✉️ <a href="mailto:${COMPANY_EMAIL}" style="color: ${BRAND_COLOR}; text-decoration: none;">${COMPANY_EMAIL}</a></span>
-                <span style="color: #475569; margin: 0 6px;">·</span>
-                <span>🌐 <a href="https://nganila.rw" target="_blank" style="color: ${BRAND_COLOR}; text-decoration: none;">nganila.rw</a></span>
+              <div style="border-top: 1px solid rgba(255,255,255,0.2); margin-top: 14px; padding-top: 10px; font-size: 11px; color: #e2e8f0; line-height: 1.4;">
+                <span style="color: #ffffff; font-weight: 600;">📍 Kicukiro, Kigali, Rwanda</span>
+                <span style="color: rgba(255,255,255,0.4); margin: 0 6px;">·</span>
+                <span>📞 <a href="tel:${COMPANY_PHONE.replace(/\s+/g, '')}" style="color: #ffffff; text-decoration: none;">${COMPANY_PHONE}</a></span>
+                <span style="color: rgba(255,255,255,0.4); margin: 0 6px;">·</span>
+                <span>✉️ <a href="mailto:${COMPANY_EMAIL}" style="color: ${BRAND_ACCENT}; text-decoration: none;">${COMPANY_EMAIL}</a></span>
+                <span style="color: rgba(255,255,255,0.4); margin: 0 6px;">·</span>
+                <span>🌐 <a href="https://nganira.rw" target="_blank" style="color: ${BRAND_ACCENT}; text-decoration: none;">nganira.rw</a></span>
               </div>
             </td>
           </tr>
@@ -796,16 +797,16 @@ export function renderBookingConfirmationHtml(data: BookingConfirmationTemplateD
             </td>
           </tr>
           <tr>
-            <td align="center" style="background-color: #0f172a; padding: 24px 20px; text-align: center; border-top: 1px solid #1e293b; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 11px; line-height: 1.55; color: #94a3b8;">
-              <p style="margin: 0 auto 10px auto; color: #94a3b8; font-size: 11px; max-width: 520px; line-height: 1.55;">
+            <td align="center" style="background-color: #26272e; padding: 24px 20px; text-align: center; border-top: 1px solid #636679; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 11px; line-height: 1.55; color: #94a3b8;">
+              <p style="margin: 0 auto 10px auto; color: #cbd5e1; font-size: 11px; max-width: 520px; line-height: 1.55;">
                 You are receiving this booking confirmation notification for service request <strong>#${bookingId}</strong>.
               </p>
               <p style="margin: 0; font-size: 11px;">
-                <a href="https://nganila.rw/contact" target="_blank" style="color: #cbd5e1; text-decoration: underline; margin: 0 6px;">Support Desk</a>
-                <span style="color: #475569;">·</span>
-                <a href="https://nganila.rw/privacy" target="_blank" style="color: #cbd5e1; text-decoration: underline; margin: 0 6px;">Privacy Policy</a>
-                <span style="color: #475569;">·</span>
-                <a href="https://nganila.rw/terms" target="_blank" style="color: #cbd5e1; text-decoration: underline; margin: 0 6px;">Terms of Service</a>
+                <a href="https://nganira.rw/contact" target="_blank" style="color: #cbd5e1; text-decoration: underline; margin: 0 6px;">Support Desk</a>
+                <span style="color: #636679;">·</span>
+                <a href="https://nganira.rw/privacy" target="_blank" style="color: #cbd5e1; text-decoration: underline; margin: 0 6px;">Privacy Policy</a>
+                <span style="color: #636679;">·</span>
+                <a href="https://nganira.rw/terms" target="_blank" style="color: #cbd5e1; text-decoration: underline; margin: 0 6px;">Terms of Service</a>
               </p>
             </td>
           </tr>
@@ -888,7 +889,7 @@ export interface CustomBroadcastTemplateData {
 }
 
 /**
- * Renders an official SANEX Company Ltd branded HTML template for custom admin messages,
+ * Renders an official Nganira Company LTD branded HTML template for custom admin messages,
  * client announcements, and broadcast communications.
  */
 export function renderCustomBroadcastHtml(data: CustomBroadcastTemplateData): string {
@@ -903,8 +904,8 @@ export function renderCustomBroadcastHtml(data: CustomBroadcastTemplateData): st
     organization,
     sectorName,
     unsubscribeUrl,
-    helpUrl = "https://nganila.rw/contact",
-    privacyUrl = "https://nganila.rw/privacy",
+    helpUrl = "https://nganira.rw/contact",
+    privacyUrl = "https://nganira.rw/privacy",
   } = data;
 
   const rawRecipient = (recipientName || '').trim();
@@ -925,7 +926,7 @@ export function renderCustomBroadcastHtml(data: CustomBroadcastTemplateData): st
 
   const effectiveUnsubscribe =
     unsubscribeUrl ||
-    `https://nganila.rw/newsletter/unsubscribe${recipientEmail ? `?email=${encodeURIComponent(recipientEmail)}` : ''}`;
+    `https://nganira.rw/newsletter/unsubscribe${recipientEmail ? `?email=${encodeURIComponent(recipientEmail)}` : ''}`;
 
   return `
 <!DOCTYPE html>
@@ -941,27 +942,27 @@ export function renderCustomBroadcastHtml(data: CustomBroadcastTemplateData): st
       <td align="center">
         <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;">
           <tr>
-            <td style="background-color: #0f172a; padding: 24px 32px; text-align: left; border-bottom: 4px solid ${BRAND_COLOR};">
+            <td style="background-color: #636679; padding: 24px 32px; text-align: left; border-bottom: 4px solid ${BRAND_ACCENT};">
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td>
-                    <h1 style="margin: 0; font-size: 20px; font-weight: 800; color: ${BRAND_COLOR}; letter-spacing: 0.5px; text-transform: uppercase;">
-                      NGANILA <span style="color: #ffffff; font-weight: 400;">Co LTD</span>
+                    <h1 style="margin: 0; font-size: 20px; font-weight: 800; color: #ffffff; letter-spacing: 0.5px; text-transform: uppercase;">
+                      NGANIRA <span style="color: ${BRAND_ACCENT}; font-weight: 600;">COMPANY LTD</span>
                     </h1>
-                    <p style="margin: 4px 0 0 0; font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">
+                    <p style="margin: 4px 0 0 0; font-size: 12px; color: #e2e8f0; text-transform: uppercase; letter-spacing: 1px;">
                       Sustainable Liquid Waste Management · Kigali, Rwanda
                     </p>
                   </td>
                 </tr>
               </table>
-              <div style="border-top: 1px solid #1e293b; margin-top: 14px; padding-top: 10px; font-size: 11px; color: #94a3b8; line-height: 1.4;">
-                <span style="color: #cbd5e1; font-weight: 600;">📍 Kicukiro, Kigali, Rwanda</span>
-                <span style="color: #475569; margin: 0 6px;">·</span>
-                <span>📞 <a href="tel:${COMPANY_PHONE.replace(/\s+/g, '')}" style="color: #cbd5e1; text-decoration: none;">${COMPANY_PHONE}</a></span>
-                <span style="color: #475569; margin: 0 6px;">·</span>
-                <span>✉️ <a href="mailto:${COMPANY_EMAIL}" style="color: ${BRAND_COLOR}; text-decoration: none;">${COMPANY_EMAIL}</a></span>
-                <span style="color: #475569; margin: 0 6px;">·</span>
-                <span>🌐 <a href="https://nganila.rw" target="_blank" style="color: ${BRAND_COLOR}; text-decoration: none;">nganila.rw</a></span>
+              <div style="border-top: 1px solid rgba(255,255,255,0.2); margin-top: 14px; padding-top: 10px; font-size: 11px; color: #e2e8f0; line-height: 1.4;">
+                <span style="color: #ffffff; font-weight: 600;">📍 Kicukiro, Kigali, Rwanda</span>
+                <span style="color: rgba(255,255,255,0.4); margin: 0 6px;">·</span>
+                <span>📞 <a href="tel:${COMPANY_PHONE.replace(/\s+/g, '')}" style="color: #ffffff; text-decoration: none;">${COMPANY_PHONE}</a></span>
+                <span style="color: rgba(255,255,255,0.4); margin: 0 6px;">·</span>
+                <span>✉️ <a href="mailto:${COMPANY_EMAIL}" style="color: ${BRAND_ACCENT}; text-decoration: none;">${COMPANY_EMAIL}</a></span>
+                <span style="color: rgba(255,255,255,0.4); margin: 0 6px;">·</span>
+                <span>🌐 <a href="https://nganira.rw" target="_blank" style="color: ${BRAND_ACCENT}; text-decoration: none;">nganira.rw</a></span>
               </div>
             </td>
           </tr>
@@ -974,14 +975,14 @@ export function renderCustomBroadcastHtml(data: CustomBroadcastTemplateData): st
                 ctaText && ctaUrl
                   ? `
               <div style="margin: 28px 0; text-align: center;">
-                <a href="${ctaUrl}" target="_blank" style="display: inline-block; background-color: ${BRAND_COLOR}; color: #000000; font-size: 14px; font-weight: 800; text-decoration: none; padding: 12px 28px; border-radius: 8px; text-transform: uppercase; letter-spacing: 0.5px;">
+                <a href="${ctaUrl}" target="_blank" style="display: inline-block; background-color: ${BRAND_ACCENT}; color: #26272e; font-size: 14px; font-weight: 800; text-decoration: none; padding: 12px 28px; border-radius: 8px; text-transform: uppercase; letter-spacing: 0.5px;">
                   ${ctaText}
                 </a>
               </div>`
                   : ''
               }
               <div style="border-top: 1px solid #e2e8f0; padding-top: 20px; margin-top: 28px; font-size: 13px; color: #64748b;">
-                <p style="margin: 0;">For questions or operational support, contact Nganila at
+                <p style="margin: 0;">For questions or operational support, contact Nganira Company LTD at
                   <a href="tel:${COMPANY_PHONE.replace(/\s+/g, '')}" style="color: #0f172a; font-weight: 700; text-decoration: none;">${COMPANY_PHONE}</a> or
                   <a href="mailto:${COMPANY_EMAIL}" style="color: #0f172a; font-weight: 700; text-decoration: none;">${COMPANY_EMAIL}</a>.
                 </p>
@@ -989,15 +990,15 @@ export function renderCustomBroadcastHtml(data: CustomBroadcastTemplateData): st
             </td>
           </tr>
           <tr>
-            <td align="center" style="background-color: #0f172a; padding: 24px 20px; text-align: center; border-top: 1px solid #1e293b; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 11px; line-height: 1.55; color: #94a3b8;">
-              <p style="margin: 0 auto 10px auto; color: #94a3b8; font-size: 11px; max-width: 520px; line-height: 1.55;">
+            <td align="center" style="background-color: #26272e; padding: 24px 20px; text-align: center; border-top: 1px solid #636679; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 11px; line-height: 1.55; color: #94a3b8;">
+              <p style="margin: 0 auto 10px auto; color: #cbd5e1; font-size: 11px; max-width: 520px; line-height: 1.55;">
                 You are receiving this official communication from <strong>${BRAND_NAME}</strong> regarding ${sectorName ? `${sectorName} wastewater and sanitation operations` : 'liquid waste management, decentralized treatment systems, and sanitation operations'} in Rwanda.
               </p>
               <p style="margin: 0; font-size: 11px;">
                 <a href="${effectiveUnsubscribe}" target="_blank" style="color: #cbd5e1; text-decoration: underline; margin: 0 6px;">Unsubscribe</a>
-                <span style="color: #475569;">·</span>
+                <span style="color: #636679;">·</span>
                 <a href="${helpUrl}" target="_blank" style="color: #cbd5e1; text-decoration: underline; margin: 0 6px;">Help &amp; Support</a>
-                <span style="color: #475569;">·</span>
+                <span style="color: #636679;">·</span>
                 <a href="${privacyUrl}" target="_blank" style="color: #cbd5e1; text-decoration: underline; margin: 0 6px;">Privacy Policy</a>
               </p>
             </td>
@@ -1032,6 +1033,6 @@ export function renderCustomBroadcastText(data: CustomBroadcastTemplateData): st
   text += `---\n`;
   text += `You are receiving this official communication regarding ${sectorName || 'sanitation operations'} in Rwanda.\n`;
   if (unsubscribeUrl) text += `Unsubscribe: ${unsubscribeUrl}\n`;
-  text += `Support: https://nganila.rw/contact\n`;
+  text += `Support: https://nganira.rw/contact\n`;
   return text;
 }

@@ -82,27 +82,27 @@ export function Highlights() {
   return (
     <div className="relative group">
       {isAdmin && (
-        <div className="absolute -inset-2 z-20 bg-sky-500/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none rounded-2xl">
-          <Button asChild className="pointer-events-auto bg-slate-950 text-white hover:bg-slate-900 gap-2 font-bold text-xs rounded-xl">
+        <div className="absolute -inset-2 z-20 bg-[#636679]/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none rounded-2xl">
+          <Button asChild className="pointer-events-auto bg-[#636679] text-white hover:bg-[#545667] gap-2 font-bold text-xs rounded-xl shadow-md">
             <Link href="/admin/content?tab=highlights">
-              <Edit3 className="h-4 w-4" /> Edit Highlights
+              <Edit3 className="h-4 w-4 text-[#d9eaa4]" /> Edit Highlights
             </Link>
           </Button>
         </div>
       )}
       <div className="space-y-2 mb-8">
-        <span className="text-xs font-bold uppercase tracking-wider text-sky-600">Why Nganila Co LTD</span>
-        <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">Our Operational Highlights</h2>
+        <span className="text-xs font-bold uppercase tracking-wider text-[#636679]">Why Nganira Company LTD</span>
+        <h2 className="text-xl font-extrabold text-[#26272e] tracking-tight">Our Operational Highlights</h2>
       </div>
       <div className="space-y-6">
         {items.map((item: any, i: number) => (
-          <div key={i} className="flex gap-4 items-start p-4 rounded-2xl bg-white border border-slate-200/80 shadow-sm hover:border-sky-300 transition-all">
-            <div className="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-xl bg-sky-50 border border-sky-100 text-sky-600 shadow-inner">
+          <div key={i} className="flex gap-4 items-start p-4 rounded-2xl bg-white border border-[#d9dadf] shadow-sm hover:border-[#636679]/40 transition-all">
+            <div className="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-xl bg-[#d9eaa4]/30 border border-[#d9eaa4] text-[#636679] shadow-inner">
               {getIcon(item.icon)}
             </div>
             <div className="space-y-1">
-              <h3 className="text-sm font-bold leading-tight text-slate-900">{item.title}</h3>
-              <p className="text-xs text-slate-600 leading-relaxed">
+              <h3 className="text-sm font-bold leading-tight text-[#26272e]">{item.title}</h3>
+              <p className="text-xs text-[#636679] leading-relaxed">
                 {item.description}
               </p>
             </div>

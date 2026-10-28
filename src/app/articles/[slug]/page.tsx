@@ -12,8 +12,8 @@ const DEFAULT_FALLBACK_IMAGE =
 function toAbsoluteUrl(url?: string): string {
   if (!url) return DEFAULT_FALLBACK_IMAGE;
   if (url.startsWith("http://") || url.startsWith("https://")) return url;
-  if (url.startsWith("/")) return `https://nganila.rw${url}`;
-  return `https://nganila.rw/${url}`;
+  if (url.startsWith("/")) return `https://nganira.rw${url}`;
+  return `https://nganira.rw/${url}`;
 }
 
 /**
@@ -27,14 +27,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const article = await getArticleForMetadata(rawSlug);
 
   const title = article?.title
-    ? `${article.title} | Nganila Rwanda`
-    : "Article | Nganila Co LTD Rwanda";
+    ? `${article.title} | Nganira Rwanda`
+    : "Article | Nganira Company LTD Rwanda";
 
   const description =
     article?.excerpt?.trim() ||
-    "Read modern liquid waste management, septic draining, and environmental solutions by Nganila Co LTD in Rwanda.";
+    "Read modern liquid waste management, septic draining, and environmental solutions by Nganira Company LTD in Rwanda.";
 
-  const canonicalUrl = `https://nganila.rw/articles/${rawSlug}`;
+  const canonicalUrl = `https://nganira.rw/articles/${rawSlug}`;
   const imageUrl = toAbsoluteUrl(article?.imageUrl);
 
   return {
@@ -49,16 +49,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       url: canonicalUrl,
       title,
       description,
-      siteName: "SANEX Rwanda",
+      siteName: "Nganira Rwanda",
       publishedTime: article?.createdAt ? new Date(article.createdAt).toISOString() : undefined,
       modifiedTime: article?.updatedAt ? new Date(article.updatedAt).toISOString() : undefined,
-      authors: article?.author ? [article.author] : ["SANEX Company Ltd"],
+      authors: article?.author ? [article.author] : ["Nganira Company LTD"],
       images: [
         {
           url: imageUrl,
           width: article?.imageWidth || 1200,
           height: article?.imageHeight || 630,
-          alt: article?.imageAlt || article?.title || "SANEX Liquid Waste Management Article",
+          alt: article?.imageAlt || article?.title || "Nganira Liquid Waste Management Article",
         },
       ],
     },
@@ -67,8 +67,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title,
       description,
       images: [imageUrl],
-      creator: "@SanexRwanda",
-      site: "@SanexRwanda",
+      creator: "@NganiraRwanda",
+      site: "@NganiraRwanda",
     },
   };
 }

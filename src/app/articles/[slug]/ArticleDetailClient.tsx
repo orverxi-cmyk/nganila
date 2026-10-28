@@ -122,7 +122,7 @@ export default function ArticleDetailClient({ initialSlug, initialArticle }: Art
   React.useEffect(() => {
     if (article) {
       if (article.title) {
-        document.title = `${article.title} | SANEX Rwanda`;
+        document.title = `${article.title} | Nganira Rwanda`;
       }
       // If user landed on raw Firestore doc ID, canonicalize the browser URL to clean SEO slug
       const canonicalSlug = getArticleSlug(article);
@@ -134,9 +134,9 @@ export default function ArticleDetailClient({ initialSlug, initialArticle }: Art
 
   const handleShare = (platform: "twitter" | "linkedin" | "facebook" | "copy") => {
     if (!article) return;
-    const origin = typeof window !== "undefined" ? window.location.origin : "https://sanex.rw";
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://nganira.rw";
     const canonicalUrl = `${origin}${getArticleUrl(article)}`;
-    const title = article.title || "SANEX Liquid Waste Management";
+    const title = article.title || "Nganira Liquid Waste Management";
 
     if (platform === "copy") {
       if (navigator.clipboard) {
@@ -194,7 +194,7 @@ export default function ArticleDetailClient({ initialSlug, initialArticle }: Art
     );
   }
 
-  const canonicalUrl = `https://sanex.rw${getArticleUrl(article)}`;
+  const canonicalUrl = `https://nganira.rw${getArticleUrl(article)}`;
 
   // Schema.org Article structured data for rich search engine results
   const structuredData = {
@@ -207,14 +207,14 @@ export default function ArticleDetailClient({ initialSlug, initialArticle }: Art
     dateModified: article.updatedAt ? new Date(article.updatedAt).toISOString() : undefined,
     author: {
       "@type": "Organization",
-      name: article.author || "SANEX Team",
+      name: article.author || "Nganira Team",
     },
     publisher: {
       "@type": "Organization",
-      name: "SANEX Company Ltd",
+      name: "Nganira Company LTD",
       logo: {
         "@type": "ImageObject",
-        url: "https://sanex.rw/favicon.ico",
+        url: "https://nganira.rw/favicon.ico",
       },
     },
     mainEntityOfPage: {
@@ -291,10 +291,10 @@ export default function ArticleDetailClient({ initialSlug, initialArticle }: Art
                 {article.createdAt ? new Date(article.createdAt).toLocaleDateString() : ""}
               </span>
               <span className="flex items-center gap-1">
-                <User className="h-3 w-3 text-primary" /> {article.author || "SANEX Team"}
+                <User className="h-3 w-3 text-[#636679]" /> {article.author || "Nganira Team"}
               </span>
               {article.category && (
-                <span className="px-2 py-0.5 rounded bg-primary text-black font-bold">
+                <span className="px-2.5 py-0.5 rounded-full bg-[#d9eaa4] text-[#26272e] font-bold">
                   {article.category}
                 </span>
               )}
@@ -319,10 +319,10 @@ export default function ArticleDetailClient({ initialSlug, initialArticle }: Art
           </header>
 
           {article.imageUrl && (
-            <div className="relative rounded-2xl overflow-hidden mb-5 shadow-xl border border-primary/10 bg-muted flex justify-center">
+            <div className="relative rounded-2xl overflow-hidden mb-5 shadow-xl border border-[#636679]/20 bg-muted flex justify-center">
               <Image
                 src={article.imageUrl}
-                alt={article.imageAlt || article.title || "SANEX Liquid Waste Management in Rwanda"}
+                alt={article.imageAlt || article.title || "Nganira Liquid Waste Management in Rwanda"}
                 width={article.imageWidth || 1200}
                 height={article.imageHeight || 600}
                 sizes="(max-width: 1024px) 100vw, 896px"
@@ -339,13 +339,13 @@ export default function ArticleDetailClient({ initialSlug, initialArticle }: Art
             />
           </article>
 
-          <div className="mt-10 pt-5 border-t border-primary/20">
+          <div className="mt-10 pt-5 border-t border-[#636679]/20">
             <h3 className="text-[16px] font-bold font-headline mb-4">Want to learn more?</h3>
-            <div className="flex flex-wrap gap-x-[5px] gap-y-[20px]">
-              <Button asChild className="h-12 px-8 bg-primary text-black font-bold text-[12px] uppercase tracking-widest rounded-full shadow-md">
+            <div className="flex flex-wrap gap-x-[12px] gap-y-[16px]">
+              <Button asChild className="h-12 px-8 bg-[#d9eaa4] text-[#26272e] hover:bg-[#cde092] font-bold text-[12px] uppercase tracking-widest rounded-full shadow-md">
                 <Link href="/book">Schedule a Consultation</Link>
               </Button>
-              <Button asChild variant="outline" className="h-12 px-8 border-primary text-primary font-bold text-[12px] uppercase tracking-widest rounded-full">
+              <Button asChild variant="outline" className="h-12 px-8 border-[#636679] text-[#636679] hover:bg-[#636679]/10 font-bold text-[12px] uppercase tracking-widest rounded-full">
                 <Link href="/articles">Browse Other Stories</Link>
               </Button>
             </div>

@@ -5,7 +5,7 @@ import { MetadataRoute } from 'next';
  * Directs crawlers to the dynamic sitemap and protects admin/api endpoints.
  */
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://nganila.rw';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://nganira.rw';
 
   return {
     rules: [

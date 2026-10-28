@@ -328,7 +328,7 @@ function ArticleManager({ articles, loading }: { articles: any, loading: boolean
   const [isTogglingViews, setIsTogglingViews] = React.useState(false);
   const [isEditing, setIsEditing] = React.useState<string | null>(null);
   const [formData, setFormData] = React.useState({
-    title: "", slug: "", excerpt: "", content: "", imageUrl: "", imageAlt: "", imageWidth: 1200, imageHeight: 600, category: "Impact", author: "SANEX Team"
+    title: "", slug: "", excerpt: "", content: "", imageUrl: "", imageAlt: "", imageWidth: 1200, imageHeight: 600, category: "Impact", author: "Nganira Team"
   });
 
   const [page, setPage] = React.useState(1);
@@ -356,7 +356,7 @@ function ArticleManager({ articles, loading }: { articles: any, loading: boolean
         toast({ title: "Created", description: "Article published." });
       }
       setIsEditing(null);
-      setFormData({ title: "", slug: "", excerpt: "", content: "", imageUrl: "", imageAlt: "", imageWidth: 1200, imageHeight: 600, category: "Impact", author: "SANEX Team" });
+      setFormData({ title: "", slug: "", excerpt: "", content: "", imageUrl: "", imageAlt: "", imageWidth: 1200, imageHeight: 600, category: "Impact", author: "Nganira Team" });
     } catch (err: any) {
       toast({ variant: "destructive", title: "Error", description: err.message });
     }
@@ -374,7 +374,7 @@ function ArticleManager({ articles, loading }: { articles: any, loading: boolean
       imageWidth: article.imageWidth || 1200,
       imageHeight: article.imageHeight || 600,
       category: article.category || "Impact",
-      author: article.author || "SANEX Team"
+      author: article.author || "Nganira Team"
     });
   };
 
@@ -455,7 +455,7 @@ function ArticleManager({ articles, loading }: { articles: any, loading: boolean
               </div>
               <Input 
                 className="h-9 text-xs" 
-                placeholder="e.g. SANEX 10000L vacuum exhauster truck in Kigali"
+                placeholder="e.g. Nganira 10000L vacuum exhauster truck in Kigali"
                 value={formData.imageAlt} 
                 onChange={e => setFormData({...formData, imageAlt: e.target.value})} 
               />
@@ -632,26 +632,26 @@ function parseArrayField(arr: any, fallbackStr: any, defaultValue: string): stri
 
 function GeneralEditor({ initialData, onSave }: { initialData: any, onSave: (data: any) => void }) {
   const [formData, setFormData] = React.useState({ 
-    siteName: initialData?.siteName || "SANEX Company Ltd", 
+    siteName: initialData?.siteName || "Nganira Company LTD", 
     logoUrl: initialData?.logoUrl || "", 
     logoWidth: initialData?.logoWidth || 160, 
     logoHeight: initialData?.logoHeight || 40, 
     logoSpacing: initialData?.logoSpacing ?? 8, 
-    phones: parseArrayField(initialData?.phones, initialData?.phone, "+250 788303628"), 
-    emails: parseArrayField(initialData?.emails, initialData?.email, "sanexcompany@gmail.com"),
+    phones: parseArrayField(initialData?.phones, initialData?.phone, "+250 788 840 000"), 
+    emails: parseArrayField(initialData?.emails, initialData?.email, "info@nganira.rw"),
     socials: initialData?.socials || { twitter: "", linkedin: "", facebook: "", instagram: "", whatsapp: "", youtube: "" }
   });
   
   React.useEffect(() => { 
     if (initialData) {
       setFormData({
-        siteName: initialData.siteName || "SANEX Company Ltd",
+        siteName: initialData.siteName || "Nganira Company LTD",
         logoUrl: initialData.logoUrl || "",
         logoWidth: initialData.logoWidth || 160,
         logoHeight: initialData.logoHeight || 40,
         logoSpacing: initialData.logoSpacing ?? 8,
-        phones: parseArrayField(initialData.phones, initialData.phone, "+250 788303628"),
-        emails: parseArrayField(initialData.emails, initialData.email, "sanexcompany@gmail.com"),
+        phones: parseArrayField(initialData.phones, initialData.phone, "+250 788 840 000"),
+        emails: parseArrayField(initialData.emails, initialData.email, "info@nganira.rw"),
         socials: initialData.socials || { twitter: "", linkedin: "", facebook: "", instagram: "", whatsapp: "", youtube: "" }
       });
     }
@@ -910,7 +910,7 @@ function GeneralEditor({ initialData, onSave }: { initialData: any, onSave: (dat
                         className="h-8 text-xs pr-16"
                         value={em}
                         onChange={e => updateEmail(idx, e.target.value)}
-                        placeholder={idx === 0 ? "e.g. sanexcompany@gmail.com (Primary)" : "e.g. support@sanex.rw"}
+                        placeholder={idx === 0 ? "e.g. info@nganira.rw (Primary)" : "e.g. support@nganira.rw"}
                       />
                       {idx === 0 && (
                         <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-primary/20 text-black pointer-events-none">

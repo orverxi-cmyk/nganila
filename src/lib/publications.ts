@@ -186,11 +186,11 @@ export function injectWebVersionHeader(html: string, publicationUrl: string, sub
       <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;">
         <tr>
           <td align="left" style="font-size:11px; color:#64748b; line-height:1.4;">
-            <span style="font-weight:600; color:#334155;">SANEX Official Publication</span>
+            <span style="font-weight:600; color:#334155;">Nganira Official Publication</span>
             ${subjectTitle ? ` &bull; <span style="color:#64748b;">${subjectTitle}</span>` : ""}
           </td>
           <td align="right" style="font-size:11px; white-space:nowrap;">
-            <a href="${publicationUrl}" target="_blank" rel="noopener noreferrer" style="color:#8DB833; font-weight:700; text-decoration:none; display:inline-flex; align-items:center;">
+            <a href="${publicationUrl}" target="_blank" rel="noopener noreferrer" style="color:#636679; font-weight:700; text-decoration:none; display:inline-flex; align-items:center;">
               View Online / Share &rarr;
             </a>
           </td>
@@ -282,7 +282,7 @@ export function isCustomEmailPublication(pub: Partial<Publication>): boolean {
 
 
 /**
- * Returns the official SANEX custom designed newsletter ready for 1-click publishing.
+ * Returns the official Nganira custom designed newsletter ready for 1-click publishing.
  * Built with full Email Studio design: brand header, hero banner, multi-column photos, CTAs, and verified footer.
  */
 export function getCustomDesignedNewsletters(): Publication[] {
@@ -294,10 +294,10 @@ export function getCustomDesignedNewsletters(): Publication[] {
     {
       id: "pub_custom_sanex_newsletter",
       slug: "sustainable-liquid-waste-management-clean-water-rwanda",
-      title: "SANEX Company Ltd: Sustainable Liquid Waste Management & Clean Water Delivery",
+      title: "Nganira Company LTD: Sustainable Liquid Waste Management & Clean Water Delivery",
       subject: "WHO ARE WE? Modern Liquid Waste & Wastewater Solutions in Rwanda",
       category: "Company Announcements",
-      author: "SANEX Communications",
+      author: "Nganira Communications",
       publishedAt: now - dayMs * 1,
       createdAt: now - dayMs * 1,
       updatedAt: now,
@@ -309,7 +309,7 @@ export function getCustomDesignedNewsletters(): Publication[] {
       thumbnailImg:
         "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1779722491089_B25A3102.jpg?alt=media",
       excerpt:
-        "Sanex Company LTD is a Rwandan company specializing in liquid waste management, emptying services, and clean water delivery.",
+        "Nganira Company LTD is a Rwandan company specializing in liquid waste management, emptying services, and clean water delivery.",
       content: newsletterHtml,
       linkedNewsletters: [],
       viewsCount: 14,

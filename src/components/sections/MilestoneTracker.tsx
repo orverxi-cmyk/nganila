@@ -32,14 +32,14 @@ export function MilestoneTracker() {
   const content = {
     title: milestonesData?.title || "Who We Are",
     description: milestonesData?.description || `
-      <p><strong>Nganila Co LTD</strong> is a professional waste management and sanitation company operating in Kicukiro, Kigali, Rwanda. The company is a verified member of <strong>ASSERWA</strong> (the Forum of Sewage Emptiers in Rwanda).</p>
+      <p><strong>Nganira Company LTD</strong> is a professional waste management and sanitation company operating in Kicukiro, Kigali, Rwanda. The company is a verified member of <strong>ASSERWA</strong> (the Forum of Sewage Emptiers in Rwanda).</p>
       <p>We specialize in decentralized wastewater treatment, professional septic tank emptying, pit latrine draining (kuvidura), and wastewater transportation. Operating a fleet of 5 vacuum tankers, we transport liquid waste safely to treatment facilities, promoting public health and environmental sustainability.</p>
     `,
     items: milestonesData?.items?.length ? milestonesData.items : defaultMilestones
   };
 
   const getIcon = (name: string) => {
-    const iconClass = "h-5 w-5 text-white";
+    const iconClass = "h-5 w-5 text-[#26272e]";
     const normalized = name?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'clock';
     switch (normalized) {
       case 'clock': return <Clock className={iconClass} />;
@@ -52,10 +52,10 @@ export function MilestoneTracker() {
   return (
     <section className="py-12 lg:py-16 bg-white relative group">
       {isAdmin && (
-        <div className="absolute inset-0 z-20 bg-sky-600/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-          <Button asChild className="pointer-events-auto bg-slate-900 text-white hover:bg-slate-800 gap-2 font-bold text-[14px] rounded-full shadow-lg">
+        <div className="absolute inset-0 z-20 bg-[#636679]/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+          <Button asChild className="pointer-events-auto bg-[#636679] text-white hover:bg-[#545667] gap-2 font-bold text-[14px] rounded-xl shadow-lg">
             <Link href="/admin/content?tab=milestones">
-              <Edit3 className="h-4 w-4" /> Edit Who We Are
+              <Edit3 className="h-4 w-4 text-[#d9eaa4]" /> Edit Who We Are
             </Link>
           </Button>
         </div>
@@ -65,36 +65,36 @@ export function MilestoneTracker() {
           {/* Left Column: Who We Are Story */}
           <div className="space-y-6 lg:col-span-7 flex flex-col justify-between">
             <div className="space-y-4">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-sky-50 text-sky-700 border border-sky-200">
-                <Shield className="h-3.5 w-3.5" />
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-[#d9eaa4]/40 text-[#383944] border border-[#d9eaa4]">
+                <Shield className="h-3.5 w-3.5 text-[#636679]" />
                 <span>Verified ASSERWA Sanitation Partner</span>
               </div>
-              <h2 className="text-[26px] sm:text-[32px] font-extrabold text-slate-900 tracking-tight leading-tight">
+              <h2 className="text-[26px] sm:text-[32px] font-extrabold text-[#26272e] tracking-tight leading-tight">
                 {content.title}
               </h2>
               <div 
-                className="text-[15px] text-slate-600 leading-relaxed space-y-4 prose prose-sm max-w-none"
+                className="text-[15px] text-[#636679] leading-relaxed space-y-4 prose prose-sm max-w-none"
                 dangerouslySetInnerHTML={{ __html: content.description }}
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-              <div className="p-5 rounded-2xl bg-gradient-to-br from-sky-50/70 to-slate-50 border border-sky-100 border-l-4 border-l-sky-500 shadow-sm">
+              <div className="p-5 rounded-2xl bg-[#f6f6f8] border border-[#d9dadf] border-l-4 border-l-[#636679] shadow-xs">
                 <div className="flex items-center gap-2 mb-2">
-                  <TrendingUp className="h-4 w-4 text-sky-600" />
-                  <h3 className="text-[16px] font-bold text-slate-900">Our Vision</h3>
+                  <TrendingUp className="h-4 w-4 text-[#636679]" />
+                  <h3 className="text-[16px] font-bold text-[#26272e]">Our Vision</h3>
                 </div>
-                <p className="text-[13px] text-slate-600 leading-relaxed">
+                <p className="text-[13px] text-[#636679] leading-relaxed">
                   To be Rwanda's leading provider of sustainable liquid waste management, fostering cleaner communities across Kigali.
                 </p>
               </div>
 
-              <div className="p-5 rounded-2xl bg-gradient-to-br from-sky-50/70 to-slate-50 border border-sky-100 border-l-4 border-l-cyan-500 shadow-sm">
+              <div className="p-5 rounded-2xl bg-[#f6f6f8] border border-[#d9dadf] border-l-4 border-l-[#d9eaa4] shadow-xs">
                 <div className="flex items-center gap-2 mb-2">
-                  <Shield className="h-4 w-4 text-cyan-600" />
-                  <h3 className="text-[16px] font-bold text-slate-900">Our Mission</h3>
+                  <Shield className="h-4 w-4 text-[#636679]" />
+                  <h3 className="text-[16px] font-bold text-[#26272e]">Our Mission</h3>
                 </div>
-                <p className="text-[13px] text-slate-600 leading-relaxed">
+                <p className="text-[13px] text-[#636679] leading-relaxed">
                   To deliver dependable, hygienic, and compliant septic evacuation (kuvidura) and decentralized treatment operations.
                 </p>
               </div>
@@ -102,29 +102,29 @@ export function MilestoneTracker() {
           </div>
 
           {/* Right Column: Evolution & Operational Highlights */}
-          <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 text-white rounded-3xl p-7 lg:p-9 shadow-xl shadow-slate-900/10 lg:col-span-5 flex flex-col justify-between border border-slate-800">
+          <div className="bg-gradient-to-br from-[#636679] via-[#454755] to-[#26272e] text-white rounded-3xl p-7 lg:p-9 shadow-xl shadow-[#636679]/10 lg:col-span-5 flex flex-col justify-between border border-[#545667]">
             <div>
-              <div className="flex items-center justify-between pb-6 mb-6 border-b border-slate-800">
+              <div className="flex items-center justify-between pb-6 mb-6 border-b border-[#545667]">
                 <h3 className="text-[18px] font-bold text-white tracking-tight">Our Evolution &amp; Fleet</h3>
-                <span className="text-[11px] font-bold text-sky-400 uppercase tracking-wider bg-sky-950/80 border border-sky-800 px-2.5 py-1 rounded-full">
+                <span className="text-[11px] font-bold text-[#26272e] uppercase tracking-wider bg-[#d9eaa4] border border-[#cbe090] px-2.5 py-1 rounded-full">
                   Verified ASSERWA
                 </span>
               </div>
               
               <div className="relative space-y-8">
                 {/* Vertical line */}
-                <div className="absolute left-[19px] top-3 bottom-3 w-0.5 bg-slate-800 z-0" />
+                <div className="absolute left-[19px] top-3 bottom-3 w-0.5 bg-[#545667] z-0" />
                 
                 {content.items.map((milestone: any, i: number) => (
                   <div key={i} className="relative z-10 flex gap-5 items-start">
-                    <div className="flex-shrink-0 h-10 w-10 rounded-xl bg-gradient-to-br from-sky-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-sky-500/20 border border-sky-400/30">
+                    <div className="flex-shrink-0 h-10 w-10 rounded-xl bg-[#d9eaa4] flex items-center justify-center shadow-lg shadow-[#d9eaa4]/20 border border-[#cbe090]">
                       {getIcon(milestone.icon)}
                     </div>
                     <div className="flex-grow pt-0.5">
-                      <div className="text-[12px] font-bold uppercase tracking-wider text-sky-400 mb-0.5">{milestone.year}</div>
+                      <div className="text-[12px] font-bold uppercase tracking-wider text-[#d9eaa4] mb-0.5">{milestone.year}</div>
                       <h4 className="text-[16px] font-bold text-white mb-1">{milestone.title}</h4>
                       <div 
-                        className="text-[13px] text-slate-300 leading-relaxed"
+                        className="text-[13px] text-slate-200 leading-relaxed"
                         dangerouslySetInnerHTML={{ __html: milestone.description }}
                       />
                     </div>
@@ -133,9 +133,9 @@ export function MilestoneTracker() {
               </div>
             </div>
 
-            <div className="pt-6 mt-6 border-t border-slate-800/80 text-[12px] text-slate-400 flex items-center justify-between">
+            <div className="pt-6 mt-6 border-t border-[#545667] text-[12px] text-[#bcbec8] flex items-center justify-between">
               <span>📍 Kicukiro, Kigali, Rwanda</span>
-              <span className="text-sky-400 font-semibold">Fleet of 5 Tankers</span>
+              <span className="text-[#d9eaa4] font-semibold">Fleet of 5 Tankers</span>
             </div>
           </div>
         </div>

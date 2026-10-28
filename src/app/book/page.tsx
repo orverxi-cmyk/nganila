@@ -207,40 +207,40 @@ function BookingPageContent() {
     return (
       <div className="min-h-screen flex flex-col font-sans">
         <Navbar />
-        <main className="flex-grow flex items-center justify-center bg-slate-50 px-4 py-12">
-          <Card className="w-full max-w-md text-center py-8 px-6 border border-slate-200/80 shadow-xl rounded-2xl bg-white">
-            <div className="h-16 w-16 bg-sky-50 border border-sky-100 rounded-2xl flex items-center justify-center mx-auto mb-4 text-sky-600">
+        <main className="flex-grow flex items-center justify-center bg-[#f6f6f8] px-4 py-12">
+          <Card className="w-full max-w-md text-center py-8 px-6 border border-[#d9dadf] shadow-xl rounded-2xl bg-white">
+            <div className="h-16 w-16 bg-[#d9eaa4]/30 border border-[#d9eaa4] rounded-2xl flex items-center justify-center mx-auto mb-4 text-[#636679]">
               <CheckCircle2 className="h-8 w-8" />
             </div>
-            <CardTitle className="text-xl font-extrabold text-slate-900 mb-1">Service Request Received</CardTitle>
-            <CardDescription className="text-sm text-slate-600">
+            <CardTitle className="text-xl font-extrabold text-[#26272e] mb-1">Service Request Received</CardTitle>
+            <CardDescription className="text-sm text-[#636679]">
               Thank you, <strong>{formData.customerName}</strong>. Our dispatch team will contact you shortly regarding your <strong>{formData.serviceType}</strong> booking.
             </CardDescription>
 
-            <div className="mt-4 p-3.5 bg-sky-50 rounded-xl border border-sky-200 text-xs text-sky-900 text-left flex items-start gap-2.5">
-              <Mail className="h-4 w-4 text-sky-600 shrink-0 mt-0.5" />
+            <div className="mt-4 p-3.5 bg-[#d9eaa4]/30 rounded-xl border border-[#d9eaa4] text-xs text-[#26272e] text-left flex items-start gap-2.5">
+              <Mail className="h-4 w-4 text-[#636679] shrink-0 mt-0.5" />
               <div>
                 <span className="font-bold">Email Updates Enabled:</span> Automated status change alerts will be sent to <strong>{formData.email}</strong>.
               </div>
             </div>
 
             {appointmentDate && (
-              <div className="mt-5 p-3.5 bg-slate-50 rounded-xl text-left border border-slate-200 text-sm max-w-xs mx-auto">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Requested Appointment</div>
-                <div className="font-bold text-slate-900 flex items-center gap-2 mt-1">
-                  <CalendarIcon className="h-4 w-4 text-sky-600 shrink-0" />
+              <div className="mt-5 p-3.5 bg-[#f6f6f8] rounded-xl text-left border border-[#d9dadf] text-sm max-w-xs mx-auto">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-[#9698a7]">Requested Appointment</div>
+                <div className="font-bold text-[#26272e] flex items-center gap-2 mt-1">
+                  <CalendarIcon className="h-4 w-4 text-[#636679] shrink-0" />
                   <span>{format(appointmentDate, "EEEE, MMMM d, yyyy")}</span>
                 </div>
                 {preferredTime && (
-                  <div className="text-xs text-slate-500 flex items-center gap-1.5 mt-1 pl-6">
-                    <Clock className="h-3.5 w-3.5 text-sky-600 shrink-0" />
+                  <div className="text-xs text-[#636679] flex items-center gap-1.5 mt-1 pl-6">
+                    <Clock className="h-3.5 w-3.5 text-[#636679] shrink-0" />
                     <span>{preferredTime}</span>
                   </div>
                 )}
               </div>
             )}
 
-            <Button className="mt-6 bg-gradient-to-r from-sky-600 to-cyan-600 hover:from-sky-700 hover:to-cyan-700 text-white font-bold h-12 px-8 rounded-xl shadow-lg shadow-sky-500/20" onClick={() => window.location.href = "/"}>
+            <Button className="mt-6 bg-[#d9eaa4] hover:bg-[#cbe090] text-[#26272e] font-bold h-12 px-8 rounded-xl shadow-md border border-[#cbe090]" onClick={() => window.location.href = "/"}>
               Return to Home
             </Button>
           </Card>
@@ -253,23 +253,23 @@ function BookingPageContent() {
   return (
     <div className="min-h-screen flex flex-col font-sans">
       <Navbar />
-      <main className="flex-grow py-8 bg-slate-50">
+      <main className="flex-grow py-8 bg-[#f6f6f8]">
         <div className="container mx-auto px-4 md:px-16">
           <div className="max-w-xl mx-auto space-y-6">
             <div className="text-center space-y-2">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1 bg-sky-100 rounded-full border border-sky-200 text-xs font-semibold text-sky-800">
-                <ShieldCheck className="h-3.5 w-3.5 text-sky-600" /> Verified ASSERWA Member · Fleet of 5 Vacuum Tankers
+              <div className="inline-flex items-center gap-2 px-3.5 py-1 bg-[#d9eaa4]/40 rounded-full border border-[#d9eaa4] text-xs font-semibold text-[#383944]">
+                <ShieldCheck className="h-3.5 w-3.5 text-[#636679]" /> Verified ASSERWA Member · Fleet of 5 Vacuum Tankers
               </div>
-              <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Book an Exhauster Truck</h1>
-              <p className="text-slate-600 text-sm">
+              <h1 className="text-3xl font-extrabold text-[#26272e] tracking-tight">Book an Exhauster Truck</h1>
+              <p className="text-[#636679] text-sm">
                 Are you looking to book an exhauster truck for a residential property, or do you need a commercial liquid waste management plan? Let us know so we can guide you on the next steps.
               </p>
             </div>
 
-            <Card className="shadow-xl border border-slate-200/80 rounded-2xl overflow-hidden bg-white">
-              <CardHeader className="bg-gradient-to-r from-sky-600 to-sky-700 text-white p-6">
+            <Card className="shadow-xl border border-[#d9dadf] rounded-2xl overflow-hidden bg-white">
+              <CardHeader className="bg-[#636679] text-white p-6">
                 <CardTitle className="text-base font-bold uppercase tracking-wider">Service Request Form</CardTitle>
-                <CardDescription className="text-sky-100 text-xs">Professional Liquid Waste Evacuation · Nationwide Coverage</CardDescription>
+                <CardDescription className="text-[#d9eaa4] text-xs font-medium">Professional Liquid Waste Evacuation · Nationwide Coverage</CardDescription>
               </CardHeader>
               <CardContent className="p-6 space-y-4">
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -475,23 +475,23 @@ function BookingPageContent() {
                     <Textarea id="desc" placeholder="Please describe your specific requirements..." className="min-h-[100px] text-sm" value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} />
                   </div>
 
-                  <Button type="submit" className="w-full h-12 text-xs font-bold uppercase tracking-wider gap-2 bg-gradient-to-r from-sky-600 to-cyan-600 hover:from-sky-700 hover:to-cyan-700 text-white rounded-xl shadow-lg shadow-sky-500/20 transition-all hover:scale-[1.01]" disabled={isSubmitting}>
+                  <Button type="submit" className="w-full h-12 text-xs font-bold uppercase tracking-wider gap-2 bg-[#d9eaa4] hover:bg-[#cbe090] text-[#26272e] rounded-xl shadow-md shadow-[#d9eaa4]/20 transition-all hover:scale-[1.01] border border-[#cbe090]" disabled={isSubmitting}>
                     {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />} Submit Service Request
                   </Button>
 
                   {/* Privacy & Terms Data Usage Assurance */}
-                  <div className="rounded-xl border border-sky-200/80 bg-sky-50/70 p-3.5 text-xs text-slate-600 space-y-1">
-                    <div className="flex items-center gap-1.5 font-bold text-slate-900">
-                      <ShieldCheck className="h-4 w-4 text-sky-600" />
+                  <div className="rounded-xl border border-[#d9dadf] bg-[#f6f6f8] p-3.5 text-xs text-[#636679] space-y-1">
+                    <div className="flex items-center gap-1.5 font-bold text-[#26272e]">
+                      <ShieldCheck className="h-4 w-4 text-[#636679]" />
                       <span>Data Privacy & Terms Assurance</span>
                     </div>
-                    <p className="text-[11px] leading-relaxed text-slate-600">
+                    <p className="text-[11px] leading-relaxed text-[#636679]">
                       The contact information you share is used solely to contact you as the service requester regarding appointment scheduling, status updates, and field logistics. We never sell or share your data. Read our{" "}
-                      <Link href="/privacy" className="font-bold underline text-sky-700 hover:text-sky-900 transition-colors">
+                      <Link href="/privacy" className="font-bold underline text-[#26272e] hover:text-[#636679] transition-colors">
                         Privacy Policy
                       </Link>{" "}
                       and{" "}
-                      <Link href="/terms" className="font-bold underline text-sky-700 hover:text-sky-900 transition-colors">
+                      <Link href="/terms" className="font-bold underline text-[#26272e] hover:text-[#636679] transition-colors">
                         Terms of Service
                       </Link>.
                     </p>

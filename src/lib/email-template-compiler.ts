@@ -47,10 +47,10 @@ export const SOCIAL_PLATFORMS: {
     id: "x",
     name: "X (Twitter)",
     iconText: "𝕏",
-    color: "#0f172a",
+    color: "#636679",
     bg: "#ffffff",
-    defaultUrl: "https://x.com/SanexRwanda",
-    placeholder: "https://x.com/SanexRwanda",
+    defaultUrl: "https://x.com/NganiraRwanda",
+    placeholder: "https://x.com/NganiraRwanda",
   },
   {
     id: "linkedin",
@@ -58,7 +58,7 @@ export const SOCIAL_PLATFORMS: {
     iconText: "in",
     color: "#0A66C2",
     bg: "#ffffff",
-    defaultUrl: "https://linkedin.com/company/sanex-rwanda",
+    defaultUrl: "https://linkedin.com/company/nganira-company-ltd",
     placeholder: "https://linkedin.com/company/...",
   },
   {
@@ -67,7 +67,7 @@ export const SOCIAL_PLATFORMS: {
     iconText: "▶",
     color: "#FF0000",
     bg: "#ffffff",
-    defaultUrl: "https://youtube.com/@sanexrwanda",
+    defaultUrl: "https://youtube.com/@nganirarwanda",
     placeholder: "https://youtube.com/@...",
   },
   {
@@ -76,7 +76,7 @@ export const SOCIAL_PLATFORMS: {
     iconText: "f",
     color: "#1877F2",
     bg: "#ffffff",
-    defaultUrl: "https://facebook.com/sanexrwanda",
+    defaultUrl: "https://facebook.com/nganirarwanda",
     placeholder: "https://facebook.com/...",
   },
   {
@@ -85,7 +85,7 @@ export const SOCIAL_PLATFORMS: {
     iconText: "📷",
     color: "#E4405F",
     bg: "#ffffff",
-    defaultUrl: "https://instagram.com/sanexrwanda",
+    defaultUrl: "https://instagram.com/nganirarwanda",
     placeholder: "https://instagram.com/...",
   },
   {
@@ -101,17 +101,17 @@ export const SOCIAL_PLATFORMS: {
     id: "website",
     name: "Official Website",
     iconText: "🌐",
-    color: "#8DB833",
-    bg: "#0f172a",
-    defaultUrl: "https://sanex.rw",
-    placeholder: "https://sanex.rw",
+    color: "#636679",
+    bg: "#d9eaa4",
+    defaultUrl: "https://nganira.rw",
+    placeholder: "https://nganira.rw",
   },
 ];
 
 export const DEFAULT_HEADER_SOCIALS: SocialLinkItem[] = [
-  { id: "s-x", platform: "x", url: "https://x.com/SanexRwanda", label: "𝕏", enabled: true },
-  { id: "s-in", platform: "linkedin", url: "https://linkedin.com/company/sanex-rwanda", label: "in", enabled: true },
-  { id: "s-yt", platform: "youtube", url: "https://youtube.com/@sanexrwanda", label: "▶", enabled: true },
+  { id: "s-x", platform: "x", url: "https://x.com/NganiraRwanda", label: "𝕏", enabled: true },
+  { id: "s-in", platform: "linkedin", url: "https://linkedin.com/company/nganira-company-ltd", label: "in", enabled: true },
+  { id: "s-yt", platform: "youtube", url: "https://youtube.com/@nganirarwanda", label: "▶", enabled: true },
 ];
 
 export function getSocialPlatformMeta(platform: SocialPlatform) {
@@ -120,9 +120,9 @@ export function getSocialPlatformMeta(platform: SocialPlatform) {
       id: platform,
       name: platform,
       iconText: "🔗",
-      color: "#0f172a",
-      bg: "#ffffff",
-      defaultUrl: "https://sanex.rw",
+      color: "#636679",
+      bg: "#d9eaa4",
+      defaultUrl: "https://nganira.rw",
       placeholder: "https://...",
     }
   );
@@ -139,7 +139,7 @@ export function parseVideoUrl(rawUrl?: string): {
       source: "website",
       thumbnailUrl:
         "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media",
-      watchUrl: "https://sanex.rw/gallery",
+      watchUrl: "https://nganira.rw/gallery",
     };
   }
 
@@ -162,7 +162,7 @@ export function parseVideoUrl(rawUrl?: string): {
       source: "mp4",
       thumbnailUrl:
         "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media",
-      watchUrl: "https://sanex.rw/gallery",
+      watchUrl: "https://nganira.rw/gallery",
     };
   }
 
@@ -170,7 +170,7 @@ export function parseVideoUrl(rawUrl?: string): {
     source: "custom",
     thumbnailUrl:
       "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media",
-    watchUrl: clean.startsWith("http") ? clean : `https://sanex.rw${clean}`,
+    watchUrl: clean.startsWith("http") ? clean : `https://nganira.rw${clean}`,
   };
 }
 
@@ -250,26 +250,26 @@ export const INITIAL_SANEX_BLOCKS: EmailBlock[] = [
   {
     id: "header-1",
     type: "header",
-    companyName: "SANEX COMPANY LTD",
+    companyName: "NGANIRA COMPANY LTD",
     companyTagline: "Sustainable Liquid Waste Management · Rwanda",
-    companyAddress: "KN 3 Rd, Kigali, Rwanda",
-    companyPhone: "+250 788 303 628",
-    companyEmail: "info@sanex.rw",
-    websiteUrl: "https://sanex.rw",
+    companyAddress: "KK 31 Ave, Niboye, Kicukiro, Kigali, Rwanda",
+    companyPhone: "+250 788 840 000",
+    companyEmail: "info@nganira.rw",
+    websiteUrl: "https://nganira.rw",
     logoUrl: "/images/logo.png",
-    bgColor: "#0f172a",
+    bgColor: "#636679",
     socialLinks: [...DEFAULT_HEADER_SOCIALS],
   },
   {
     id: "hero-1",
     type: "hero",
     heading: "",
-    text: "Sanex Company LTD is a Rwandan company specializing in liquid waste management, emptying services, and clean water delivery.",
+    text: "Nganira Company LTD is a Rwandan company specializing in liquid waste management, emptying services, and clean water delivery.",
     buttonText: "BOOK SERVICE NOW >>",
-    buttonUrl: "https://sanex.rw/book",
+    buttonUrl: "https://nganira.rw/book",
     buttonVariant: "filled",
-    buttonColor: "#8DB833",
-    buttonTextColor: "#000000",
+    buttonColor: "#d9eaa4",
+    buttonTextColor: "#26272e",
     bgColor: "#ffffff",
   },
   {
@@ -282,13 +282,13 @@ export const INITIAL_SANEX_BLOCKS: EmailBlock[] = [
     col1ImageWidth: 260,
     col2Heading:
       "Installation and Management of Decentralized Wastewater Treatment Systems (DWTS)",
-    col2HeadingColor: "#8DB833",
+    col2HeadingColor: "#636679",
     col2Text:
       "We provide comprehensive DWTS solutions, from initial construction to ongoing management, designed to address the unique needs of communities and businesses lacking access to centralized wastewater infrastructure.",
     col2ButtonText: "Read More >>",
-    col2ButtonUrl: "https://sanex.rw/services",
-    col2ButtonColor: "#8DB833",
-    col2ButtonTextColor: "#000000",
+    col2ButtonUrl: "https://nganira.rw/services",
+    col2ButtonColor: "#d9eaa4",
+    col2ButtonTextColor: "#26272e",
   },
   {
     id: "col2-clean-water",
@@ -298,14 +298,14 @@ export const INITIAL_SANEX_BLOCKS: EmailBlock[] = [
     col1Image:
       "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1779722938429_WhatsApp%20Image%202025-04-19%20at%2020.13.41.jpeg?alt=media",
     col1ImageWidth: 260,
-    col2Heading: "Clean Water Delivery at You Doorstep",
-    col2HeadingColor: "#8DB833",
+    col2Heading: "Clean Water Delivery at Your Doorstep",
+    col2HeadingColor: "#636679",
     col2Text:
       "Our portfolio also includes modern, clean water tank trucks. During water scarcity, we are a trusted partner for delivering clean water to your doorstep.",
     col2ButtonText: "Read More >>",
-    col2ButtonUrl: "https://sanex.rw/services",
-    col2ButtonColor: "#000000",
-    col2ButtonTextColor: "#8DB833",
+    col2ButtonUrl: "https://nganira.rw/services",
+    col2ButtonColor: "#636679",
+    col2ButtonTextColor: "#d9eaa4",
   },
   {
     id: "col2-liquid-waste",
@@ -316,26 +316,26 @@ export const INITIAL_SANEX_BLOCKS: EmailBlock[] = [
       "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1779723894783_vlcsnap-2025-04-19-16h01m39s409.png?alt=media",
     col1ImageWidth: 260,
     col2Heading: "Liquid Waste Collection and Transport",
-    col2HeadingColor: "#8DB833",
+    col2HeadingColor: "#636679",
     col2Text:
       "Modern vacuum trucks for efficient waste collection, serving schools, hospitals, hotels, and commercial buildings.",
     col2ButtonText: "Read More >>",
-    col2ButtonUrl: "https://sanex.rw/services",
-    col2ButtonColor: "#000000",
-    col2ButtonTextColor: "#8DB833",
+    col2ButtonUrl: "https://nganira.rw/services",
+    col2ButtonColor: "#636679",
+    col2ButtonTextColor: "#d9eaa4",
   },
   {
     id: "video-highlights",
     type: "video",
-    videoTitle: "SANEX in Action: Operational Highlights",
+    videoTitle: "Nganira Company LTD in Action: Operational Highlights",
     videoCaption:
       "Watch our specialized vacuum trucks and decentralized treatment systems providing essential sanitation services across Rwanda.",
     videoButtonText: "Watch Video",
-    videoUrl: "https://sanex.rw/gallery",
-    videoWatchUrl: "https://sanex.rw/gallery",
+    videoUrl: "https://nganira.rw/gallery",
+    videoWatchUrl: "https://nganira.rw/gallery",
     videoThumbnail:
       "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media",
-    videoPlayButtonColor: "#8DB833",
+    videoPlayButtonColor: "#d9eaa4",
   },
   {
     id: "footer-1",
@@ -344,11 +344,11 @@ export const INITIAL_SANEX_BLOCKS: EmailBlock[] = [
     recipientRole: "",
     organization: "",
     disclaimerContext:
-      "You are receiving this official communication from SANEX Company Ltd regarding environmental sanitation, liquid waste operations, and wastewater management in Rwanda.",
+      "You are receiving this official communication from Nganira Company LTD regarding environmental sanitation, liquid waste operations, and wastewater management in Rwanda.",
     showDisclaimer: true,
-    unsubscribeUrl: "https://sanex.rw/unsubscribe",
-    helpUrl: "https://sanex.rw/contact",
-    privacyUrl: "https://sanex.rw/privacy",
+    unsubscribeUrl: "https://nganira.rw/unsubscribe",
+    helpUrl: "https://nganira.rw/contact",
+    privacyUrl: "https://nganira.rw/privacy",
   },
 ];
 
@@ -358,13 +358,13 @@ export function compileBlocksToHtml(blocks: EmailBlock[] = INITIAL_SANEX_BLOCKS)
     .map((block) => {
       switch (block.type) {
         case "header": {
-          const companyName = block.companyName || "SANEX COMPANY LTD";
+          const companyName = block.companyName || "NGANIRA COMPANY LTD";
           const tagline = block.companyTagline || "Sustainable Liquid Waste Management · Rwanda";
-          const address = block.companyAddress || "KN 3 Rd, Kigali, Rwanda";
-          const phone = block.companyPhone || "+250 788 303 628";
-          const email = block.companyEmail || "info@sanex.rw";
-          const website = block.websiteUrl || "https://sanex.rw";
-          const bgColor = block.bgColor || "#0f172a";
+          const address = block.companyAddress || "KK 31 Ave, Niboye, Kicukiro, Kigali, Rwanda";
+          const phone = block.companyPhone || "+250 788 840 000";
+          const email = block.companyEmail || "info@nganira.rw";
+          const website = block.websiteUrl || "https://nganira.rw";
+          const bgColor = block.bgColor || "#636679";
           const links = getEffectiveSocialLinks(block).filter((l) => l.enabled !== false && l.url);
 
           const socialCells = links
@@ -459,9 +459,9 @@ export function compileBlocksToHtml(blocks: EmailBlock[] = INITIAL_SANEX_BLOCKS)
                       <span style="color:#475569; margin:0 6px;">·</span>
                       <span>📞 <a href="tel:${phone.replace(/\s+/g, "")}" style="color:#cbd5e1; text-decoration:none;">${phone}</a></span>
                       <span style="color:#475569; margin:0 6px;">·</span>
-                      <span>✉️ <a href="mailto:${email}" style="color:#8DB833; text-decoration:none;">${email}</a></span>
+                      <span>✉️ <a href="mailto:${email}" style="color:#d9eaa4; text-decoration:none;">${email}</a></span>
                       <span style="color:#475569; margin:0 6px;">·</span>
-                      <span>🌐 <a href="${website}" target="_blank" rel="noopener noreferrer" style="color:#8DB833; text-decoration:none;">sanex.rw</a></span>
+                      <span>🌐 <a href="${website}" target="_blank" rel="noopener noreferrer" style="color:#d9eaa4; text-decoration:none;">nganira.rw</a></span>
                     </td>
                   </tr>
                 </table>
@@ -511,8 +511,8 @@ export function compileBlocksToHtml(blocks: EmailBlock[] = INITIAL_SANEX_BLOCKS)
                     <span style="font-size:24px; line-height:60px;">🚛</span>
                   </div>
                 </div>
-                <div style="color:#8DB833; font-size:13px; font-weight:900; letter-spacing:2px; text-transform:uppercase; margin-top:4px;">
-                  ${block.text || "SANEX COMPANY LTD"}
+                <div style="color:#636679; font-size:13px; font-weight:900; letter-spacing:2px; text-transform:uppercase; margin-top:4px;">
+                  ${block.text || "NGANIRA COMPANY LTD"}
                 </div>
                 ${
                   block.subheading
@@ -570,7 +570,7 @@ export function compileBlocksToHtml(blocks: EmailBlock[] = INITIAL_SANEX_BLOCKS)
                     <td width="${leftW}%" valign="top" style="padding-right:16px;">
                       ${
                         block.col1Image
-                          ? `<img src="${block.col1Image}" alt="${block.col2Heading || "Sanex Service"}" width="${block.col1ImageWidth || 260}" style="width:100%; max-width:${block.col1ImageWidth || 260}px; height:auto; border-radius:6px; display:block;" />`
+                          ? `<img src="${block.col1Image}" alt="${block.col2Heading || "Nganira Service"}" width="${block.col1ImageWidth || 260}" style="width:100%; max-width:${block.col1ImageWidth || 260}px; height:auto; border-radius:6px; display:block;" />`
                           : ""
                       }
                       ${block.col1Heading ? `<h3 style="color:#1e293b; font-size:15px; font-weight:800; margin:8px 0 6px 0;">${block.col1Heading}</h3>` : ""}
@@ -607,7 +607,7 @@ export function compileBlocksToHtml(blocks: EmailBlock[] = INITIAL_SANEX_BLOCKS)
                   ${
                     block.col1Image
                       ? `<div style="margin:0 0 14px 0; width:100%;">
-                          <img src="${block.col1Image}" alt="${block.col2Heading || "Sanex Service"}" style="width:100%; max-width:100%; height:auto; border-radius:8px; display:block;" />
+                          <img src="${block.col1Image}" alt="${block.col2Heading || "Nganira Service"}" style="width:100%; max-width:100%; height:auto; border-radius:8px; display:block;" />
                         </div>`
                       : ""
                   }
@@ -671,7 +671,7 @@ export function compileBlocksToHtml(blocks: EmailBlock[] = INITIAL_SANEX_BLOCKS)
           return `
             <tr>
               <td align="${block.align || "center"}" style="background-color:#ffffff; padding:16px 24px;">
-                <img src="${block.imageUrl || "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=600&q=80"}" alt="${block.imageAlt || "SANEX"}" style="width:${block.imageWidth || "100%"}; max-width:100%; height:auto; border-radius:6px; display:inline-block;" />
+                <img src="${block.imageUrl || "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=600&q=80"}" alt="${block.imageAlt || "Nganira"}" style="width:${block.imageWidth || "100%"}; max-width:100%; height:auto; border-radius:6px; display:inline-block;" />
               </td>
             </tr>
           `;
@@ -680,7 +680,7 @@ export function compileBlocksToHtml(blocks: EmailBlock[] = INITIAL_SANEX_BLOCKS)
           return `
             <tr>
               <td align="${block.align || "center"}" style="background-color:#ffffff; padding:16px 24px;">
-                <a href="${block.buttonUrl || "#"}" target="_blank" style="display:inline-block; background-color:${block.buttonColor || "#8DB833"}; color:${block.buttonTextColor || "#000000"}; font-size:13px; font-weight:800; text-decoration:none; padding:11px 28px; border-radius:6px; text-transform:uppercase; letter-spacing:0.5px;">
+                <a href="${block.buttonUrl || "#"}" target="_blank" style="display:inline-block; background-color:${block.buttonColor || "#d9eaa4"}; color:${block.buttonTextColor || "#26272e"}; font-size:13px; font-weight:800; text-decoration:none; padding:11px 28px; border-radius:6px; text-transform:uppercase; letter-spacing:0.5px;">
                   ${block.buttonText || "Call to Action"}
                 </a>
               </td>
@@ -714,12 +714,12 @@ export function compileBlocksToHtml(blocks: EmailBlock[] = INITIAL_SANEX_BLOCKS)
             block.videoWatchUrl?.trim() ||
             (isDirectMedia
               ? parsed.watchUrl
-              : block.videoUrl?.trim() || parsed.watchUrl || "https://sanex.rw/gallery");
+              : block.videoUrl?.trim() || parsed.watchUrl || "https://nganira.rw/gallery");
           const thumbnailUrl =
             block.videoThumbnail ||
             parsed.thumbnailUrl ||
             "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media";
-          const title = block.videoTitle || "SANEX in Action: Operational Highlights";
+          const title = block.videoTitle || "Nganira Company LTD in Action: Operational Highlights";
           const caption = block.videoCaption || "";
           const btnText = block.videoButtonText || "Watch Video";
           const playColor = block.videoPlayButtonColor || "#8DB833";
@@ -833,10 +833,10 @@ export function compileBlocksToHtml(blocks: EmailBlock[] = INITIAL_SANEX_BLOCKS)
           const showDisc = block.showDisclaimer !== false;
           const contextText =
             block.disclaimerContext ||
-            "You are receiving this official communication from SANEX Company Ltd regarding environmental sanitation, liquid waste operations, and wastewater management in Rwanda.";
-          const unsubsUrl = block.unsubscribeUrl || "https://sanex.rw/unsubscribe";
-          const helpUrl = block.helpUrl || "https://sanex.rw/contact";
-          const privacyUrl = block.privacyUrl || "https://sanex.rw/privacy";
+            "You are receiving this official communication from Nganira Company LTD regarding environmental sanitation, liquid waste operations, and wastewater management in Rwanda.";
+          const unsubsUrl = block.unsubscribeUrl || "https://nganira.rw/unsubscribe";
+          const helpUrl = block.helpUrl || "https://nganira.rw/contact";
+          const privacyUrl = block.privacyUrl || "https://nganira.rw/privacy";
 
           return `
             <tr>
@@ -877,7 +877,7 @@ export function compileBlocksToHtml(blocks: EmailBlock[] = INITIAL_SANEX_BLOCKS)
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SANEX Campaign</title>
+  <title>Nganira Campaign</title>
   <style type="text/css">
     @media only screen and (max-width: 600px) {
       .sanex-desktop-col {

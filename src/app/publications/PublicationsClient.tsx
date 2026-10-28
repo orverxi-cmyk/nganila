@@ -92,7 +92,7 @@ export default function PublicationsClient() {
   }, [publications]);
 
   const handleCopyLink = (pub: Publication) => {
-    const origin = typeof window !== "undefined" ? window.location.origin : "https://nganila.com";
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://nganira.rw";
     const fullUrl = getPublicationUrl(pub, origin);
     if (navigator.clipboard) {
       navigator.clipboard.writeText(fullUrl);
@@ -105,7 +105,7 @@ export default function PublicationsClient() {
     platform: "twitter" | "linkedin" | "facebook" | "whatsapp",
     pub: Publication
   ) => {
-    const origin = typeof window !== "undefined" ? window.location.origin : "https://nganila.com";
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://nganira.rw";
     const fullUrl = getPublicationUrl(pub, origin);
     const links = getSocialShareLinks(pub.title, fullUrl, pub.excerpt);
     const targetUrl = links[platform];
@@ -122,12 +122,12 @@ export default function PublicationsClient() {
         <div className="container mx-auto px-4 md:px-16 max-w-7xl">
           {/* Clean Simple Page Header */}
           <div className="text-center mb-10 md:mb-12 space-y-3 max-w-2xl mx-auto">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold font-headline tracking-tight text-slate-900">
-              SANEX Publications
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold font-headline tracking-tight text-[#26272e]">
+              Nganira Publications
             </h1>
 
             <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
-              Official newsletters, announcements, and environmental sanitation insights published by SANEX Company Ltd across Rwanda.
+              Official newsletters, announcements, and environmental sanitation insights published by Nganira Company LTD across Rwanda.
             </p>
           </div>
 
@@ -179,7 +179,7 @@ export default function PublicationsClient() {
 
                     {/* Header Strip with Category and Date */}
                     <div className="p-5 pb-3 border-b border-slate-100 flex items-center justify-between gap-2 flex-wrap">
-                      <Badge className="bg-primary/20 hover:bg-primary/30 text-black border-primary/30 text-[10px] font-extrabold uppercase tracking-wider">
+                      <Badge className="bg-[#d9eaa4] hover:bg-[#cde092] text-[#26272e] border-[#d9eaa4] text-[10px] font-extrabold uppercase tracking-wider">
                         {pub.category || "Announcement"}
                       </Badge>
                       <div className="flex items-center gap-2">
@@ -232,7 +232,7 @@ export default function PublicationsClient() {
                       <Button
                         asChild
                         size="sm"
-                        className="h-8 text-xs font-bold bg-primary text-black hover:bg-primary/90 gap-1.5 shadow-2xs rounded-lg"
+                        className="h-8 text-xs font-bold bg-[#d9eaa4] text-[#26272e] hover:bg-[#cde092] gap-1.5 shadow-2xs rounded-lg"
                       >
                         <Link href={pubUrl}>
                           <span>Read Online</span>

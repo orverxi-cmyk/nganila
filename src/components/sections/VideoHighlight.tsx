@@ -12,7 +12,7 @@ export function VideoHighlight() {
   const { data: videoData, loading } = useDoc(videoRef);
 
   const content = {
-    title: videoData?.title || "Nganila Co LTD in Action",
+    title: videoData?.title || "Nganira Company LTD in Action",
     description: videoData?.description || "Watch our specialized fleet of 5 vacuum tankers and localized wastewater systems delivering professional sanitation services in Kigali and across Rwanda.",
     videoUrl: videoData?.videoUrl || ""
   };
@@ -40,14 +40,14 @@ export function VideoHighlight() {
       <span id="operational-highlights" className="scroll-mt-24 absolute -top-24 pointer-events-none" />
       <div className="container mx-auto px-4 md:px-16">
         <div className="flex flex-col items-center text-center mb-8 space-y-2">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-50 text-sky-700 text-[11px] font-bold uppercase tracking-wider border border-sky-200">
-            <Activity className="h-3 w-3 text-sky-600" /> Operational Footage
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#d9eaa4]/40 text-[#383944] text-[11px] font-bold uppercase tracking-wider border border-[#d9eaa4]">
+            <Activity className="h-3 w-3 text-[#636679]" /> Operational Footage
           </div>
-          <h2 className="text-[26px] sm:text-[32px] font-extrabold text-slate-900 tracking-tight">{content.title}</h2>
-          <p className="text-[15px] text-slate-600 max-w-2xl leading-relaxed">{content.description}</p>
+          <h2 className="text-[26px] sm:text-[32px] font-extrabold text-[#26272e] tracking-tight">{content.title}</h2>
+          <p className="text-[15px] text-[#636679] max-w-2xl leading-relaxed">{content.description}</p>
         </div>
 
-        <div className="max-w-4xl mx-auto aspect-video rounded-3xl overflow-hidden shadow-2xl shadow-slate-900/10 border border-slate-200 bg-slate-950 relative">
+        <div className="max-w-4xl mx-auto aspect-video rounded-3xl overflow-hidden shadow-2xl shadow-[#636679]/10 border border-[#545667] bg-[#26272e] relative">
           {isYouTube ? (
             <iframe
               src={embedUrl}

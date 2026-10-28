@@ -281,7 +281,7 @@ export default function PublicationDetailClient({
   useEffect(() => {
     if (publication) {
       if (publication.title) {
-        document.title = `${publication.title} | SANEX Publications`;
+        document.title = `${publication.title} | Nganira Publications`;
       }
       const canonicalSlug = getPublicationSlug(publication);
       if (canonicalSlug && slugParam !== canonicalSlug && typeof window !== "undefined") {
@@ -291,14 +291,14 @@ export default function PublicationDetailClient({
   }, [publication, slugParam]);
 
   // Social sharing handlers
-  const origin = typeof window !== "undefined" ? window.location.origin : "https://sanex.rw";
+  const origin = typeof window !== "undefined" ? window.location.origin : "https://nganira.rw";
   const canonicalUrl = publication
     ? `${origin}${getPublicationUrl(publication)}`
-    : `https://sanex.rw/publications/${slugParam}`;
+    : `https://nganira.rw/publications/${slugParam}`;
 
   const handleShare = (platform: "twitter" | "linkedin" | "facebook" | "whatsapp" | "native" | "copy") => {
     if (!publication) return;
-    const title = publication.title || "SANEX Official Publication";
+    const title = publication.title || "Nganira Official Publication";
 
     if (platform === "copy") {
       if (navigator.clipboard) {
@@ -370,19 +370,19 @@ export default function PublicationDetailClient({
     "@type": "Article",
     headline: publication.title,
     description: publication.excerpt || publication.title,
-    image: publication.coverImage ? [publication.coverImage] : ["https://sanex.rw/favicon.ico"],
+    image: publication.coverImage ? [publication.coverImage] : ["https://nganira.rw/favicon.ico"],
     datePublished: publication.publishedAt ? new Date(publication.publishedAt).toISOString() : undefined,
     dateModified: publication.updatedAt ? new Date(publication.updatedAt).toISOString() : undefined,
     author: {
       "@type": "Organization",
-      name: publication.author || "SANEX Communications",
+      name: publication.author || "Nganira Communications",
     },
     publisher: {
       "@type": "Organization",
-      name: "SANEX Company Ltd",
+      name: "Nganira Company LTD",
       logo: {
         "@type": "ImageObject",
-        url: "https://sanex.rw/favicon.ico",
+        url: "https://nganira.rw/favicon.ico",
       },
     },
     mainEntityOfPage: {
@@ -538,7 +538,7 @@ export default function PublicationDetailClient({
                 <Button
                   size="sm"
                   onClick={() => handleShare("copy")}
-                  className="h-8 text-xs font-bold bg-primary text-black hover:bg-primary/90 gap-1.5"
+                  className="h-8 text-xs font-bold bg-[#d9eaa4] text-[#26272e] hover:bg-[#cde092] gap-1.5"
                 >
                   {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
                   <span>{copied ? "Link Copied!" : "Copy Special Link"}</span>
@@ -604,21 +604,21 @@ export default function PublicationDetailClient({
           )}
 
           {/* Consultation CTA Banner */}
-          <div className="mt-12 rounded-3xl bg-slate-900 text-white p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="mt-12 rounded-3xl bg-[#26272e] text-white p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-md border border-[#636679]/20">
             <div className="space-y-1.5 text-center md:text-left">
               <h3 className="text-lg sm:text-xl font-bold font-headline text-white">
                 Interested in tailored wastewater management for your facility?
               </h3>
-              <p className="text-xs text-slate-300 max-w-xl">
-                SANEX provides industrial vacuum exhauster services, decentralized wastewater treatment plants
+              <p className="text-xs text-[#d9eaa4]/80 max-w-xl">
+                Nganira Company LTD provides industrial vacuum exhauster services, decentralized wastewater treatment plants
                 (DWTS), and maintenance across Rwanda.
               </p>
             </div>
             <div className="flex items-center gap-3 shrink-0">
-              <Button asChild className="bg-primary hover:bg-primary/90 text-black font-extrabold text-xs h-9 px-5 rounded-full">
+              <Button asChild className="bg-[#d9eaa4] hover:bg-[#cde092] text-[#26272e] font-extrabold text-xs h-9 px-5 rounded-full shadow-sm">
                 <Link href="/book">Schedule a Consultation</Link>
               </Button>
-              <Button asChild variant="outline" className="border-slate-700 bg-white/5 hover:bg-white/10 text-white font-bold text-xs h-9 px-4 rounded-full">
+              <Button asChild variant="outline" className="border-[#636679] bg-white/5 hover:bg-white/10 text-white font-bold text-xs h-9 px-4 rounded-full">
                 <Link href="/contact">Inquire</Link>
               </Button>
             </div>

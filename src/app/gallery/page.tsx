@@ -71,18 +71,18 @@ export default function GalleryPage() {
       <main className="flex-grow py-5 bg-background">
         <div className="container mx-auto px-4 md:px-6">
           <div className="text-center mb-5 space-y-2">
-            <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#d9eaa4]/40 text-[#636679]">
               <Camera className="h-5 w-5" />
             </div>
-            <h1 className="text-[16px] font-bold text-black uppercase tracking-widest">Service Gallery</h1>
-            <p className="text-[14px] font-normal text-muted-foreground max-w-2xl mx-auto">
+            <h1 className="text-[16px] font-bold text-[#26272e] uppercase tracking-widest">Service Gallery</h1>
+            <p className="text-[14px] font-normal text-[#636679] max-w-2xl mx-auto">
               Visual journey through our nationwide liquid waste management operations.
             </p>
           </div>
 
           {showLoading ? (
             <div className="flex justify-center py-10">
-              <Loader2 className="h-10 w-10 animate-spin text-primary" />
+              <Loader2 className="h-10 w-10 animate-spin text-[#636679]" />
             </div>
           ) : photos && photos.length > 0 ? (
             <>

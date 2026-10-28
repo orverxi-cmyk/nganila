@@ -21,7 +21,7 @@ export function Hero() {
 
   const content = {
     badge: heroData?.badge || "Verified Member of ASSERWA",
-    title: heroData?.title || "Nganila Co LTD",
+    title: heroData?.title || "Nganira Company LTD",
     titleAccent: heroData?.titleAccent || "Waste Management & Sanitation",
     description: heroData?.description || "Professional waste management and sanitation company in Kicukiro, Kigali, Rwanda. Operating a fleet of 5 vacuum tankers for septic tank emptying, pit latrine draining (kuvidura), and decentralized wastewater treatment.",
     imageUrl: heroData?.imageUrl || "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1779799776154_B25A3083.jpg?alt=media",
@@ -32,46 +32,46 @@ export function Hero() {
   };
 
   return (
-    <section className="relative overflow-hidden py-12 bg-slate-950 text-white group font-sans border-b border-slate-900">
+    <section className="relative overflow-hidden py-12 bg-[#26272e] text-white group font-sans border-b border-[#383944]">
       {isAdmin && (
         <div className="absolute inset-0 z-20 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-          <Button asChild className="pointer-events-auto bg-white text-slate-900 hover:bg-white/80 gap-2 font-bold text-[14px] rounded-xl">
+          <Button asChild className="pointer-events-auto bg-[#636679] text-white hover:bg-[#545667] gap-2 font-bold text-[14px] rounded-xl shadow-lg border border-[#7d8094]">
             <Link href="/admin/content?tab=hero">
-              <Edit3 className="h-4 w-4" /> Edit Hero
+              <Edit3 className="h-4 w-4 text-[#d9eaa4]" /> Edit Hero
             </Link>
           </Button>
         </div>
       )}
-      <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-[500px] h-[500px] bg-sky-500/10 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/2 w-[400px] h-[400px] bg-cyan-500/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-[500px] h-[500px] bg-[#636679]/20 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/2 w-[400px] h-[400px] bg-[#d9eaa4]/10 rounded-full blur-[120px] pointer-events-none" />
       
       <div className="container mx-auto px-4 md:px-16 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
           <div className="space-y-5 animate-in fade-in slide-in-from-left duration-700">
-            <div className="inline-flex items-center rounded-full border border-sky-500/30 bg-sky-950/60 px-4 py-1.5 text-xs font-semibold text-sky-300 uppercase tracking-wider backdrop-blur-sm">
+            <div className="inline-flex items-center rounded-full border border-[#d9eaa4]/40 bg-[#d9eaa4]/15 px-4 py-1.5 text-xs font-semibold text-[#d9eaa4] uppercase tracking-wider backdrop-blur-sm">
               <span className="relative flex h-2 w-2 mr-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#d9eaa4] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#d9eaa4]"></span>
               </span>
               {content.badge}
             </div>
             
             <h1 className="text-3xl lg:text-5xl font-extrabold tracking-tight leading-tight text-white">
-              {content.title} <span className="text-sky-400">{content.titleAccent}</span>
+              {content.title} <span className="text-[#d9eaa4]">{content.titleAccent}</span>
             </h1>
             
-            <div className="text-sm font-normal text-slate-300 max-w-[600px] leading-relaxed prose prose-invert prose-sky">
+            <div className="text-sm font-normal text-slate-200 max-w-[600px] leading-relaxed prose prose-invert">
               <div dangerouslySetInnerHTML={{ __html: content.description }} />
             </div>
             
             <div className="flex flex-wrap gap-3 pt-2">
-              <Button asChild className="h-12 px-7 text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-sky-500 to-cyan-500 hover:from-sky-600 hover:to-cyan-600 text-white rounded-xl gap-2 shadow-lg shadow-sky-500/20 transition-all hover:scale-105">
+              <Button asChild className="h-12 px-7 text-xs font-bold uppercase tracking-wider bg-[#d9eaa4] hover:bg-[#cbe090] text-[#26272e] rounded-xl gap-2 shadow-lg shadow-[#d9eaa4]/20 transition-all hover:scale-105 border border-[#cbe090]">
                 <Link href={content.ctaLink}>
-                  <Calendar className="h-4 w-4 text-white" /> 
+                  <Calendar className="h-4 w-4 text-[#26272e]" /> 
                   {content.ctaText}
                 </Link>
               </Button>
-              <Button asChild variant="outline" className="h-12 px-7 text-xs font-bold uppercase tracking-wider rounded-xl border-sky-500/40 text-sky-300 hover:bg-sky-950/60 hover:border-sky-400 hover:text-white transition-colors">
+              <Button asChild variant="outline" className="h-12 px-7 text-xs font-bold uppercase tracking-wider rounded-xl border-[#d9eaa4]/40 text-[#d9eaa4] hover:bg-[#d9eaa4]/20 hover:border-[#d9eaa4] hover:text-white transition-colors">
                 <Link href="/about">
                   Learn More 
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -81,7 +81,7 @@ export function Hero() {
           </div>
 
           <div className="relative animate-in fade-in slide-in-from-right duration-1000">
-            <div className="relative z-10 rounded-2xl overflow-hidden shadow-2xl border border-slate-800 ring-1 ring-sky-500/20">
+            <div className="relative z-10 rounded-2xl overflow-hidden shadow-2xl border border-[#545667] ring-1 ring-[#d9eaa4]/20">
               {content.imageUrl ? (
                 <Image
                   src={content.imageUrl}

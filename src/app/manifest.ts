@@ -3,13 +3,13 @@ import { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Nganila Co LTD',
-    short_name: 'Nganila',
+    name: 'Nganira Company LTD',
+    short_name: 'Nganira',
     description: 'Professional Waste Management & Sanitation Company in Kicukiro, Kigali, Rwanda — Verified Member of ASSERWA',
     start_url: '/',
     display: 'standalone',
-    background_color: '#0f172a',
-    theme_color: '#0284c7',
+    background_color: '#636679',
+    theme_color: '#d9eaa4',
     icons: [
       {
         src: '/favicon.ico',

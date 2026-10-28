@@ -195,7 +195,7 @@ export default function AdminPublicationsPage() {
   const [formCategory, setFormCategory] = useState<string>("Company Announcements");
   const [formExcerpt, setFormExcerpt] = useState("");
   const [formContent, setFormContent] = useState("");
-  const [formAuthor, setFormAuthor] = useState("SANEX Communications");
+  const [formAuthor, setFormAuthor] = useState("Nganira Communications");
   const [formStatus, setFormStatus] = useState<"published" | "draft" | "archived">("published");
   const [selectedLinkedIds, setSelectedLinkedIds] = useState<string[]>([]);
   const [formCoverImage, setFormCoverImage] = useState<string>("");
@@ -227,7 +227,7 @@ export default function AdminPublicationsPage() {
     setFormCategory("Company Announcements");
     setFormExcerpt("");
     setFormContent("<p>Write publication announcement or paste email newsletter content here...</p>");
-    setFormAuthor("SANEX Communications");
+    setFormAuthor("Nganira Communications");
     setFormStatus("published");
     setFormCoverImage("");
     setSelectedLinkedIds([]);
@@ -242,7 +242,7 @@ export default function AdminPublicationsPage() {
     setFormCategory(pub.category || "Company Announcements");
     setFormExcerpt(pub.excerpt || "");
     setFormContent(pub.content || "");
-    setFormAuthor(pub.author || "SANEX Communications");
+    setFormAuthor(pub.author || "Nganira Communications");
     setFormStatus(pub.status || "published");
     const validCover =
       pub.coverImage && !isLikelyBrandLogo(pub.coverImage)
@@ -255,7 +255,7 @@ export default function AdminPublicationsPage() {
 
   // Copy Link
   const handleCopyLink = (pub: Publication) => {
-    const origin = typeof window !== "undefined" ? window.location.origin : "https://sanex.rw";
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://nganira.rw";
     const fullUrl = getPublicationUrl(pub, origin);
     if (navigator.clipboard) {
       navigator.clipboard.writeText(fullUrl);
@@ -270,7 +270,7 @@ export default function AdminPublicationsPage() {
 
   // Share Link
   const handleShare = (platform: "twitter" | "linkedin" | "facebook" | "whatsapp", pub: Publication) => {
-    const origin = typeof window !== "undefined" ? window.location.origin : "https://sanex.rw";
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://nganira.rw";
     const fullUrl = getPublicationUrl(pub, origin);
     const links = getSocialShareLinks(pub.title, fullUrl, pub.excerpt);
     const targetUrl = links[platform];
@@ -334,7 +334,7 @@ export default function AdminPublicationsPage() {
         excerpt: formExcerpt.trim() || formTitle.trim(),
         content: formContent.trim(),
         coverImage: formCoverImage.trim() || undefined,
-        author: formAuthor.trim() || "SANEX Communications",
+        author: formAuthor.trim() || "Nganira Communications",
         status: formStatus,
         linkedNewsletters: resolvedLinkedNewsletters as any,
         updatedAt: Date.now(),

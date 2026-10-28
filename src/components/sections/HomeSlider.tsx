@@ -29,7 +29,7 @@ export function HomeSlider() {
 
   const defaultItems = [
     { 
-      title: "Nganila Co LTD", 
+      title: "Nganira Company LTD", 
       description: "<p>Professional waste management and sanitation company in Kicukiro, Kigali, Rwanda. Verified member of ASSERWA operating a fleet of 5 vacuum tankers.</p>", 
       imageUrl: "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1779714862617_SANEX_VIDEO_higlights%20-%20Copy.mp4?alt=media",
       width: 2000,
@@ -104,14 +104,14 @@ export function HomeSlider() {
   }, [carouselApi, items]);
 
   return (
-    <section id="slider" className="w-full overflow-hidden relative group bg-slate-950 scroll-mt-24">
+    <section id="slider" className="w-full overflow-hidden relative group bg-[#26272e] scroll-mt-24">
       <span id="video" className="scroll-mt-24 absolute -top-24 pointer-events-none" />
       
       {isAdmin && (
         <div className="absolute top-4 right-4 z-30 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Button asChild className="pointer-events-auto bg-slate-900/90 text-white hover:bg-slate-800 gap-2 font-bold text-xs rounded-xl shadow-xl border border-slate-700 backdrop-blur-md">
+          <Button asChild className="pointer-events-auto bg-[#636679] text-white hover:bg-[#545667] gap-2 font-bold text-xs rounded-xl shadow-xl border border-[#7d8094] backdrop-blur-md">
             <Link href="/admin/content?tab=slider">
-              <Edit3 className="h-4 w-4" /> Edit Showcase
+              <Edit3 className="h-4 w-4 text-[#d9eaa4]" /> Edit Showcase
             </Link>
           </Button>
         </div>
@@ -122,7 +122,7 @@ export function HomeSlider() {
         <CarouselContent className="m-0">
           {items.map((slide: any, i: number) => (
             <CarouselItem key={i} className="h-full pl-0">
-              <div className="grid grid-cols-1 lg:grid-cols-12 w-full bg-slate-950 items-stretch">
+              <div className="grid grid-cols-1 lg:grid-cols-12 w-full bg-[#26272e] items-stretch">
                 
                 {/* Media Stage (7 Cols / 8 Cols on XL) */}
                 <div className="relative w-full min-h-[320px] sm:min-h-[420px] md:min-h-[500px] lg:h-[580px] xl:h-[620px] lg:col-span-7 xl:col-span-8 bg-black flex items-center justify-center overflow-hidden">
@@ -144,16 +144,16 @@ export function HomeSlider() {
                       priority={i === 0} 
                     />
                   ) : (
-                    <div className="h-full w-full bg-slate-900 flex items-center justify-center text-slate-500 text-sm uppercase font-bold">
+                    <div className="h-full w-full bg-[#383944] flex items-center justify-center text-[#bcbec8] text-sm uppercase font-bold">
                       Media Pending
                     </div>
                   )}
                 </div>
 
                 {/* Text Part (5 Cols / 4 Cols on XL) - Contains ONLY Title and Description */}
-                <div className="flex flex-col justify-center p-8 sm:p-12 lg:p-14 xl:p-16 lg:col-span-5 xl:col-span-4 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 text-white relative border-t lg:border-t-0 lg:border-l border-slate-800/80">
+                <div className="flex flex-col justify-center p-8 sm:p-12 lg:p-14 xl:p-16 lg:col-span-5 xl:col-span-4 bg-gradient-to-br from-[#636679] via-[#454755] to-[#26272e] text-white relative border-t lg:border-t-0 lg:border-l border-[#545667]/80">
                   {/* Subtle ambient background glow */}
-                  <div className="absolute -top-12 -right-12 w-64 h-64 bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
+                  <div className="absolute -top-12 -right-12 w-64 h-64 bg-[#d9eaa4]/10 rounded-full blur-3xl pointer-events-none" />
 
                   <div className="space-y-4 relative z-10 max-w-xl">
                     <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight leading-tight">
@@ -161,7 +161,7 @@ export function HomeSlider() {
                     </h2>
 
                     <div 
-                      className="text-slate-300 text-sm sm:text-base font-normal leading-relaxed prose prose-invert prose-sky max-w-none prose-p:leading-relaxed"
+                      className="text-slate-200 text-sm sm:text-base font-normal leading-relaxed prose prose-invert prose-p:leading-relaxed"
                       dangerouslySetInnerHTML={{ __html: slide.description }}
                     />
                   </div>
@@ -173,12 +173,12 @@ export function HomeSlider() {
         </CarouselContent>
 
         {/* Navigation Controls */}
-        <CarouselPrevious className="hidden md:flex left-4 lg:left-6 border-slate-700/80 bg-slate-900/80 text-white hover:bg-sky-600 hover:text-white hover:border-sky-500 shadow-2xl backdrop-blur-md z-30 h-12 w-12 rounded-full transition-all" />
-        <CarouselNext className="hidden md:flex right-4 lg:right-6 border-slate-700/80 bg-slate-900/80 text-white hover:bg-sky-600 hover:text-white hover:border-sky-500 shadow-2xl backdrop-blur-md z-30 h-12 w-12 rounded-full transition-all" />
+        <CarouselPrevious className="hidden md:flex left-4 lg:left-6 border-[#545667] bg-[#383944]/80 text-white hover:bg-[#d9eaa4] hover:text-[#26272e] hover:border-[#d9eaa4] shadow-2xl backdrop-blur-md z-30 h-12 w-12 rounded-full transition-all" />
+        <CarouselNext className="hidden md:flex right-4 lg:right-6 border-[#545667] bg-[#383944]/80 text-white hover:bg-[#d9eaa4] hover:text-[#26272e] hover:border-[#d9eaa4] shadow-2xl backdrop-blur-md z-30 h-12 w-12 rounded-full transition-all" />
 
         {/* Slide Dots Indicator */}
         {count > 1 && (
-          <div className="flex items-center justify-center gap-2 py-3.5 bg-slate-950 border-t border-slate-900">
+          <div className="flex items-center justify-center gap-2 py-3.5 bg-[#26272e] border-t border-[#383944]">
             {Array.from({ length: count }).map((_, idx) => (
               <button
                 key={idx}
@@ -187,8 +187,8 @@ export function HomeSlider() {
                 className={cn(
                   "h-2 rounded-full transition-all duration-300",
                   current === idx 
-                    ? "w-8 bg-sky-500" 
-                    : "w-2 bg-slate-700 hover:bg-slate-500"
+                    ? "w-8 bg-[#d9eaa4]" 
+                    : "w-2 bg-[#636679] hover:bg-[#9698a7]"
                 )}
               />
             ))}

@@ -799,7 +799,7 @@ export default function AdminDashboard() {
                   </div>
                   <h1 className="text-2xl font-bold font-headline">Operations Center</h1>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Managing SANEX Company digital infrastructure, service inquiries, and marketing attribution.
+                    Managing Nganira Company LTD digital infrastructure, service inquiries, and marketing attribution.
                   </p>
                 </div>
                 <div className="flex items-center gap-2">

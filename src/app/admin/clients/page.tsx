@@ -281,7 +281,7 @@ export default function ClientLifecyclePage() {
       { header: "First Contact", key: "firstContact", width: 18 },
       { header: "Last Activity", key: "lastActivity", width: 18 },
       { header: "Services Used", key: "servicesUsed", width: 45 },
-    ], `SANEX_Clients_${new Date().toISOString().slice(0, 10)}`, "Client Lifecycle");
+    ], `Nganira_Clients_${new Date().toISOString().slice(0, 10)}`, "Client Lifecycle");
   };
 
   if (authLoading || (profileLoading && !userProfile)) {

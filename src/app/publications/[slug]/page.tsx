@@ -12,8 +12,8 @@ const DEFAULT_FALLBACK_IMAGE =
 function toAbsoluteUrl(url?: string): string {
   if (!url) return DEFAULT_FALLBACK_IMAGE;
   if (url.startsWith("http://") || url.startsWith("https://")) return url;
-  if (url.startsWith("/")) return `https://nganila.rw${url}`;
-  return `https://nganila.rw/${url}`;
+  if (url.startsWith("/")) return `https://nganira.rw${url}`;
+  return `https://nganira.rw/${url}`;
 }
 
 /**
@@ -27,14 +27,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const pub = await getServerPublicationBySlug(rawSlug);
 
   const title = pub?.title
-    ? `${pub.title} | Nganila Publications`
-    : "Official Newsletter & Broadcast | Nganila Rwanda";
+    ? `${pub.title} | Nganira Publications`
+    : "Official Newsletter & Broadcast | Nganira Rwanda";
 
   const description =
     pub?.excerpt?.trim() ||
-    "Official publication and newsletter from Nganila Co LTD, leading modern liquid waste management in Rwanda.";
+    "Official publication and newsletter from Nganira Company LTD, leading modern liquid waste management in Rwanda.";
 
-  const canonicalUrl = `https://nganila.rw/publications/${rawSlug}`;
+  const canonicalUrl = `https://nganira.rw/publications/${rawSlug}`;
   const imageUrl = toAbsoluteUrl(pub?.coverImage || pub?.thumbnailImg);
 
   return {
@@ -49,16 +49,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       url: canonicalUrl,
       title,
       description,
-      siteName: "SANEX Rwanda",
+      siteName: "Nganira Rwanda",
       publishedTime: pub?.publishedAt ? new Date(pub.publishedAt).toISOString() : undefined,
       modifiedTime: pub?.updatedAt ? new Date(pub.updatedAt).toISOString() : undefined,
-      authors: pub?.author ? [pub.author] : ["SANEX Communications"],
+      authors: pub?.author ? [pub.author] : ["Nganira Communications"],
       images: [
         {
           url: imageUrl,
           width: 1200,
           height: 630,
-          alt: pub?.title || "SANEX Official Newsletter",
+          alt: pub?.title || "Nganira Official Newsletter",
         },
       ],
     },
@@ -67,8 +67,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title,
       description,
       images: [imageUrl],
-      creator: "@SanexRwanda",
-      site: "@SanexRwanda",
+      creator: "@NganiraRwanda",
+      site: "@NganiraRwanda",
     },
   };
 }
