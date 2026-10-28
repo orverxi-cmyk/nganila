@@ -42,9 +42,9 @@ export function Highlights() {
   const { data: highlightsData, loading } = useDoc(highlightsRef);
 
   const defaultHighlights = [
-    { icon: "shield", title: "Licensed Since 2021", description: "Trusted by over 114 clients nationwide with verified operational standards." },
-    { icon: "cpu", title: "Advanced Technology", description: "Eco-friendly wastewater treatment systems using activated sludge technology." },
-    { icon: "globe", title: "Nationwide Coverage", description: "Serving urban and rural communities from Kigali to Musanze and Huye." }
+    { icon: "shield", title: "Verified ASSERWA Member", description: "Official member of the Forum of Sewage Emptiers in Rwanda, ensuring compliant and certified liquid waste disposal." },
+    { icon: "truck", title: "Fleet of 5 Vacuum Tankers", description: "Equipped with 5 specialized vacuum tankers for prompt residential, commercial, and industrial waste evacuation." },
+    { icon: "globe", title: "Kicukiro & Greater Kigali", description: "Operating centrally in Kicukiro, serving residential properties and commercial establishments across Kigali and Rwanda." }
   ];
 
   const items = highlightsData?.items?.length ? highlightsData.items : defaultHighlights;

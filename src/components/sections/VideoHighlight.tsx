@@ -12,8 +12,8 @@ export function VideoHighlight() {
   const { data: videoData, loading } = useDoc(videoRef);
 
   const content = {
-    title: videoData?.title || "SANEX in Action",
-    description: videoData?.description || "Watch our specialized vacuum trucks and decentralized treatment systems providing essential sanitation services across Rwanda.",
+    title: videoData?.title || "Nganila Co LTD in Action",
+    description: videoData?.description || "Watch our specialized fleet of 5 vacuum tankers and localized wastewater systems delivering professional sanitation services in Kigali and across Rwanda.",
     videoUrl: videoData?.videoUrl || ""
   };
 

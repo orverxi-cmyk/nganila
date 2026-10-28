@@ -1,5 +1,11 @@
-
 {
+  "storage": {
+    "rules": "storage.rules"
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
   "functions": [
     {
       "source": "functions",
@@ -15,9 +21,5 @@
         "npm --prefix \"$RESOURCE_DIR\" run build"
       ]
     }
-  ],
-  "firestore": {
-    "rules": "firestore.rules",
-    "indexes": "firestore.indexes.json"
-  }
+  ]
 }

@@ -5,50 +5,52 @@ import { Toaster } from '@/components/ui/toaster';
 import Script from 'next/script';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://sanex.rw'),
+  metadataBase: new URL('https://nganila.com'),
   title: {
-    default: 'Sanex | Leading Liquid Waste Management in Rwanda',
-    template: '%s | Sanex Rwanda',
+    default: 'Nganila Co LTD | Waste Management & Sanitation in Kigali, Rwanda',
+    template: '%s | Nganila Co LTD',
   },
-  description: 'SANEX Company Ltd provides sustainable liquid waste management, vacuum exhauster services, decentralized wastewater treatment systems (DEWATS), and professional sanitation solutions across Rwanda.',
+  description: 'Nganila Co LTD is a professional waste management and sanitation company operating in Kicukiro, Kigali, Rwanda. Verified member of ASSERWA operating a fleet of 5 vacuum tankers.',
   keywords: [
+    'Nganila Co LTD',
     'liquid waste management Rwanda',
     'septic tank emptying Kigali',
-    'vacuum exhauster truck Rwanda',
+    'pit latrine draining Kigali',
+    'kuvidura Rwanda',
+    'vacuum tanker Kigali',
+    'exhauster truck Rwanda',
     'decentralized wastewater treatment Kigali',
-    'commercial sludge collection',
-    'cesspool emptying Rwanda',
-    'SANEX Company Ltd',
-    'sanitation services Kigali',
+    'ASSERWA member',
+    'sanitation services Kicukiro',
   ],
-  authors: [{ name: 'SANEX Company Ltd', url: 'https://sanex.rw' }],
-  creator: 'SANEX Company Ltd',
-  publisher: 'SANEX Company Ltd',
+  authors: [{ name: 'Nganila Co LTD', url: 'https://nganila.com' }],
+  creator: 'Nganila Co LTD',
+  publisher: 'Nganila Co LTD',
   alternates: {
-    canonical: 'https://sanex.rw',
+    canonical: 'https://nganila.com',
   },
   openGraph: {
     type: 'website',
     locale: 'en_RW',
-    url: 'https://sanex.rw',
-    siteName: 'SANEX Company Ltd',
-    title: 'Sanex | Leading Liquid Waste Management in Rwanda',
-    description: 'Professional liquid waste collection, modern vacuum exhauster trucks, and decentralized wastewater treatment solutions across Rwanda.',
+    url: 'https://nganila.com',
+    siteName: 'Nganila Co LTD',
+    title: 'Nganila Co LTD | Waste Management & Sanitation in Kigali, Rwanda',
+    description: 'Professional liquid waste evacuation, vacuum tankers, and decentralized wastewater treatment in Kicukiro, Kigali. Verified member of ASSERWA.',
     images: [
       {
         url: 'https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media&token=d3048d2c-2d02-4fdb-8eaa-f741686a4401',
         width: 1200,
         height: 630,
-        alt: 'SANEX Company Ltd - Sustainable Liquid Waste Management in Rwanda',
+        alt: 'Nganila Co LTD - Waste Management & Sanitation in Rwanda',
         type: 'image/jpeg',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Sanex | Leading Liquid Waste Management in Rwanda',
-    description: 'Professional liquid waste collection, vacuum exhauster trucks, and wastewater treatment systems across Rwanda.',
-    creator: '@sanex_rw',
+    title: 'Nganila Co LTD | Waste Management & Sanitation in Kigali, Rwanda',
+    description: 'Professional liquid waste evacuation, vacuum tankers, and wastewater treatment in Kigali. Verified ASSERWA member.',
+    creator: '@nganila_rw',
     images: [
       'https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media&token=d3048d2c-2d02-4fdb-8eaa-f741686a4401',
     ],
@@ -64,16 +66,17 @@ export const metadata: Metadata = {
 const localBusinessSchema = {
   "@context": "https://schema.org",
   "@type": "SanitationService",
-  "@id": "https://sanex.rw/#organization",
-  "name": "SANEX Company Ltd",
-  "legalName": "SANEX Company Ltd",
-  "url": "https://sanex.rw",
-  "logo": "https://sanex.rw/favicon.ico",
-  "description": "SANEX Company Ltd provides sustainable liquid waste management, vacuum exhauster services, and decentralized wastewater treatment systems (DEWATS) across Rwanda.",
-  "telephone": "+250788303628",
-  "email": "sanexcompany@gmail.com",
+  "@id": "https://nganila.com/#organization",
+  "name": "Nganila Co LTD",
+  "legalName": "Nganila Co LTD",
+  "url": "https://nganila.com",
+  "logo": "https://nganila.com/favicon.ico",
+  "description": "Nganila Co LTD is a professional waste management and sanitation company operating in Kicukiro, Kigali, Rwanda. Verified member of ASSERWA.",
+  "telephone": "+250788450120",
+  "email": "info@nganila.com",
   "address": {
     "@type": "PostalAddress",
+    "streetAddress": "Kicukiro",
     "addressLocality": "Kigali",
     "addressCountry": "RW"
   },
@@ -93,10 +96,7 @@ const localBusinessSchema = {
     }
   ],
   "sameAs": [
-    "https://twitter.com/sanex_rw",
-    "https://linkedin.com/company/sanex-rw",
-    "https://facebook.com/sanex.rw",
-    "https://instagram.com/sanex_rw"
+    "https://asserwa.rw"
   ],
   "priceRange": "$$"
 };

@@ -34,17 +34,17 @@ export function ImpactDashboard() {
       ]
     },
     { 
-      title: "Job Creation", 
+      title: "Job Creation & Community", 
       points: [
-        "<p>SANEX has directly created jobs for skilled and unskilled workers, contributing to local economic growth.</p>",
-        "<p>Our training programs have enhanced the capacities of local communities in managing liquid waste and understanding sustainable practices.</p>"
+        "<p>Nganila Co LTD directly creates employment for professional drivers, sanitation operators, and technical staff in Kigali.</p>",
+        "<p>We work closely with local authorities and communities to raise sanitation awareness and prevent unhygienic waste dumping.</p>"
       ]
     }
   ];
 
   const content = {
-    title: impactData?.title || "Impact Since Our Inception",
-    subtitle: impactData?.subtitle || "Since its establishment in 2017, SANEX Company Ltd has made a significant impact in addressing the challenges of liquid waste management across Rwanda.",
+    title: impactData?.title || "Our Environmental & Community Impact",
+    subtitle: impactData?.subtitle || "Operating from Kicukiro, Kigali, Nganila Co LTD provides responsible sanitation solutions that protect water sources and keep Rwandan communities clean.",
     items: (impactData?.items && impactData.items.length > 0 && impactData.items[0]?.points?.length > 1) 
       ? impactData.items 
       : defaultImpacts

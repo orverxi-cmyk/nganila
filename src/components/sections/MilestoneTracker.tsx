@@ -24,16 +24,16 @@ export function MilestoneTracker() {
   const { data: milestonesData } = useDoc(milestonesRef);
 
   const defaultMilestones = [
-    { year: "2017", title: "Founding", description: "Established to address Rwanda's liquid waste challenges.", icon: "clock" },
-    { year: "2021", title: "Licensing", description: "Achieved official licensing for waste collection.", icon: "shield" },
-    { year: "2024", title: "Expansion", description: "Expanded services to decentralized treatment systems.", icon: "rocket" }
+    { year: "ASSERWA", title: "Verified Member", description: "Official member of the Forum of Sewage Emptiers in Rwanda.", icon: "shield" },
+    { year: "5 Trucks", title: "Modern Fleet", description: "Fleet of 5 vacuum tankers serving residential and commercial clients.", icon: "rocket" },
+    { year: "Kicukiro", title: "Kigali & Rwanda", description: "Strategic base providing rapid response liquid waste solutions.", icon: "clock" }
   ];
 
   const content = {
     title: milestonesData?.title || "Who We Are",
     description: milestonesData?.description || `
-      <p>Founded in 2017, SANEX Company Ltd was born out of a commitment to address Rwanda's pressing liquid waste management challenges. Recognizing the critical need for sustainable solutions, we embarked on a journey to protect the environment, improve public health, and contribute to sustainable development.</p>
-      <p>Over the years, our dedication to innovation and customer satisfaction has positioned SANEX as a trusted name in the waste management sector. We take pride in offering end-to-end solutions, from waste collection and transportation to the installation of cutting-edge decentralized wastewater treatment systems (DWTS). Our holistic approach ensures we deliver services that are not only efficient but also environmentally responsible.</p>
+      <p><strong>Nganila Co LTD</strong> is a professional waste management and sanitation company operating in Kicukiro, Kigali, Rwanda. The company is a verified member of <strong>ASSERWA</strong> (the Forum of Sewage Emptiers in Rwanda).</p>
+      <p>We specialize in decentralized wastewater treatment, professional septic tank emptying, pit latrine draining (kuvidura), and wastewater transportation. Operating a fleet of 5 vacuum tankers, we transport liquid waste safely to treatment facilities, promoting public health and environmental sustainability.</p>
     `,
     items: milestonesData?.items?.length ? milestonesData.items : defaultMilestones
   };

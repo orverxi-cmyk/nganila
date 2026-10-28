@@ -257,10 +257,13 @@ function BookingPageContent() {
         <div className="container mx-auto px-4 md:px-16">
           <div className="max-w-xl mx-auto space-y-5">
             <div className="text-center space-y-2">
-              <h1 className="text-3xl font-bold font-headline">Book a Service</h1>
+              <h1 className="text-3xl font-bold font-headline">Book a Service with Nganila Co LTD</h1>
               <p className="text-muted-foreground text-[14px]">
-                Professional liquid waste management services across Rwanda.
+                Are you looking to book an exhauster truck for a residential property, or do you need a commercial liquid waste management plan? Let us know so we can guide you on the next steps.
               </p>
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 rounded-full border border-primary/20 text-xs font-semibold text-black">
+                <ShieldCheck className="h-3.5 w-3.5 text-primary" /> Verified ASSERWA Member · Fleet of 5 Vacuum Tankers
+              </div>
             </div>
 
             <Card className="shadow-lg border-none overflow-hidden">
@@ -309,10 +312,10 @@ function BookingPageContent() {
                         <SelectValue placeholder="Choose Service Type" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Liquid Waste Collection">Liquid Waste Collection</SelectItem>
-                        <SelectItem value="Installation of DWTS">DWTS Installation</SelectItem>
+                        <SelectItem value="Liquid Waste Evacuation">Liquid Waste Evacuation (Septic Tank / Pit Latrine / Kuvidura)</SelectItem>
+                        <SelectItem value="Wastewater Transportation">Wastewater Transportation (Vacuum Tankers)</SelectItem>
+                        <SelectItem value="Decentralized Wastewater Treatment">Decentralized Wastewater Treatment (DWTS)</SelectItem>
                         <SelectItem value="Maintenance & Consultancy">Maintenance & Consultancy</SelectItem>
-                        <SelectItem value="Clean Water Delivery">Clean Water Delivery</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

@@ -6,14 +6,32 @@ import { FirebaseProvider } from './provider';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 
 export const FirebaseClientProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [services, setServices] = useState<ReturnType<typeof initializeFirebase> | null>(null);
+  const [services, setServices] = useState<ReturnType<typeof initializeFirebase> | null>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        return initializeFirebase();
+      } catch (e) {
+        console.error('Firebase init error:', e);
+        return null;
+      }
+    }
+    return null;
+  });
 
   useEffect(() => {
-    const initialized = initializeFirebase();
-    setServices(initialized);
-  }, []);
+    if (!services) {
+      try {
+        setServices(initializeFirebase());
+      } catch (e) {
+        console.error('Firebase init error:', e);
+      }
+    }
+  }, [services]);
 
-  if (!services) return null;
+  if (!services) {
+    // Render children directly during SSR so the page renders immediately
+    return <>{children}</>;
+  }
 
   return (
     <FirebaseProvider

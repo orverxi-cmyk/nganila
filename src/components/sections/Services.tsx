@@ -23,15 +23,35 @@ export function Services() {
   const { data: servicesData, loading } = useDoc(servicesRef);
 
   const defaultServices = [
-    { title: "Liquid Waste Collection and Transport", description: "Modern vacuum trucks for efficient waste collection serving schools, hospitals, hotels, and commercial buildings.", imageUrl: "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1779723894783_vlcsnap-2025-04-19-16h01m39s409.png?alt=media&token=40440145-c8f7-4e34-a3cb-a21f4565d9c0", icon: "truck" },
-    { title: "Installation of DWTS", description: "Advanced systems for clean water reuse in irrigation and flushing using activated sludge technology.", imageUrl: "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1779722491089_B25A3102.jpg?alt=media&token=e7f97250-ccbd-4a24-a9fa-793f86798a7d", icon: "droplets" },
-    { title: "Maintenance & Consultancy", description: "Quarterly maintenance services and expert advice for optimal wastewater management.", imageUrl: "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1779722519315_B25A3083.jpg?alt=media&token=f1e293b2-73e6-4571-9982-4527f23c0f8e", icon: "settings" },
-    { title: "Sanitation Projects and Partnerships", description: "Collaborating with government and private organizations to promote public health and hygiene.", imageUrl: "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1779722938429_WhatsApp%20Image%202025-04-19%20at%2020.13.41.jpeg?alt=media&token=3f2a420d-9624-4356-be91-cf8fea746965", icon: "truck" }
+    { 
+      title: "Decentralized Wastewater Treatment", 
+      description: "Managing localized wastewater systems and treatment units for residential, commercial, and institutional clients.", 
+      imageUrl: "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1779722491089_B25A3102.jpg?alt=media&token=e7f97250-ccbd-4a24-a9fa-793f86798a7d", 
+      icon: "droplets" 
+    },
+    { 
+      title: "Liquid Waste Evacuation", 
+      description: "Providing professional septic tank emptying, pit latrine draining (kuvidura), and vacuum tanker services across Kigali and Rwanda.", 
+      imageUrl: "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1779723894783_vlcsnap-2025-04-19-16h01m39s409.png?alt=media&token=40440145-c8f7-4e34-a3cb-a21f4565d9c0", 
+      icon: "truck" 
+    },
+    { 
+      title: "Wastewater Transportation", 
+      description: "Operating a dedicated fleet of 5 modern vacuum tankers to transport liquid waste safely and responsibly to treatment facilities.", 
+      imageUrl: "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media&token=d3048d2c-2d02-4fdb-8eaa-f741686a4401", 
+      icon: "truck" 
+    },
+    { 
+      title: "Verified ASSERWA Member", 
+      description: "Proud member of ASSERWA (the Forum of Sewage Emptiers in Rwanda), certified for professional standards and public hygiene.", 
+      imageUrl: "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1779722938429_WhatsApp%20Image%202025-04-19%20at%2020.13.41.jpeg?alt=media&token=3f2a420d-9624-4356-be91-cf8fea746965", 
+      icon: "shield" 
+    }
   ];
 
   const content = {
-    title: servicesData?.title || "Comprehensive Liquid Waste Solutions",
-    subtitle: servicesData?.subtitle || "At SANEX, we offer a full suite of services designed to promote public health and sustainable environmental growth.",
+    title: servicesData?.title || "Our Core Services",
+    subtitle: servicesData?.subtitle || "Nganila Co LTD offers professional, reliable waste management and sanitation services in Kicukiro, Kigali, and across Rwanda.",
     items: servicesData?.items?.length ? servicesData.items : defaultServices
   };
 

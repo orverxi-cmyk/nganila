@@ -40,20 +40,18 @@ export const adminSeedInitialData = onCall({ cors: true }, async (request: Calla
   const batch = db.batch();
 
   batch.set(db.collection('settings').doc('general'), {
-    siteName: "SANEX Company Ltd",
+    siteName: "Nganila Co LTD",
     logoUrl: "/logo.png",
     logoWidth: 160,
     logoHeight: 40,
     logoSpacing: 8,
-    phone: "+250 788303628",
-    phones: ["+250 788303628"],
-    email: "sanexcompany@gmail.com",
-    emails: ["sanexcompany@gmail.com"],
+    phone: "+250 788 450 120",
+    phones: ["+250 788 450 120", "+250 788 668 855"],
+    email: "info@nganila.com",
+    emails: ["info@nganila.com"],
     socials: {
-      twitter: "https://twitter.com/sanex_rw",
-      linkedin: "https://linkedin.com/company/sanex-rw",
-      facebook: "https://facebook.com/sanex.rw",
-      instagram: "https://instagram.com/sanex_rw"
+      twitter: "https://asserwa.rw",
+      linkedin: "https://asserwa.rw"
     },
     navLinks: [
       { name: "Home", href: "/" },

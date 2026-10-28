@@ -45,7 +45,7 @@ export function Navbar({ isAdmin }: NavbarProps = {}) {
   ];
 
   const navLinks = generalData?.navLinks?.length ? generalData.navLinks : defaultNavLinks;
-  const siteName = generalData?.siteName || "SANEX Company Ltd";
+  const siteName = generalData?.siteName || "Nganila Co LTD";
   const logoUrl = generalData?.logoUrl;
   const logoWidth = generalData?.logoWidth || 160;
   const logoHeight = generalData?.logoHeight || 40;

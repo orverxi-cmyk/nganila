@@ -22,7 +22,7 @@ export default function ContactPage() {
       const valid = generalData.phones.filter((p: any) => typeof p === "string" && p.trim() !== "");
       if (valid.length > 0) return valid;
     }
-    return [generalData?.phone || "+250 788303628"];
+    return [generalData?.phone || "+250 788 450 120", "+250 788 668 855"];
   }, [generalData]);
 
   const emails: string[] = React.useMemo(() => {
@@ -30,7 +30,7 @@ export default function ContactPage() {
       const valid = generalData.emails.filter((e: any) => typeof e === "string" && e.trim() !== "");
       if (valid.length > 0) return valid;
     }
-    return [generalData?.email || "sanexcompany@gmail.com"];
+    return [generalData?.email || "info@nganila.com"];
   }, [generalData]);
 
   return (
@@ -96,7 +96,8 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1">Office</div>
-                      <p className="text-lg font-bold">Kigali, Rwanda</p>
+                      <p className="text-lg font-bold">Kicukiro, Kigali, Rwanda</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">Verified Member of ASSERWA</p>
                     </div>
                   </div>
                 </CardContent>
@@ -106,8 +107,10 @@ export default function ContactPage() {
                 <Card className="border-primary border-2 bg-primary/5">
                   <CardContent className="p-8 text-center space-y-5">
                     <Calendar className="h-12 w-12 mx-auto text-primary" />
-                    <h3 className="text-2xl font-bold font-headline">Need a Service?</h3>
-                    <p className="text-muted-foreground">Book a liquid waste collection or consultancy directly through our booking portal.</p>
+                    <h3 className="text-2xl font-bold font-headline">Need an Exhauster Truck?</h3>
+                    <p className="text-muted-foreground">
+                      Are you looking to book an exhauster truck for a residential property, or do you need a commercial liquid waste management plan? Let us know so we can guide you on the next steps.
+                    </p>
                     <div className="flex flex-wrap gap-x-[5px] gap-y-[20px] justify-center">
                       <Button asChild className="h-12 px-8 text-lg bg-primary text-black font-bold uppercase tracking-widest rounded-full">
                         <Link href="/book">Schedule Now <ArrowRight className="ml-2 h-5 w-5" /></Link>

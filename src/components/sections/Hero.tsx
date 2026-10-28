@@ -20,14 +20,14 @@ export function Hero() {
   const { data: heroData, loading } = useDoc(heroRef);
 
   const content = {
-    badge: heroData?.badge || "Leading Sanitation Partner in Rwanda",
-    title: heroData?.title || "Transforming",
-    titleAccent: heroData?.titleAccent || "Waste Into Opportunity",
-    description: heroData?.description || "Leading Liquid Waste Management Solutions in Rwanda. We protect public health and environmental integrity through advanced technology and nationwide coverage.",
+    badge: heroData?.badge || "Verified Member of ASSERWA",
+    title: heroData?.title || "Nganila Co LTD",
+    titleAccent: heroData?.titleAccent || "Waste Management & Sanitation",
+    description: heroData?.description || "Professional waste management and sanitation company in Kicukiro, Kigali, Rwanda. Operating a fleet of 5 vacuum tankers for septic tank emptying, pit latrine draining (kuvidura), and decentralized wastewater treatment.",
     imageUrl: heroData?.imageUrl || "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1779799776154_B25A3083.jpg?alt=media&token=f390e684-ab5b-4ff1-aa5d-fd95f4512e93",
     imageWidth: heroData?.imageWidth || 800,
     imageHeight: heroData?.imageHeight || 600,
-    ctaText: heroData?.ctaText || "Book a Service",
+    ctaText: heroData?.ctaText || "Book an Exhauster Truck",
     ctaLink: heroData?.ctaLink || "/book"
   };
 

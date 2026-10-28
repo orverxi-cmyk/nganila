@@ -25,7 +25,7 @@ export function Footer() {
       const valid = generalData.phones.filter((p: any) => typeof p === "string" && p.trim() !== "");
       if (valid.length > 0) return valid;
     }
-    return [generalData?.phone || "+250 788303628"];
+    return [generalData?.phone || "+250 788 450 120", "+250 788 668 855"];
   }, [generalData]);
 
   const emails: string[] = React.useMemo(() => {
@@ -33,7 +33,7 @@ export function Footer() {
       const valid = generalData.emails.filter((e: any) => typeof e === "string" && e.trim() !== "");
       if (valid.length > 0) return valid;
     }
-    return [generalData?.email || "sanexcompany@gmail.com"];
+    return [generalData?.email || "info@nganila.com"];
   }, [generalData]);
   const navLinks = generalData?.navLinks || [
     { name: "About Us", href: "/about" },
@@ -124,16 +124,17 @@ export function Footer() {
           <div className="space-y-4">
             <h4 className="text-[16px] font-bold uppercase tracking-wider text-primary">Services</h4>
             <ul className="space-y-2 text-[14px] font-normal text-white/70">
-              <li>Waste Collection</li>
-              <li>DWTS Installation</li>
-              <li>Maintenance</li>
+              <li>Liquid Waste Evacuation</li>
+              <li>Wastewater Transportation</li>
+              <li>Decentralized Wastewater Treatment</li>
+              <li>Verified ASSERWA Member</li>
             </ul>
           </div>
           <div className="space-y-4">
             <h4 className="text-[16px] font-bold uppercase tracking-wider text-primary">Contact</h4>
             <ul className="space-y-2 text-[14px] font-normal text-white/70">
               <li className="flex gap-2 justify-center md:justify-start items-center">
-                <MapPin className="h-3.5 w-3.5 text-primary shrink-0" /> Kigali, Rwanda
+                <MapPin className="h-3.5 w-3.5 text-primary shrink-0" /> Kicukiro, Kigali, Rwanda
               </li>
               {phones.map((phoneItem, idx) => (
                 <li key={`phone-${idx}`} className="flex gap-2 justify-center md:justify-start items-center">
@@ -175,7 +176,7 @@ export function Footer() {
         
         <div className="border-t border-white/10 pt-5 flex flex-col md:flex-row items-center justify-between gap-4 text-[14px] font-normal text-white/50">
           <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-center sm:text-left">
-            <span>© {new Date().getFullYear()}. SANEX Company Ltd. All rights reserved.</span>
+            <span>© {new Date().getFullYear()}. Nganila Co LTD. All rights reserved.</span>
             <span className="hidden sm:inline text-white/30">•</span>
             <Link href="/privacy" className="hover:text-primary transition-colors text-white/70 underline sm:no-underline">
               Privacy Policy

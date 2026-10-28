@@ -29,22 +29,22 @@ export function HomeSlider() {
 
   const defaultItems = [
     { 
-      title: "Our Services", 
-      description: "<p>Whether addressing urban or rural challenges, our innovative and eco-friendly solutions are designed to improve public health, protect the environment, and promote sustainable development.</p>", 
+      title: "Nganila Co LTD", 
+      description: "<p>Professional waste management and sanitation company in Kicukiro, Kigali, Rwanda. Verified member of ASSERWA operating a fleet of 5 vacuum tankers.</p>", 
       imageUrl: "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1779714862617_SANEX_VIDEO_higlights%20-%20Copy.mp4?alt=media&token=789f5d47-98cb-4c35-a048-59bf6a4b39a5",
       width: 2000,
       height: 1080,
       link: "/services",
-      buttonText: "Our Solutions"
+      buttonText: "Our Core Services"
     },
     { 
-      title: "Our Impact", 
-      description: "<p>Since its establishment in 2017, SANEX Company Ltd has made a significant impact in addressing the challenges of liquid waste management across Rwanda.</p>", 
+      title: "Liquid Waste Evacuation & Transport", 
+      description: "<p>Professional septic tank emptying, pit latrine draining (kuvidura), and vacuum tanker transportation with rapid dispatch across Kigali.</p>", 
       imageUrl: "https://firebasestorage.googleapis.com/v0/b/studio-9595184890-5bb3c.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media&token=d3048d2c-2d02-4fdb-8eaa-f741686a4401",
       width: 1200,
       height: 600,
-      link: "/about",
-      buttonText: "Learn More"
+      link: "/book",
+      buttonText: "Book an Exhauster Truck"
     }
   ];
 
