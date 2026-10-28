@@ -2120,7 +2120,7 @@ export function EmailStudioBuilder({
               const html = compileBlocksToHtml(activeBlocks);
               onSaveAndProceed(html, activeBlocks);
             }}
-            className="h-8 text-xs font-extrabold bg-[#8DB833] text-black hover:bg-[#8DB833]/90 gap-1.5 shadow-xs"
+            className="h-8 text-xs font-extrabold bg-primary text-white hover:bg-primary/90 gap-1.5 shadow-xs"
           >
             {isOptimizingImages ? (
               <>
@@ -2367,7 +2367,7 @@ export function EmailStudioBuilder({
                       <Button
                         type="button"
                         onClick={() => openVideoEditor(block.id)}
-                        className="w-full h-8 text-xs font-bold bg-[#8DB833] text-black hover:bg-[#8DB833]/90 gap-1.5 shadow-xs"
+                        className="w-full h-8 text-xs font-bold bg-primary text-white hover:bg-primary/90 gap-1.5 shadow-xs"
                       >
                         <Video className="h-3.5 w-3.5" /> Configure Video & Links
                       </Button>
@@ -2405,7 +2405,7 @@ export function EmailStudioBuilder({
                     <Button
                       type="button"
                       onClick={() => openSocialEditor(block.id)}
-                      className="w-full h-8 text-xs font-bold bg-[#8DB833] text-black hover:bg-[#8DB833]/90 gap-1.5 shadow-xs"
+                      className="w-full h-8 text-xs font-bold bg-primary text-white hover:bg-primary/90 gap-1.5 shadow-xs"
                     >
                       <Settings2 className="h-3.5 w-3.5" /> Configure Social Media
                     </Button>
@@ -2513,7 +2513,7 @@ export function EmailStudioBuilder({
                     <Button
                       type="button"
                       onClick={() => openSocialEditor(block.id)}
-                      className="w-full h-8 text-xs font-bold bg-[#8DB833] text-black hover:bg-[#8DB833]/90 gap-1.5 shadow-xs"
+                      className="w-full h-8 text-xs font-bold bg-primary text-white hover:bg-primary/90 gap-1.5 shadow-xs"
                     >
                       <Share2 className="h-3.5 w-3.5" /> Configure Header Social Links
                     </Button>
@@ -2591,7 +2591,7 @@ export function EmailStudioBuilder({
                     <Button
                       type="button"
                       onClick={() => openFooterEditor(block.id)}
-                      className="w-full h-8 text-xs font-bold bg-[#8DB833] text-black hover:bg-[#8DB833]/90 gap-1.5 shadow-xs"
+                      className="w-full h-8 text-xs font-bold bg-primary text-white hover:bg-primary/90 gap-1.5 shadow-xs"
                     >
                       <ShieldCheck className="h-3.5 w-3.5" /> Configure Disclaimer &amp; Legal
                     </Button>
@@ -2665,7 +2665,7 @@ export function EmailStudioBuilder({
                           block.type === "image" ? "Full-Width Image" : "Section Photo"
                         )
                       }
-                      className="w-full h-8 text-xs font-bold bg-[#8DB833] text-black hover:bg-[#8DB833]/90 gap-1.5 shadow-xs"
+                      className="w-full h-8 text-xs font-bold bg-primary text-white hover:bg-primary/90 gap-1.5 shadow-xs"
                     >
                       <UploadCloud className="h-3.5 w-3.5" /> Image Settings (Cloud CDN)
                     </Button>
@@ -2895,11 +2895,11 @@ export function EmailStudioBuilder({
                 <Button
                   type="button"
                   size="sm"
-                  onClick={() => applyBrandColorToButtons("#8DB833")}
-                  className="w-full h-7 text-[11px] font-bold bg-[#8DB833] text-black hover:bg-[#8DB833]/90 gap-1.5 shadow-none"
+                  onClick={() => applyBrandColorToButtons("#006400")}
+                  className="w-full h-7 text-[11px] font-bold bg-[#006400] text-white hover:bg-[#006400]/90 gap-1.5 shadow-none"
                 >
                   <Sparkles className="h-3 w-3" />
-                  Apply #8DB833 Brand Green to Buttons
+                  Apply #006400 Brand Green to Buttons
                 </Button>
               </div>
 
@@ -3050,7 +3050,7 @@ export function EmailStudioBuilder({
                         size="sm"
                         disabled={isOptimizingImages}
                         onClick={() => convertAllBase64ImagesToCloud(blocks)}
-                        className="w-full h-7 text-xs font-bold bg-[#8DB833] text-black hover:bg-[#8DB833]/90 gap-1.5"
+                        className="w-full h-7 text-xs font-bold bg-primary text-white hover:bg-primary/90 gap-1.5"
                       >
                         {isOptimizingImages ? (
                           <>
@@ -4067,7 +4067,7 @@ export function EmailStudioBuilder({
                   <Button
                     type="button"
                     onClick={() => setLinkEditModal(null)}
-                    className="h-8 text-xs font-bold bg-[#8DB833] text-black hover:bg-[#8DB833]/90"
+                    className="h-8 text-xs font-bold bg-primary text-white hover:bg-primary/90"
                   >
                     Save & Close
                   </Button>
@@ -4380,7 +4380,7 @@ export function EmailStudioBuilder({
             <Button
               type="button"
               onClick={() => setSocialEditModal(null)}
-              className="h-8 text-xs font-bold bg-[#8DB833] text-black hover:bg-[#8DB833]/90 shadow-xs"
+              className="h-8 text-xs font-bold bg-primary text-white hover:bg-primary/90 shadow-xs"
             >
               Done & Save
             </Button>
@@ -4729,9 +4729,9 @@ export function EmailStudioBuilder({
                       />
                       <button
                         type="button"
-                        onClick={() => updateBlock(block.id, { videoPlayButtonColor: "#8DB833" })}
-                        className="px-2 py-1 text-[10px] font-bold rounded bg-[#8DB833] text-black shadow-2xs"
-                        title="SANEX Lime Green"
+                        onClick={() => updateBlock(block.id, { videoPlayButtonColor: "#006400" })}
+                        className="px-2 py-1 text-[10px] font-bold rounded bg-[#006400] text-white shadow-2xs"
+                        title="SANEX Forest Green"
                       >
                         Brand
                       </button>
@@ -4757,7 +4757,7 @@ export function EmailStudioBuilder({
             <Button
               type="button"
               onClick={() => setVideoEditModal(null)}
-              className="h-8 text-xs font-bold bg-[#8DB833] text-black hover:bg-[#8DB833]/90 shadow-xs"
+              className="h-8 text-xs font-bold bg-primary text-white hover:bg-primary/90 shadow-xs"
             >
               Done & Save
             </Button>
@@ -4937,7 +4937,7 @@ export function EmailStudioBuilder({
                   <Button
                     type="button"
                     onClick={() => setFooterEditModal(null)}
-                    className="h-8 text-xs font-bold bg-[#8DB833] text-black hover:bg-[#8DB833]/90"
+                    className="h-8 text-xs font-bold bg-primary text-white hover:bg-primary/90"
                   >
                     Save &amp; Apply Footer
                   </Button>
@@ -5058,7 +5058,7 @@ export function EmailStudioBuilder({
                           <Button
                             type="button"
                             size="sm"
-                            className="mt-2 h-7 text-xs font-bold bg-[#8DB833] text-black hover:bg-[#8DB833]/90"
+                            className="mt-2 h-7 text-xs font-bold bg-primary text-white hover:bg-primary/90"
                           >
                             Browse Files
                           </Button>

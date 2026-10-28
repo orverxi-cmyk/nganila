@@ -280,7 +280,7 @@ export function SpecialLinkGeneratorModal({
             <div className="bg-slate-900 text-white p-4 rounded-xl space-y-3 shadow-sm border border-slate-800">
               <div className="flex items-center justify-between gap-2 flex-wrap">
                 <div className="flex items-center gap-2">
-                  <Badge className="bg-primary text-black font-extrabold text-[10px] uppercase tracking-wider">
+                  <Badge className="bg-primary text-white font-extrabold text-[10px] uppercase tracking-wider">
                     {activePublication.category || "Publication"}
                   </Badge>
                   <span className="text-xs text-slate-400 flex items-center gap-1 font-medium">
@@ -328,7 +328,7 @@ export function SpecialLinkGeneratorModal({
                       type="button"
                       size="sm"
                       onClick={() => handleCopy(canonicalUrl, "main-url", "Special Link Copied!")}
-                      className="h-9 px-3 text-xs font-bold bg-primary text-black hover:bg-primary/90 gap-1.5 shadow-xs"
+                      className="h-9 px-3 text-xs font-bold bg-primary text-white hover:bg-primary/90 gap-1.5 shadow-xs"
                     >
                       {copiedKey === "main-url" ? (
                         <>
@@ -479,7 +479,7 @@ export function SpecialLinkGeneratorModal({
                       type="button"
                       size="sm"
                       onClick={() => handleCopy(buttonEmbedHtml, "btn-embed", "Button HTML Copied!")}
-                      className="h-8 text-xs font-bold bg-primary text-black hover:bg-primary/90 gap-1"
+                      className="h-8 text-xs font-bold bg-primary text-white hover:bg-primary/90 gap-1"
                     >
                       {copiedKey === "btn-embed" ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
                       <span>Copy HTML</span>
@@ -572,7 +572,7 @@ export function SpecialLinkGeneratorModal({
                       type="button"
                       disabled={isUpdatingSlug || !customSlugInput || customSlugInput === currentSlug}
                       onClick={handleSaveCustomSlug}
-                      className="h-9 px-4 text-xs font-bold bg-primary text-black hover:bg-primary/90 gap-1.5 shrink-0"
+                      className="h-9 px-4 text-xs font-bold bg-primary text-white hover:bg-primary/90 gap-1.5 shrink-0"
                     >
                       <Save className="h-3.5 w-3.5" />
                       <span>{isUpdatingSlug ? "Saving..." : "Update Slug"}</span>

@@ -46,7 +46,7 @@ function Calendar({
           buttonVariants({ variant: "ghost" }),
           "h-9 w-9 p-0 font-normal hover:bg-primary/20 hover:text-foreground aria-selected:opacity-100 transition-colors"
         ),
-        selected: "bg-primary text-black font-bold hover:bg-primary hover:text-black focus:bg-primary focus:text-black rounded-md",
+        selected: "bg-primary text-white font-bold hover:bg-primary/90 hover:text-white focus:bg-primary focus:text-white rounded-md",
         today: "bg-accent/60 text-accent-foreground font-bold border border-primary/40 rounded-md",
         outside: "day-outside text-muted-foreground/30 opacity-30 aria-selected:bg-accent/50 aria-selected:text-muted-foreground",
         disabled: "text-muted-foreground/30 opacity-30 cursor-not-allowed hover:bg-transparent pointer-events-none",

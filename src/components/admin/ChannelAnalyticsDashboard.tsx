@@ -287,7 +287,7 @@ export function ChannelAnalyticsDashboard({ bookings = [], onRefresh, isRefreshi
               {topVolumeChannel && topVolumeChannel.total > 0 ? topVolumeChannel.name : "None yet"}
             </div>
             <div className="flex items-center gap-2 mt-2">
-              <Badge className="bg-primary text-black font-bold text-[10px]">
+              <Badge className="bg-primary text-white font-bold text-[10px]">
                 {topVolumeChannel && topVolumeChannel.total > 0 ? `${topVolumeChannel.share}% Share` : "0%"}
               </Badge>
               <span className="text-xs text-muted-foreground">
@@ -507,7 +507,7 @@ export function ChannelAnalyticsDashboard({ bookings = [], onRefresh, isRefreshi
                         <div className="font-bold text-sm text-foreground flex items-center gap-2">
                           {channel.name}
                           {channel.conversionRate >= 60 && channel.total >= 1 && (
-                            <Badge className="bg-primary text-black border-none text-[9px] px-1.5 py-0 h-4 font-bold">
+                            <Badge className="bg-primary text-white border-none text-[9px] px-1.5 py-0 h-4 font-bold">
                               High Yield
                             </Badge>
                           )}
@@ -566,7 +566,7 @@ export function ChannelAnalyticsDashboard({ bookings = [], onRefresh, isRefreshi
       <Card className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-primary/20 shadow-sm">
         <CardContent className="p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex items-start gap-3.5">
-            <div className="h-10 w-10 rounded-xl bg-primary text-black flex items-center justify-center shrink-0 shadow-sm">
+            <div className="h-10 w-10 rounded-xl bg-primary text-white flex items-center justify-center shrink-0 shadow-sm">
               <Sparkles className="h-5 w-5" />
             </div>
             <div>

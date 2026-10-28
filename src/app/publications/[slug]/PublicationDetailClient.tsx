@@ -356,7 +356,7 @@ export default function PublicationDetailClient({
             The publication or newsletter you are looking for does not exist, may have been archived,
             or the link is no longer valid.
           </p>
-          <Button asChild className="bg-primary text-black font-bold h-9 text-xs">
+          <Button asChild className="bg-primary text-white hover:bg-primary/90 font-bold h-9 text-xs">
             <Link href="/publications">Return to All Publications</Link>
           </Button>
         </main>

@@ -186,7 +186,7 @@ export default function ArticleDetailClient({ initialSlug, initialArticle }: Art
           <p className="text-sm text-muted-foreground mb-6">
             The article you requested could not be found or may have been moved.
           </p>
-          <Button asChild className="bg-primary text-black font-bold">
+          <Button asChild className="bg-primary text-white hover:bg-primary/90 font-bold">
             <Link href="/articles">Back to Articles</Link>
           </Button>
         </main>

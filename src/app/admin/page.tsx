@@ -1311,7 +1311,7 @@ export default function AdminDashboard() {
                                     {(!b.status || b.status === 'pending') && (
                                       <Button
                                         size="sm"
-                                        className="h-7 px-2.5 text-[11px] font-bold bg-primary text-black hover:bg-primary/90"
+                                        className="h-7 px-2.5 text-[11px] font-bold bg-primary text-white hover:bg-primary/90"
                                         onClick={() => handleUpdateStatus(b.id, 'confirmed')}
                                         disabled={updatingId === b.id}
                                       >
@@ -1461,13 +1461,13 @@ export default function AdminDashboard() {
                       className={cn(
                         "px-3.5 py-2 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-2 border",
                         isSelected
-                          ? "bg-primary text-black border-primary shadow-sm"
+                          ? "bg-primary text-white border-primary shadow-sm"
                           : "border-transparent text-muted-foreground hover:bg-muted hover:text-foreground"
                       )}
                     >
-                      <Icon className="h-3.5 w-3.5" style={{ color: isSelected ? '#000' : stat.config?.color }} />
+                      <Icon className="h-3.5 w-3.5" style={{ color: isSelected ? '#fff' : stat.config?.color }} />
                       <span>{stat.name}</span>
-                      <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-black/10 font-bold">
+                      <span className={cn("text-[10px] px-1.5 py-0.2 rounded-full font-bold", isSelected ? "bg-white/20 text-white" : "bg-black/10 text-foreground")}>
                         {stat.total}
                       </span>
                     </button>
@@ -1600,7 +1600,7 @@ export default function AdminDashboard() {
                                           {(!b.status || b.status === 'pending') && (
                                             <Button
                                               size="sm"
-                                              className="h-7 text-xs font-bold bg-primary text-black"
+                                              className="h-7 text-xs font-bold bg-primary text-white hover:bg-primary/90"
                                               onClick={() => handleUpdateStatus(b.id, 'confirmed')}
                                               disabled={updatingId === b.id}
                                             >

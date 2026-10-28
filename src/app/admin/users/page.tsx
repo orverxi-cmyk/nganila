@@ -323,7 +323,7 @@ export default function UserManagementPage() {
 
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button className="h-10 text-[10px] font-bold uppercase tracking-widest gap-2 bg-primary text-black rounded-full px-6">
+                  <Button className="h-10 text-[10px] font-bold uppercase tracking-widest gap-2 bg-primary text-white hover:bg-primary/90 rounded-full px-6">
                     <UserPlus className="h-4 w-4" /> Add New User
                   </Button>
                 </DialogTrigger>
@@ -392,7 +392,7 @@ export default function UserManagementPage() {
                     </div>
                     <DialogFooter>
                       <div className="flex flex-wrap gap-x-[5px] gap-y-[20px] w-full pt-2">
-                        <Button type="submit" className="flex-grow h-12 text-[12px] font-bold uppercase tracking-widest bg-primary text-black rounded-full" disabled={isAdding}>
+                        <Button type="submit" className="flex-grow h-12 text-[12px] font-bold uppercase tracking-widest bg-primary text-white hover:bg-primary/90 rounded-full" disabled={isAdding}>
                           {isAdding ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <UserPlus className="h-4 w-4 mr-2" />}
                           Create Account
                         </Button>
@@ -449,7 +449,7 @@ export default function UserManagementPage() {
                               <div>
                                 <div className="font-bold text-black flex items-center gap-2">
                                   {u.displayName}
-                                  {isMaster && <Badge className="bg-primary text-black text-[8px] font-bold uppercase tracking-widest px-1.5 h-4">Master</Badge>}
+                                  {isMaster && <Badge className="bg-primary text-white text-[8px] font-bold uppercase tracking-widest px-1.5 h-4">Master</Badge>}
                                 </div>
                                 <div className="text-[12px] text-muted-foreground flex items-center gap-1">
                                   <Mail className="h-3 w-3" /> {u.email}
@@ -458,7 +458,7 @@ export default function UserManagementPage() {
                             </div>
                           </td>
                           <td className="px-6 py-4">
-                            <Badge variant={u.role === "admin" ? "default" : "outline"} className={u.role === "admin" ? "bg-primary text-black font-bold text-[8px] tracking-widest uppercase" : "text-[8px] tracking-widest uppercase"}>
+                            <Badge variant={u.role === "admin" ? "default" : "outline"} className={u.role === "admin" ? "bg-primary text-white font-bold text-[8px] tracking-widest uppercase" : "text-[8px] tracking-widest uppercase"}>
                               {u.role || "USER"}
                             </Badge>
                           </td>

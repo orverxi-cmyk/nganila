@@ -394,7 +394,7 @@ function NavigationEditor({ initialData, onSave }: { initialData: any, onSave: (
         </div>
         <Button 
           onClick={() => onSave({ ...initialData, navLinks })} 
-          className="gap-2 h-10 text-[10px] font-bold uppercase tracking-widest w-full bg-primary text-black"
+          className="gap-2 h-10 text-[10px] font-bold uppercase tracking-widest w-full bg-primary text-white hover:bg-primary/90"
         >
           <Save className="h-4 w-4" /> Save Navigation Menu
         </Button>
@@ -746,7 +746,7 @@ function SliderEditor({ initialData, onSave }: { initialData: any, onSave: (data
               <Trash2 className="h-3.5 w-3.5" /> Clear All
             </Button>
           )}
-          <Button size="sm" onClick={addItem} className="gap-1.5 h-9 text-[10px] font-bold uppercase tracking-widest bg-primary text-black">
+          <Button size="sm" onClick={addItem} className="gap-1.5 h-9 text-[10px] font-bold uppercase tracking-widest bg-primary text-white hover:bg-primary/90">
             <Plus className="h-4 w-4" /> Add Slide
           </Button>
         </div>
@@ -759,7 +759,7 @@ function SliderEditor({ initialData, onSave }: { initialData: any, onSave: (data
             <p className="text-xs text-muted-foreground max-w-sm mx-auto">
               Click &quot;Add Slide&quot; above to create your first custom slide with your preferred title, description, and photo/video.
             </p>
-            <Button size="sm" onClick={addItem} className="gap-2 h-9 text-xs font-bold bg-primary text-black">
+            <Button size="sm" onClick={addItem} className="gap-2 h-9 text-xs font-bold bg-primary text-white hover:bg-primary/90">
               <Plus className="h-4 w-4" /> Add Your First Slide
             </Button>
           </div>
@@ -770,7 +770,7 @@ function SliderEditor({ initialData, onSave }: { initialData: any, onSave: (data
                 {/* Header row with slide index and controls */}
                 <div className="flex items-center justify-between pb-3 border-b">
                   <div className="flex items-center gap-2">
-                    <span className="h-6 w-6 rounded-full bg-primary text-black font-extrabold text-xs flex items-center justify-center">
+                    <span className="h-6 w-6 rounded-full bg-primary text-white font-extrabold text-xs flex items-center justify-center">
                       {i + 1}
                     </span>
                     <h4 className="font-extrabold text-sm text-foreground">
@@ -874,7 +874,7 @@ function SliderEditor({ initialData, onSave }: { initialData: any, onSave: (data
 
         <Button 
           onClick={handleSave} 
-          className="gap-2 h-11 text-xs font-bold uppercase tracking-widest w-full bg-primary text-black shadow-md hover:bg-primary/90"
+          className="gap-2 h-11 text-xs font-bold uppercase tracking-widest w-full bg-primary text-white shadow-md hover:bg-primary/90"
         >
           <Save className="h-4 w-4" /> Save All Slides Config
         </Button>
@@ -1265,7 +1265,7 @@ function GeneralEditor({ initialData, onSave }: { initialData: any, onSave: (dat
             </div>
           </div>
 
-          <Button type="submit" className="gap-2 h-10 text-[10px] font-bold uppercase tracking-widest w-full bg-primary text-black"><Save className="h-4 w-4" /> Save Branding & Socials</Button>
+          <Button type="submit" className="gap-2 h-10 text-[10px] font-bold uppercase tracking-widest w-full bg-primary text-white hover:bg-primary/90"><Save className="h-4 w-4" /> Save Branding & Socials</Button>
         </form>
       </CardContent>
     </Card>
@@ -1295,7 +1295,7 @@ function HeroEditor({ initialData, onSave }: { initialData: any, onSave: (data: 
             value={formData.description} 
             onChange={val => setFormData({...formData, description: val})} 
           />
-          <Button type="submit" className="h-10 text-[10px] font-bold uppercase tracking-widest w-full bg-primary text-black"><Save className="h-4 w-4 mr-2" /> Save Hero</Button>
+          <Button type="submit" className="h-10 text-[10px] font-bold uppercase tracking-widest w-full bg-primary text-white hover:bg-primary/90"><Save className="h-4 w-4 mr-2" /> Save Hero</Button>
         </form>
       </CardContent>
     </Card>
@@ -1336,7 +1336,7 @@ function HighlightsEditor({ initialData, onSave }: { initialData: any, onSave: (
             </Card>
           ))}
         </div>
-        <Button onClick={() => onSave(formData)} className="h-10 text-[10px] font-bold uppercase tracking-widest w-full bg-primary text-black"><Save className="h-4 w-4 mr-2" /> Save Highlights</Button>
+        <Button onClick={() => onSave(formData)} className="h-10 text-[10px] font-bold uppercase tracking-widest w-full bg-primary text-white hover:bg-primary/90"><Save className="h-4 w-4 mr-2" /> Save Highlights</Button>
       </CardContent>
     </Card>
   );
@@ -1386,7 +1386,7 @@ function ServicesEditor({ initialData, onSave }: { initialData: any, onSave: (da
             </Card>
           ))}
         </div>
-        <Button onClick={() => onSave(formData)} className="h-10 text-[10px] font-bold uppercase tracking-widest w-full bg-primary text-black"><Save className="h-4 w-4 mr-2" /> Save Services</Button>
+        <Button onClick={() => onSave(formData)} className="h-10 text-[10px] font-bold uppercase tracking-widest w-full bg-primary text-white hover:bg-primary/90"><Save className="h-4 w-4 mr-2" /> Save Services</Button>
       </CardContent>
     </Card>
   );
@@ -1507,7 +1507,7 @@ function ImpactEditor({ initialData, onSave }: { initialData: any, onSave: (data
             <p className="text-muted-foreground text-sm">No impact items configured. Click 'Add Impact Category' to start.</p>
           </div>
         )}
-        <Button onClick={() => onSave(formData)} className="h-10 text-[10px] font-bold uppercase tracking-widest w-full bg-primary text-black">
+        <Button onClick={() => onSave(formData)} className="h-10 text-[10px] font-bold uppercase tracking-widest w-full bg-primary text-white hover:bg-primary/90">
           <Save className="h-4 w-4 mr-2" /> Save Impact Configuration
         </Button>
       </CardContent>
@@ -1644,7 +1644,7 @@ function MilestonesEditor({ initialData, onSave }: { initialData: any, onSave: (
             </div>
           )}
         </div>
-        <Button onClick={() => onSave(formData)} className="h-11 text-[10px] font-bold uppercase tracking-widest w-full bg-primary text-black mt-4">
+        <Button onClick={() => onSave(formData)} className="h-11 text-[10px] font-bold uppercase tracking-widest w-full bg-primary text-white hover:bg-primary/90 mt-4">
           <Save className="h-4 w-4 mr-2" /> Save Who We Are Configuration
         </Button>
       </CardContent>
@@ -1674,7 +1674,7 @@ function RegionalEditor({ initialData, onSave }: { initialData: any, onSave: (da
             </div>
           ))}
         </div>
-        <Button onClick={() => onSave(formData)} className="h-10 text-[10px] font-bold uppercase tracking-widest w-full bg-primary text-black"><Save className="h-4 w-4 mr-2" /> Save Presence Config</Button>
+        <Button onClick={() => onSave(formData)} className="h-10 text-[10px] font-bold uppercase tracking-widest w-full bg-primary text-white hover:bg-primary/90"><Save className="h-4 w-4 mr-2" /> Save Presence Config</Button>
       </CardContent>
     </Card>
   );
@@ -1785,7 +1785,7 @@ function GalleryManager({ photos, loading }: { photos: any, loading: boolean }) 
                 <Input type="number" className="h-9 text-xs" value={height} onChange={e => setHeight(Number(e.target.value))} />
               </div>
             </div>
-            <Button className="w-full h-10 text-[10px] font-bold uppercase tracking-widest bg-primary text-black" disabled={isSubmitting}>
+            <Button className="w-full h-10 text-[10px] font-bold uppercase tracking-widest bg-primary text-white hover:bg-primary/90" disabled={isSubmitting}>
               {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
               {isEditing ? "Save Changes" : "Add Photo"}
             </Button>

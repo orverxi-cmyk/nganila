@@ -399,7 +399,7 @@ export function LoadSentNewslettersModal({
                             currentThumb
                           )
                         }
-                        className="h-8 text-xs font-extrabold bg-primary text-black hover:bg-primary/90 gap-1.5 shrink-0"
+                        className="h-8 text-xs font-extrabold bg-primary text-white hover:bg-primary/90 gap-1.5 shrink-0"
                       >
                         {importingKey === "cloud" ? (
                           <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -458,7 +458,7 @@ export function LoadSentNewslettersModal({
                                   className="h-full w-full object-cover"
                                 />
                                 {isSelected && (
-                                  <div className="absolute top-1 right-1 bg-primary text-black rounded-full p-0.5 shadow-xs">
+                                  <div className="absolute top-1 right-1 bg-primary text-white rounded-full p-0.5 shadow-xs">
                                     <Check className="h-2.5 w-2.5 stroke-[3]" />
                                   </div>
                                 )}
@@ -516,7 +516,7 @@ export function LoadSentNewslettersModal({
                           onClick={() =>
                             handleImportCustomTemplate(tpl.id, tpl.name, compiled, currentThumb)
                           }
-                          className="h-8 text-xs font-extrabold bg-primary text-black hover:bg-primary/90 gap-1.5 shrink-0"
+                          className="h-8 text-xs font-extrabold bg-primary text-white hover:bg-primary/90 gap-1.5 shrink-0"
                         >
                           {importingKey === tpl.id ? (
                             <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -577,7 +577,7 @@ export function LoadSentNewslettersModal({
                                     className="h-full w-full object-cover"
                                   />
                                   {isSelected && (
-                                    <div className="absolute top-1 right-1 bg-primary text-black rounded-full p-0.5 shadow-xs">
+                                    <div className="absolute top-1 right-1 bg-primary text-white rounded-full p-0.5 shadow-xs">
                                       <Check className="h-2.5 w-2.5 stroke-[3]" />
                                     </div>
                                   )}
@@ -730,7 +730,7 @@ export function LoadSentNewslettersModal({
                               className="h-full w-full object-cover"
                             />
                             {isSelected && (
-                              <div className="absolute top-1 right-1 bg-primary text-black rounded-full p-0.5 shadow-xs">
+                              <div className="absolute top-1 right-1 bg-primary text-white rounded-full p-0.5 shadow-xs">
                                 <Check className="h-2.5 w-2.5 stroke-[3]" />
                               </div>
                             )}
@@ -764,7 +764,7 @@ export function LoadSentNewslettersModal({
                 <Button
                   type="submit"
                   disabled={isSubmittingManual}
-                  className="h-9 text-xs font-extrabold bg-primary text-black hover:bg-primary/90 gap-1.5"
+                  className="h-9 text-xs font-extrabold bg-primary text-white hover:bg-primary/90 gap-1.5"
                 >
                   {isSubmittingManual ? (
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />

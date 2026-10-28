@@ -677,7 +677,7 @@ export function SectorAddressBook() {
               <div>
                 <CardTitle className="text-base font-bold flex items-center gap-2">
                   Sector Address Book &amp; Zoho Contacts
-                  <Badge className="bg-primary text-black font-extrabold text-[10px]">
+                  <Badge className="bg-primary text-white font-extrabold text-[10px]">
                     {sectorCounts.all} Total Contacts
                   </Badge>
                 </CardTitle>
@@ -737,7 +737,7 @@ export function SectorAddressBook() {
               <Button
                 size="sm"
                 onClick={() => handleOpenAddRecipient()}
-                className="h-8 text-xs font-bold bg-primary text-black hover:bg-primary/90 gap-1.5 shadow-xs"
+                className="h-8 text-xs font-bold bg-primary text-white hover:bg-primary/90 gap-1.5 shadow-xs"
               >
                 <UserPlus className="h-3.5 w-3.5" /> Add Recipient
               </Button>
@@ -842,7 +842,7 @@ export function SectorAddressBook() {
                 <Button
                   size="sm"
                   onClick={() => handleOpenAddRecipient(selectedSector)}
-                  className="h-7 text-xs font-bold bg-primary text-black hover:bg-primary/90 gap-1.5 shadow-xs"
+                  className="h-7 text-xs font-bold bg-primary text-white hover:bg-primary/90 gap-1.5 shadow-xs"
                 >
                   <UserPlus className="h-3 w-3" /> Add Recipient
                 </Button>
@@ -942,7 +942,7 @@ export function SectorAddressBook() {
                 <Button
                   size="sm"
                   onClick={() => handleOpenAddRecipient(selectedSector !== "all" ? selectedSector : undefined)}
-                  className="h-8 text-xs font-bold bg-primary text-black hover:bg-primary/90 gap-1.5 shadow-xs"
+                  className="h-8 text-xs font-bold bg-primary text-white hover:bg-primary/90 gap-1.5 shadow-xs"
                 >
                   <UserPlus className="h-3.5 w-3.5" />
                   {selectedSector !== "all" ? `Add Recipient to ${getGroupName(selectedSector)}` : "Add Recipient"}
@@ -1330,7 +1330,7 @@ export function SectorAddressBook() {
               <Button
                 type="submit"
                 disabled={isAddingGroup || !newGroupName.trim()}
-                className="text-xs h-9 font-bold bg-primary text-black hover:bg-primary/90 gap-1.5"
+                className="text-xs h-9 font-bold bg-primary text-white hover:bg-primary/90 gap-1.5"
               >
                 {isAddingGroup ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -1369,7 +1369,7 @@ export function SectorAddressBook() {
                   setIsManageGroupsModalOpen(false);
                   setIsAddGroupModalOpen(true);
                 }}
-                className="h-8 text-xs font-bold bg-primary text-black hover:bg-primary/90 gap-1"
+                className="h-8 text-xs font-bold bg-primary text-white hover:bg-primary/90 gap-1"
               >
                 <Plus className="h-3 w-3" /> Add Group
               </Button>
@@ -1692,7 +1692,7 @@ export function SectorAddressBook() {
               <Button
                 type="submit"
                 disabled={isSavingRecipient || !addRecipientEmail.trim()}
-                className="text-xs h-9 font-bold bg-primary text-black hover:bg-primary/90 gap-1.5"
+                className="text-xs h-9 font-bold bg-primary text-white hover:bg-primary/90 gap-1.5"
               >
                 {isSavingRecipient ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -1822,7 +1822,7 @@ export function SectorAddressBook() {
                 <Button
                   type="submit"
                   disabled={isUpdatingRecipient}
-                  className="text-xs h-9 font-bold bg-primary text-black hover:bg-primary/90 gap-1.5"
+                  className="text-xs h-9 font-bold bg-primary text-white hover:bg-primary/90 gap-1.5"
                 >
                   {isUpdatingRecipient ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -2048,7 +2048,7 @@ export function SectorAddressBook() {
               type="button"
               disabled={isMovingGroup}
               onClick={handleExecuteMoveGroup}
-              className="text-xs h-9 font-bold bg-primary text-black hover:bg-primary/90 gap-1.5"
+              className="text-xs h-9 font-bold bg-primary text-white hover:bg-primary/90 gap-1.5"
             >
               {isMovingGroup ? (
                 <Loader2 className="h-4 w-4 animate-spin" />

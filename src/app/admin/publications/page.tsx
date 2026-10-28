@@ -424,7 +424,7 @@ export default function AdminPublicationsPage() {
                 You must possess administrative privileges to manage SANEX publications and newsletters.
               </p>
             </div>
-            <Button asChild className="w-full bg-primary text-black font-bold h-9 text-xs">
+            <Button asChild className="w-full bg-primary text-white hover:bg-primary/90 font-bold h-9 text-xs">
               <Link href="/admin">Return to Admin Login</Link>
             </Button>
           </Card>
@@ -500,7 +500,7 @@ export default function AdminPublicationsPage() {
               <Button
                 size="sm"
                 onClick={handleOpenCreate}
-                className="h-9 text-xs font-extrabold bg-primary text-black hover:bg-primary/90 gap-1.5 shadow-xs"
+                className="h-9 text-xs font-extrabold bg-primary text-white hover:bg-primary/90 gap-1.5 shadow-xs"
               >
                 <Plus className="h-4 w-4" /> Add Publication
               </Button>
@@ -828,7 +828,7 @@ export default function AdminPublicationsPage() {
               <div className="flex items-center justify-center gap-2 flex-wrap">
                 <Button
                   onClick={() => setIsLoadSentModalOpen(true)}
-                  className="bg-primary text-black font-extrabold h-9 text-xs gap-1.5 shadow-xs"
+                  className="bg-primary text-white hover:bg-primary/90 font-extrabold h-9 text-xs gap-1.5 shadow-xs"
                 >
                   <DownloadCloud className="h-4 w-4" /> Load Custom Emails
                 </Button>
@@ -1107,7 +1107,7 @@ export default function AdminPublicationsPage() {
                           />
                           {isSelected && (
                             <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
-                              <span className="bg-primary text-black text-[10px] font-bold px-1.5 py-0.5 rounded shadow-xs flex items-center gap-1">
+                              <span className="bg-primary text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-xs flex items-center gap-1">
                                 <Check className="h-3 w-3 stroke-[3]" /> Selected
                               </span>
                             </div>
@@ -1169,7 +1169,7 @@ export default function AdminPublicationsPage() {
               <Button
                 type="submit"
                 disabled={isSaving}
-                className="h-9 text-xs font-extrabold bg-primary text-black hover:bg-primary/90 gap-1.5"
+                className="h-9 text-xs font-extrabold bg-primary text-white hover:bg-primary/90 gap-1.5"
               >
                 {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
                 <span>{editingPublication ? "Save Changes" : "Publish to Website"}</span>

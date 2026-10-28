@@ -23,7 +23,7 @@ export default function OfflinePage() {
         <p className="text-muted-foreground max-w-md mb-8">
           It looks like you've lost your internet connection. SANEX services are still accessible once you're back online.
         </p>
-        <Button onClick={handleRetry} className="bg-primary text-black font-bold h-12 px-8 rounded-full gap-2">
+        <Button onClick={handleRetry} className="bg-primary text-white hover:bg-primary/90 font-bold h-12 px-8 rounded-full gap-2">
           <RefreshCw className="h-4 w-4" /> Try Reconnecting
         </Button>
       </main>

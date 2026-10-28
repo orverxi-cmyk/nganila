@@ -1040,7 +1040,7 @@ export function ZohoEmailHub() {
                     <Button
                       type="submit"
                       disabled={isSending || parsedRecipients.valid.length === 0}
-                      className="w-full sm:w-auto h-10 px-6 text-xs font-extrabold bg-primary text-black hover:bg-primary/90 gap-2 shadow-sm"
+                      className="w-full sm:w-auto h-10 px-6 text-xs font-extrabold bg-primary text-white hover:bg-primary/90 gap-2 shadow-sm"
                     >
                       {isSending ? (
                         <>
@@ -1141,7 +1141,7 @@ export function ZohoEmailHub() {
                     <div className="p-4 rounded-xl border border-primary/40 bg-primary/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <Badge className="bg-primary text-black font-extrabold text-[10px]">
+                          <Badge className="bg-primary text-white font-extrabold text-[10px]">
                             {customMessage ? "Custom Design Ready" : "Draft"}
                           </Badge>
                           <span className="text-xs font-extrabold text-slate-800">
@@ -1493,7 +1493,7 @@ export function ZohoEmailHub() {
                       )}
                       {ctaText && ctaUrl && (
                         <div className="pt-4 text-center">
-                          <span className="inline-block bg-[#8DB833] text-black font-extrabold text-xs px-6 py-2.5 rounded-lg shadow-xs">
+                          <span className="inline-block bg-primary text-white font-extrabold text-xs px-6 py-2.5 rounded-lg shadow-xs">
                             {ctaText}
                           </span>
                         </div>
@@ -1803,7 +1803,7 @@ export function ZohoEmailHub() {
                     }
                   }}
                   disabled={isImporting}
-                  className="h-8 text-xs font-bold gap-1.5 bg-[#8DB833] text-black hover:bg-[#8DB833]/90 shadow-xs"
+                  className="h-8 text-xs font-bold gap-1.5 bg-primary text-white hover:bg-primary/90 shadow-xs"
                 >
                   {isImporting ? (
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -1856,7 +1856,7 @@ export function ZohoEmailHub() {
             {/* Quick Transfer from Live Website */}
             <div className="p-4 rounded-xl border border-emerald-200 bg-emerald-50/40 space-y-3">
               <div className="flex items-center gap-2">
-                <Badge className="bg-[#8DB833] text-black font-extrabold text-[10px]">
+                <Badge className="bg-primary text-white font-extrabold text-[10px]">
                   Instant Transfer
                 </Badge>
                 <h4 className="font-extrabold text-slate-900 m-0">
@@ -1974,7 +1974,7 @@ export function ZohoEmailHub() {
                         setIsImporting(false);
                       }
                     }}
-                    className="h-8 text-xs font-extrabold bg-[#8DB833] text-black hover:bg-[#8DB833]/90 gap-1.5 shadow-xs"
+                    className="h-8 text-xs font-extrabold bg-primary text-white hover:bg-primary/90 gap-1.5 shadow-xs"
                   >
                     {isImporting ? (
                       <Loader2 className="h-3.5 w-3.5 animate-spin" />

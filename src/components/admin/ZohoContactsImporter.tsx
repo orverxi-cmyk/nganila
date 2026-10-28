@@ -483,7 +483,7 @@ info@campus.edu.rw, bursar@school.rw"
                 <Button
                   type="submit"
                   disabled={isSaving || !singleEmail.trim()}
-                  className="w-full sm:w-auto h-9 text-xs font-bold bg-primary text-black"
+                  className="w-full sm:w-auto h-9 text-xs font-bold bg-primary text-white hover:bg-primary/90"
                 >
                   {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Check className="h-4 w-4 mr-1" />}
                   Save Contact to {getGroupName(targetSector)}
@@ -499,7 +499,7 @@ info@campus.edu.rw, bursar@school.rw"
             <div className="flex items-center justify-between">
               <div className="text-xs font-bold text-foreground flex items-center gap-2">
                 <span>Preview Ready Contacts:</span>
-                <Badge className="bg-primary text-black text-[10px] font-bold">
+                <Badge className="bg-primary text-white text-[10px] font-bold">
                   {parsedList.length} ready to save
                 </Badge>
               </div>
@@ -552,7 +552,7 @@ info@campus.edu.rw, bursar@school.rw"
                 type="button"
                 onClick={handleSaveBatch}
                 disabled={isSaving}
-                className="h-9 text-xs font-extrabold bg-primary text-black gap-1.5"
+                className="h-9 text-xs font-extrabold bg-primary text-white hover:bg-primary/90 gap-1.5"
               >
                 {isSaving ? (
                   <>

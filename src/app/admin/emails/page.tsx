@@ -63,7 +63,7 @@ export default function AdminEmailCenterPage() {
                 You must possess administrative privileges to dispatch emails on behalf of SANEX Company.
               </p>
             </div>
-            <Button asChild className="w-full bg-primary text-black font-bold h-9 text-xs">
+            <Button asChild className="w-full bg-primary text-white hover:bg-primary/90 font-bold h-9 text-xs">
               <Link href="/admin">Return to Admin Login</Link>
             </Button>
           </Card>
