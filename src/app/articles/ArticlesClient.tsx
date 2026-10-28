@@ -32,16 +32,18 @@ export default function ArticlesClient() {
   }, [db]);
 
   const { data: articles, loading } = useCollection(articlesQuery);
+  const [mounted, setMounted] = React.useState(false);
   const [timedOut, setTimedOut] = React.useState(false);
 
   React.useEffect(() => {
+    setMounted(true);
     const timer = setTimeout(() => {
       setTimedOut(true);
     }, 3000);
     return () => clearTimeout(timer);
   }, []);
 
-  const showLoading = loading && !timedOut && (!articles || articles.length === 0);
+  const showLoading = !mounted || (loading && !timedOut && (!articles || articles.length === 0));
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -54,7 +56,7 @@ export default function ArticlesClient() {
             </div>
             <h1 className="text-4xl lg:text-5xl font-bold font-headline">Impact & Case Studies</h1>
             <p className="text-muted-foreground max-w-2xl mx-auto text-sm lg:text-base">
-              Read about how SANEX is transforming waste management and protecting the environment across Rwanda.
+              Read about how Nganila Co LTD is transforming waste management and protecting the environment across Rwanda.
             </p>
           </div>
 

@@ -27,16 +27,18 @@ export default function GalleryPage() {
   }, [db]);
 
   const { data: photos, loading } = useCollection(galleryQuery);
+  const [mounted, setMounted] = useState(false);
   const [timedOut, setTimedOut] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const timer = setTimeout(() => {
       setTimedOut(true);
     }, 3000);
     return () => clearTimeout(timer);
   }, []);
 
-  const showLoading = loading && !timedOut && (!photos || photos.length === 0);
+  const showLoading = !mounted || (loading && !timedOut && (!photos || photos.length === 0));
 
   const handlePrevious = useCallback((e?: React.MouseEvent) => {
     e?.stopPropagation();

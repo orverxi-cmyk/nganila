@@ -41,6 +41,7 @@ export default function PublicationsClient() {
   const isAuthorized =
     Boolean(user?.email) &&
     (user?.email?.toLowerCase() === "orverxi@gmail.com" ||
+      user?.email?.toLowerCase() === "tharushyamagara@gmail.com" ||
       user?.email?.toLowerCase() === "sanexcompany@gmail.com");
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -91,7 +92,7 @@ export default function PublicationsClient() {
   }, [publications]);
 
   const handleCopyLink = (pub: Publication) => {
-    const origin = typeof window !== "undefined" ? window.location.origin : "https://sanex.rw";
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://nganila.com";
     const fullUrl = getPublicationUrl(pub, origin);
     if (navigator.clipboard) {
       navigator.clipboard.writeText(fullUrl);
@@ -104,7 +105,7 @@ export default function PublicationsClient() {
     platform: "twitter" | "linkedin" | "facebook" | "whatsapp",
     pub: Publication
   ) => {
-    const origin = typeof window !== "undefined" ? window.location.origin : "https://sanex.rw";
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://nganila.com";
     const fullUrl = getPublicationUrl(pub, origin);
     const links = getSocialShareLinks(pub.title, fullUrl, pub.excerpt);
     const targetUrl = links[platform];
