@@ -4,12 +4,12 @@ import { collection, getDocs } from 'firebase/firestore';
 import { getArticleUrl } from '@/lib/slug';
 
 /**
- * Generates the sitemap for the SANEX Company website.
+ * Generates the sitemap for Nganila Co LTD website.
  * Next.js automatically maps this to /sitemap.xml
  * Dynamically includes individual articles with their SEO friendly URLs.
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://sanex.rw';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://nganila.rw';
 
   const staticRoutes: MetadataRoute.Sitemap = [
     {

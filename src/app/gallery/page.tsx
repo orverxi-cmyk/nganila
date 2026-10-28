@@ -66,7 +66,7 @@ export default function GalleryPage() {
   }, [selectedIndex, handlePrevious, handleNext]);
 
   return (
-    <div className="min-h-screen flex flex-col font-arial">
+    <div className="min-h-screen flex flex-col font-sans">
       <Navbar />
       <main className="flex-grow py-5 bg-background">
         <div className="container mx-auto px-4 md:px-6">

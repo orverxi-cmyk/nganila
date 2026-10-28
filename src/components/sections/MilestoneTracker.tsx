@@ -39,7 +39,7 @@ export function MilestoneTracker() {
   };
 
   const getIcon = (name: string) => {
-    const iconClass = "h-5 w-5 text-black";
+    const iconClass = "h-5 w-5 text-white";
     const normalized = name?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'clock';
     switch (normalized) {
       case 'clock': return <Clock className={iconClass} />;
@@ -50,10 +50,10 @@ export function MilestoneTracker() {
   };
 
   return (
-    <section className="py-0 bg-background relative group">
+    <section className="py-12 lg:py-16 bg-white relative group">
       {isAdmin && (
-        <div className="absolute inset-0 z-20 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-          <Button asChild className="pointer-events-auto bg-black text-white hover:bg-black/80 gap-2 font-bold text-[14px]">
+        <div className="absolute inset-0 z-20 bg-sky-600/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+          <Button asChild className="pointer-events-auto bg-slate-900 text-white hover:bg-slate-800 gap-2 font-bold text-[14px] rounded-full shadow-lg">
             <Link href="/admin/content?tab=milestones">
               <Edit3 className="h-4 w-4" /> Edit Who We Are
             </Link>
@@ -61,63 +61,81 @@ export function MilestoneTracker() {
         </div>
       )}
       <div className="container mx-auto px-4 md:px-16">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 pt-0">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-stretch">
           {/* Left Column: Who We Are Story */}
-          <div className="space-y-6">
+          <div className="space-y-6 lg:col-span-7 flex flex-col justify-between">
             <div className="space-y-4">
-              <h2 className="text-[16px] font-bold text-black uppercase tracking-widest m-0">{content.title}</h2>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-sky-50 text-sky-700 border border-sky-200">
+                <Shield className="h-3.5 w-3.5" />
+                <span>Verified ASSERWA Sanitation Partner</span>
+              </div>
+              <h2 className="text-[26px] sm:text-[32px] font-extrabold text-slate-900 tracking-tight leading-tight">
+                {content.title}
+              </h2>
               <div 
-                className="text-[14px] font-normal text-muted-foreground leading-relaxed space-y-4 prose prose-sm max-w-none"
+                className="text-[15px] text-slate-600 leading-relaxed space-y-4 prose prose-sm max-w-none"
                 dangerouslySetInnerHTML={{ __html: content.description }}
               />
             </div>
 
-            <div className="space-y-4">
-              <div className="p-5 rounded-xl bg-white border border-border border-l-4 border-l-primary shadow-sm">
-                <div className="flex items-center gap-2 mb-1 text-black">
-                  <TrendingUp className="h-4 w-4 text-primary" />
-                  <h3 className="text-[15px] font-bold">Our Vision</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+              <div className="p-5 rounded-2xl bg-gradient-to-br from-sky-50/70 to-slate-50 border border-sky-100 border-l-4 border-l-sky-500 shadow-sm">
+                <div className="flex items-center gap-2 mb-2">
+                  <TrendingUp className="h-4 w-4 text-sky-600" />
+                  <h3 className="text-[16px] font-bold text-slate-900">Our Vision</h3>
                 </div>
-                <p className="text-[14px] font-normal text-muted-foreground leading-relaxed">
-                  To be Rwanda's leading provider of sustainable liquid waste management solutions, fostering a cleaner, healthier, and more sustainable environment for future generations.
+                <p className="text-[13px] text-slate-600 leading-relaxed">
+                  To be Rwanda's leading provider of sustainable liquid waste management, fostering cleaner communities across Kigali.
                 </p>
               </div>
 
-              <div className="p-5 rounded-xl bg-white border border-border border-l-4 border-l-primary shadow-sm">
-                <div className="flex items-center gap-2 mb-1 text-black">
-                  <Shield className="h-4 w-4 text-primary" />
-                  <h3 className="text-[15px] font-bold">Our Mission</h3>
+              <div className="p-5 rounded-2xl bg-gradient-to-br from-sky-50/70 to-slate-50 border border-sky-100 border-l-4 border-l-cyan-500 shadow-sm">
+                <div className="flex items-center gap-2 mb-2">
+                  <Shield className="h-4 w-4 text-cyan-600" />
+                  <h3 className="text-[16px] font-bold text-slate-900">Our Mission</h3>
                 </div>
-                <p className="text-[14px] font-normal text-muted-foreground leading-relaxed">
-                  To deliver efficient, eco-friendly, and cost-effective liquid waste management services that empower communities, support businesses, and promote environmental conservation.
+                <p className="text-[13px] text-slate-600 leading-relaxed">
+                  To deliver dependable, hygienic, and compliant septic evacuation (kuvidura) and decentralized treatment operations.
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Right Column: Evolution Timeline */}
-          <div className="bg-white border border-border rounded-2xl p-6 lg:p-8 shadow-sm h-full">
-            <h2 className="text-[16px] font-bold text-black text-center mb-10">Our Evolution</h2>
-            
-            <div className="relative space-y-12">
-              {/* Vertical line */}
-              <div className="absolute left-[20px] top-4 bottom-4 w-px bg-border z-0" />
+          {/* Right Column: Evolution & Operational Highlights */}
+          <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 text-white rounded-3xl p-7 lg:p-9 shadow-xl shadow-slate-900/10 lg:col-span-5 flex flex-col justify-between border border-slate-800">
+            <div>
+              <div className="flex items-center justify-between pb-6 mb-6 border-b border-slate-800">
+                <h3 className="text-[18px] font-bold text-white tracking-tight">Our Evolution &amp; Fleet</h3>
+                <span className="text-[11px] font-bold text-sky-400 uppercase tracking-wider bg-sky-950/80 border border-sky-800 px-2.5 py-1 rounded-full">
+                  Verified ASSERWA
+                </span>
+              </div>
               
-              {content.items.map((milestone: any, i: number) => (
-                <div key={i} className="relative z-10 flex gap-6 items-start">
-                  <div className="flex-shrink-0 h-10 w-10 rounded-full bg-primary flex items-center justify-center shadow-md border-2 border-white">
-                    {getIcon(milestone.icon)}
+              <div className="relative space-y-8">
+                {/* Vertical line */}
+                <div className="absolute left-[19px] top-3 bottom-3 w-0.5 bg-slate-800 z-0" />
+                
+                {content.items.map((milestone: any, i: number) => (
+                  <div key={i} className="relative z-10 flex gap-5 items-start">
+                    <div className="flex-shrink-0 h-10 w-10 rounded-xl bg-gradient-to-br from-sky-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-sky-500/20 border border-sky-400/30">
+                      {getIcon(milestone.icon)}
+                    </div>
+                    <div className="flex-grow pt-0.5">
+                      <div className="text-[12px] font-bold uppercase tracking-wider text-sky-400 mb-0.5">{milestone.year}</div>
+                      <h4 className="text-[16px] font-bold text-white mb-1">{milestone.title}</h4>
+                      <div 
+                        className="text-[13px] text-slate-300 leading-relaxed"
+                        dangerouslySetInnerHTML={{ __html: milestone.description }}
+                      />
+                    </div>
                   </div>
-                  <div className="flex-grow pt-1">
-                    <div className="text-[14px] font-bold text-primary mb-1">{milestone.year}</div>
-                    <h4 className="text-[16px] font-bold text-black mb-1">{milestone.title}</h4>
-                    <div 
-                      className="text-[14px] font-normal text-muted-foreground leading-relaxed"
-                      dangerouslySetInnerHTML={{ __html: milestone.description }}
-                    />
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
+            </div>
+
+            <div className="pt-6 mt-6 border-t border-slate-800/80 text-[12px] text-slate-400 flex items-center justify-between">
+              <span>📍 Kicukiro, Kigali, Rwanda</span>
+              <span className="text-sky-400 font-semibold">Fleet of 5 Tankers</span>
             </div>
           </div>
         </div>

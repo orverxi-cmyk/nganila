@@ -6,34 +6,34 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 0 0% 0%;
+    --foreground: 222 47% 11%;
     
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 0%;
+    --card-foreground: 222 47% 11%;
     
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 0%;
+    --popover-foreground: 222 47% 11%;
     
-    --primary: 79 51% 55%;
-    --primary-foreground: 0 0% 0%;
+    --primary: 199 89% 48%;
+    --primary-foreground: 0 0% 100%;
     
-    --secondary: 0 0% 0%;
-    --secondary-foreground: 79 51% 55%;
+    --secondary: 222 47% 11%;
+    --secondary-foreground: 199 89% 65%;
     
-    --muted: 79 20% 92%;
-    --muted-foreground: 0 0% 30%;
+    --muted: 204 45% 96%;
+    --muted-foreground: 215 16% 47%;
     
-    --accent: 79 51% 55%;
-    --accent-foreground: 0 0% 0%;
+    --accent: 189 94% 43%;
+    --accent-foreground: 0 0% 100%;
     
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
-    --ring: 79 51% 55%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 199 89% 48%;
     
-    --radius: 0.75rem;
+    --radius: 1rem;
   }
 }
 
@@ -42,12 +42,12 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-arial text-[14px] font-normal leading-relaxed;
+    @apply bg-background text-foreground font-sans text-[15px] font-normal leading-relaxed antialiased;
   }
   h1, h2, h3, h4, h5, h6 {
-    @apply font-arial font-bold text-[16px];
+    @apply font-sans font-bold tracking-tight text-slate-900;
   }
   p {
-    @apply text-[14px] font-normal;
+    @apply text-[15px] leading-relaxed;
   }
 }

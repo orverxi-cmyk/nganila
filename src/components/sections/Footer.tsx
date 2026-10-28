@@ -106,114 +106,166 @@ export function Footer() {
   };
 
   return (
-    <footer id="contact" className="bg-black text-white py-5">
-      <div className="container mx-auto px-4 md:px-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8 text-center md:text-left">
+    <footer id="contact" className="bg-slate-950 text-slate-100 pt-14 pb-8 border-t border-slate-800/80 relative overflow-hidden">
+      {/* Subtle background ambient glow */}
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-sky-600/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 right-10 w-80 h-80 bg-cyan-600/5 rounded-full blur-3xl pointer-events-none" />
+
+      <div className="container mx-auto px-4 md:px-16 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12 text-left">
+          
+          {/* Brand & ASSERWA Profile */}
           <div className="space-y-4">
-            <h4 className="text-[16px] font-bold uppercase tracking-wider text-primary">Links</h4>
-            <ul className="space-y-2 text-[14px] font-normal">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-sky-500 to-cyan-500 flex items-center justify-center text-white font-extrabold text-lg shadow-md shadow-sky-500/20">
+                N
+              </div>
+              <div>
+                <span className="font-extrabold text-base tracking-tight text-white block">NGANILA CO LTD</span>
+                <span className="text-[11px] text-sky-400 font-semibold tracking-wider uppercase block">Sanitation & Liquid Waste</span>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Professional waste management and sanitation company based in Kicukiro, Kigali. Operating a specialized fleet of 5 vacuum tankers for residential, commercial, and industrial liquid waste evacuation.
+            </p>
+
+            <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 text-xs space-y-1">
+              <div className="flex items-center gap-2 text-sky-300 font-semibold">
+                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span>Verified ASSERWA Member</span>
+              </div>
+              <p className="text-[11px] text-slate-400">
+                Forum of Sewage Emptiers in Rwanda
+              </p>
+            </div>
+          </div>
+
+          {/* Quick Links */}
+          <div className="space-y-4">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-sky-400">Quick Navigation</h4>
+            <ul className="space-y-2.5 text-xs font-medium">
               {navLinks.map((link: any) => (
                 <li key={link.name}>
-                  <Link href={link.href} className="text-white/70 hover:text-primary transition-colors">
-                    {link.name}
+                  <Link href={link.href} className="text-slate-300 hover:text-sky-400 transition-colors flex items-center gap-2 group">
+                    <span className="h-1 w-1 rounded-full bg-slate-600 group-hover:bg-sky-400 transition-colors" />
+                    <span>{link.name}</span>
                   </Link>
                 </li>
               ))}
+              <li>
+                <Link href="/book" className="text-sky-400 hover:text-sky-300 transition-colors flex items-center gap-2 font-semibold">
+                  <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />
+                  <span>Book an Exhauster Truck</span>
+                </Link>
+              </li>
             </ul>
           </div>
+
+          {/* Core Services */}
           <div className="space-y-4">
-            <h4 className="text-[16px] font-bold uppercase tracking-wider text-primary">Services</h4>
-            <ul className="space-y-2 text-[14px] font-normal text-white/70">
-              <li>Liquid Waste Evacuation</li>
-              <li>Wastewater Transportation</li>
-              <li>Decentralized Wastewater Treatment</li>
-              <li>Verified ASSERWA Member</li>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-sky-400">Core Services</h4>
+            <ul className="space-y-2.5 text-xs text-slate-300">
+              <li className="flex items-start gap-2">
+                <span className="text-sky-400 mt-0.5">•</span>
+                <span>Septic Tank Emptying & Pit Latrine Draining (Kuvidura)</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-sky-400 mt-0.5">•</span>
+                <span>Wastewater Transportation (Fleet of 5 Tankers)</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-sky-400 mt-0.5">•</span>
+                <span>Decentralized Wastewater Treatment (DWTS)</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-sky-400 mt-0.5">•</span>
+                <span>Commercial Liquid Waste Management Plans</span>
+              </li>
             </ul>
           </div>
+
+          {/* Dispatch & Contact */}
           <div className="space-y-4">
-            <h4 className="text-[16px] font-bold uppercase tracking-wider text-primary">Contact</h4>
-            <ul className="space-y-2 text-[14px] font-normal text-white/70">
-              <li className="flex gap-2 justify-center md:justify-start items-center">
-                <MapPin className="h-3.5 w-3.5 text-primary shrink-0" /> Kicukiro, Kigali, Rwanda
+            <h4 className="text-xs font-bold uppercase tracking-wider text-sky-400">Dispatch & Contact</h4>
+            <ul className="space-y-3 text-xs text-slate-300">
+              <li className="flex gap-2.5 items-start">
+                <MapPin className="h-4 w-4 text-sky-400 shrink-0 mt-0.5" />
+                <div>
+                  <div className="font-semibold text-white">Strategic Operating Hub</div>
+                  <div className="text-slate-400 text-[11px]">Kicukiro, Kigali, Rwanda</div>
+                </div>
               </li>
               {phones.map((phoneItem, idx) => (
-                <li key={`phone-${idx}`} className="flex gap-2 justify-center md:justify-start items-center">
-                  <Phone className="h-3.5 w-3.5 text-primary shrink-0" />
-                  <a href={`tel:${phoneItem.replace(/[^0-9+]/g, '')}`} className="hover:text-primary transition-colors">{phoneItem}</a>
+                <li key={`phone-${idx}`} className="flex gap-2.5 items-center">
+                  <Phone className="h-4 w-4 text-sky-400 shrink-0" />
+                  <a href={`tel:${phoneItem.replace(/[^0-9+]/g, '')}`} className="font-semibold text-white hover:text-sky-400 transition-colors">{phoneItem}</a>
                 </li>
               ))}
               {emails.map((emailItem, idx) => (
-                <li key={`email-${idx}`} className="flex gap-2 justify-center md:justify-start items-center">
-                  <Mail className="h-3.5 w-3.5 text-primary shrink-0" />
-                  <a href={`mailto:${emailItem}`} className="hover:text-primary transition-colors break-all">{emailItem}</a>
+                <li key={`email-${idx}`} className="flex gap-2.5 items-center">
+                  <Mail className="h-4 w-4 text-sky-400 shrink-0" />
+                  <a href={`mailto:${emailItem}`} className="text-slate-300 hover:text-sky-400 transition-colors break-all">{emailItem}</a>
                 </li>
               ))}
             </ul>
-          </div>
-          <div className="space-y-4">
-            <h4 className="text-[16px] font-bold uppercase tracking-wider text-primary">Newsletter</h4>
-            <p className="text-[14px] text-white/70">
-              Subscribe to get the latest news and updates directly to your inbox.
-            </p>
-            <div className="flex flex-col gap-2 items-center md:items-start">
+
+            <div className="pt-2">
               <a
                 href="https://eepurl.com/2gm-Vewnrw"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center bg-primary text-black font-semibold px-4 py-2 rounded text-sm hover:bg-primary/90 transition-colors"
+                className="inline-flex items-center justify-center w-full bg-gradient-to-r from-sky-500 to-cyan-500 hover:from-sky-600 hover:to-cyan-600 text-white font-semibold px-4 py-2.5 rounded-xl text-xs transition-all shadow-md shadow-sky-500/20"
               >
-                Subscribe to Newsletter
+                Subscribe to Updates
               </a>
-              <Link
-                href="/publications"
-                className="text-xs text-primary/80 hover:text-primary transition-colors underline"
-              >
-                Browse Sent Newsletters &rarr;
-              </Link>
             </div>
           </div>
         </div>
         
-        <div className="border-t border-white/10 pt-5 flex flex-col md:flex-row items-center justify-between gap-4 text-[14px] font-normal text-white/50">
+        {/* Bottom Bar */}
+        <div className="border-t border-slate-800/80 pt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-400">
           <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-center sm:text-left">
-            <span>© {new Date().getFullYear()}. Nganila Co LTD. All rights reserved.</span>
-            <span className="hidden sm:inline text-white/30">•</span>
-            <Link href="/privacy" className="hover:text-primary transition-colors text-white/70 underline sm:no-underline">
+            <span>© {new Date().getFullYear()} Nganila Co LTD. All rights reserved.</span>
+            <span className="hidden sm:inline text-slate-700">•</span>
+            <span className="text-slate-500">Verified ASSERWA Member</span>
+            <span className="hidden sm:inline text-slate-700">•</span>
+            <Link href="/privacy" className="hover:text-sky-400 transition-colors">
               Privacy Policy
             </Link>
-            <span className="hidden sm:inline text-white/30">•</span>
-            <Link href="/terms" className="hover:text-primary transition-colors text-white/70 underline sm:no-underline">
+            <span className="hidden sm:inline text-slate-700">•</span>
+            <Link href="/terms" className="hover:text-sky-400 transition-colors">
               Terms of Service
             </Link>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-2.5">
             {socials.twitter && (
-              <a href={socials.twitter} target="_blank" rel="noopener noreferrer" className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary hover:text-black transition-all text-white" title="Twitter / X">
+              <a href={socials.twitter} target="_blank" rel="noopener noreferrer" className="h-8 w-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center hover:bg-sky-500 hover:text-white transition-all text-slate-300" title="Twitter / X">
                 <Twitter className="h-4 w-4" />
               </a>
             )}
             {socials.linkedin && (
-              <a href={socials.linkedin} target="_blank" rel="noopener noreferrer" className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary hover:text-black transition-all text-white" title="LinkedIn">
+              <a href={socials.linkedin} target="_blank" rel="noopener noreferrer" className="h-8 w-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center hover:bg-sky-500 hover:text-white transition-all text-slate-300" title="LinkedIn">
                 <Linkedin className="h-4 w-4" />
               </a>
             )}
             {socials.facebook && (
-              <a href={socials.facebook} target="_blank" rel="noopener noreferrer" className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary hover:text-black transition-all text-white" title="Facebook">
+              <a href={socials.facebook} target="_blank" rel="noopener noreferrer" className="h-8 w-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center hover:bg-sky-500 hover:text-white transition-all text-slate-300" title="Facebook">
                 <Facebook className="h-4 w-4" />
               </a>
             )}
             {socials.instagram && (
-              <a href={socials.instagram} target="_blank" rel="noopener noreferrer" className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary hover:text-black transition-all text-white" title="Instagram">
+              <a href={socials.instagram} target="_blank" rel="noopener noreferrer" className="h-8 w-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center hover:bg-sky-500 hover:text-white transition-all text-slate-300" title="Instagram">
                 <Instagram className="h-4 w-4" />
               </a>
             )}
             {socials.whatsapp && (
-              <a href={socials.whatsapp.startsWith('http') ? socials.whatsapp : `https://wa.me/${socials.whatsapp.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary hover:text-black transition-all text-white" title="WhatsApp">
+              <a href={socials.whatsapp.startsWith('http') ? socials.whatsapp : `https://wa.me/${socials.whatsapp.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="h-8 w-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center hover:bg-emerald-500 hover:text-white transition-all text-slate-300" title="WhatsApp">
                 <MessageCircle className="h-4 w-4" />
               </a>
             )}
             {socials.youtube && (
-              <a href={socials.youtube} target="_blank" rel="noopener noreferrer" className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary hover:text-black transition-all text-white" title="YouTube">
+              <a href={socials.youtube} target="_blank" rel="noopener noreferrer" className="h-8 w-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all text-slate-300" title="YouTube">
                 <Youtube className="h-4 w-4" />
               </a>
             )}
@@ -222,77 +274,77 @@ export function Footer() {
       </div>
 
       <Dialog open={isNewsletterModalOpen} onOpenChange={setIsNewsletterModalOpen}>
-        <DialogContent className="bg-zinc-950 text-white border-zinc-800 sm:max-w-[425px]">
+        <DialogContent className="bg-slate-950 text-white border-slate-800 sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold text-white flex items-center gap-2">
-              <Mail className="h-5 w-5 text-primary" />
-              Complete Newsletter Subscription
+              <Mail className="h-5 w-5 text-sky-400" />
+              Subscribe to Nganila Updates
             </DialogTitle>
-            <DialogDescription className="text-zinc-400 text-sm">
-              Please enter your details to complete subscribing to the SANEX newsletter.
+            <DialogDescription className="text-slate-400 text-sm">
+              Please enter your details to receive updates and sanitation insights from Nganila Co LTD.
             </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleSubscribe} className="space-y-4 mt-2">
             <div className="space-y-1">
-              <label className="text-xs text-zinc-400 font-medium">Email Address *</label>
+              <label className="text-xs text-slate-400 font-medium">Email Address *</label>
               <input
                 type="email"
                 required
                 value={newsletterEmail}
                 onChange={(e) => setNewsletterEmail(e.target.value)}
                 placeholder="your.email@example.com"
-                className="w-full bg-zinc-900 border border-zinc-800 rounded-md px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="text-xs text-zinc-400 font-medium">First Name</label>
+                <label className="text-xs text-slate-400 font-medium">First Name</label>
                 <input
                   type="text"
                   value={newsletterFirstName}
                   onChange={(e) => setNewsletterFirstName(e.target.value)}
                   placeholder="First Name"
-                  className="w-full bg-zinc-900 border border-zinc-800 rounded-md px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                  className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-xs text-zinc-400 font-medium">Last Name</label>
+                <label className="text-xs text-slate-400 font-medium">Last Name</label>
                 <input
                   type="text"
                   value={newsletterLastName}
                   onChange={(e) => setNewsletterLastName(e.target.value)}
                   placeholder="Last Name"
-                  className="w-full bg-zinc-900 border border-zinc-800 rounded-md px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                  className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
                 />
               </div>
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs text-zinc-400 font-medium">Address</label>
+              <label className="text-xs text-slate-400 font-medium">Address</label>
               <input
                 type="text"
                 value={newsletterAddress}
                 onChange={(e) => setNewsletterAddress(e.target.value)}
-                placeholder="e.g. Kigali, Rwanda"
-                className="w-full bg-zinc-900 border border-zinc-800 rounded-md px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                placeholder="e.g. Kicukiro, Kigali"
+                className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs text-zinc-400 font-medium">Phone Number</label>
+              <label className="text-xs text-slate-400 font-medium">Phone Number</label>
               <input
                 type="tel"
                 value={newsletterPhone}
                 onChange={(e) => setNewsletterPhone(e.target.value)}
                 placeholder="+250 788 000 000"
-                className="w-full bg-zinc-900 border border-zinc-800 rounded-md px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
               />
             </div>
 
             {newsletterMessage && (
-              <div className={`p-3 rounded-md text-xs border ${
+              <div className={`p-3 rounded-lg text-xs border ${
                 newsletterStatus === "success" 
                   ? "bg-emerald-950/50 text-emerald-400 border-emerald-800/50" 
                   : "bg-red-950/50 text-red-400 border-red-800/50"
@@ -305,14 +357,14 @@ export function Footer() {
               <button
                 type="button"
                 onClick={() => setIsNewsletterModalOpen(false)}
-                className="px-4 py-2 text-xs font-medium text-zinc-400 hover:text-white transition-colors"
+                className="px-4 py-2 text-xs font-medium text-slate-400 hover:text-white transition-colors"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={newsletterStatus === "loading" || newsletterStatus === "success"}
-                className="bg-primary text-black font-semibold px-5 py-2 rounded-md text-sm hover:bg-primary/90 transition-colors disabled:opacity-50"
+                className="bg-gradient-to-r from-sky-500 to-cyan-500 hover:from-sky-600 hover:to-cyan-600 text-white font-semibold px-5 py-2 rounded-lg text-sm transition-all disabled:opacity-50"
               >
                 {newsletterStatus === "loading" ? "Subscribing..." : newsletterStatus === "success" ? "Subscribed!" : "Confirm Subscription"}
               </button>
@@ -325,10 +377,10 @@ export function Footer() {
         {pathname !== "/book" && (
           <Link
             href="/book"
-            aria-label="Book a Service"
-            className="md:hidden pointer-events-auto flex flex-col items-center gap-2 bg-black text-primary border border-primary/50 font-bold px-2 py-3 rounded-l-md shadow-2xl hover:bg-black/90 transition-all group"
+            aria-label="Book an Exhauster"
+            className="md:hidden pointer-events-auto flex flex-col items-center gap-2 bg-slate-900 text-sky-400 border border-sky-500/40 font-bold px-2.5 py-3 rounded-l-xl shadow-2xl hover:bg-slate-800 transition-all group"
           >
-            <span className="[writing-mode:vertical-rl] rotate-180 text-xs font-bold tracking-widest uppercase">Book Service</span>
+            <span className="[writing-mode:vertical-rl] rotate-180 text-[11px] font-bold tracking-widest uppercase">Book Truck</span>
             <Calendar className="h-4 w-4 shrink-0 -rotate-90 transition-transform group-hover:scale-110" />
           </Link>
         )}
@@ -336,10 +388,10 @@ export function Footer() {
           href="https://eepurl.com/2gm-Vewnrw"
           target="_blank"
           rel="noopener noreferrer"
-          aria-label="Subscribe to Newsletter"
-          className="pointer-events-auto flex flex-col items-center gap-2 bg-primary text-black font-bold px-2 py-3.5 rounded-l-md shadow-2xl hover:bg-primary/90 transition-all group"
+          aria-label="Subscribe to Updates"
+          className="pointer-events-auto flex flex-col items-center gap-2 bg-gradient-to-b from-sky-500 to-cyan-600 text-white font-bold px-2.5 py-3.5 rounded-l-xl shadow-2xl hover:brightness-110 transition-all group"
         >
-          <span className="[writing-mode:vertical-rl] rotate-180 text-xs font-bold tracking-widest uppercase">Subscribe</span>
+          <span className="[writing-mode:vertical-rl] rotate-180 text-[11px] font-bold tracking-widest uppercase">Subscribe</span>
           <Mail className="h-4 w-4 shrink-0 -rotate-90 transition-transform group-hover:scale-110" />
         </a>
       </div>

@@ -36,18 +36,18 @@ export function VideoHighlight() {
   const embedUrl = isYouTube ? getYouTubeEmbedUrl(content.videoUrl) : content.videoUrl;
 
   return (
-    <section id="highlights" className="py-[20px] bg-transparent scroll-mt-24">
+    <section id="highlights" className="py-12 lg:py-16 bg-white scroll-mt-24">
       <span id="operational-highlights" className="scroll-mt-24 absolute -top-24 pointer-events-none" />
       <div className="container mx-auto px-4 md:px-16">
-        <div className="flex flex-col items-center text-center mb-5 space-y-1">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-secondary/10 text-secondary text-[10px] font-bold uppercase tracking-widest">
-            <Activity className="h-2.5 w-2.5" /> Operational Highlights
+        <div className="flex flex-col items-center text-center mb-8 space-y-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-50 text-sky-700 text-[11px] font-bold uppercase tracking-wider border border-sky-200">
+            <Activity className="h-3 w-3 text-sky-600" /> Operational Footage
           </div>
-          <h2 className="text-base font-bold font-headline">{content.title}</h2>
-          <p className="text-[14px] font-normal text-muted-foreground max-w-2xl">{content.description}</p>
+          <h2 className="text-[26px] sm:text-[32px] font-extrabold text-slate-900 tracking-tight">{content.title}</h2>
+          <p className="text-[15px] text-slate-600 max-w-2xl leading-relaxed">{content.description}</p>
         </div>
 
-        <div className="max-w-4xl mx-auto aspect-video rounded-xl overflow-hidden shadow-lg border-2 border-white bg-black relative">
+        <div className="max-w-4xl mx-auto aspect-video rounded-3xl overflow-hidden shadow-2xl shadow-slate-900/10 border border-slate-200 bg-slate-950 relative">
           {isYouTube ? (
             <iframe
               src={embedUrl}

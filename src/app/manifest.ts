@@ -3,13 +3,13 @@ import { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'SANEX Company Ltd',
-    short_name: 'SANEX',
-    description: 'Leading Liquid Waste Management Solutions in Rwanda',
+    name: 'Nganila Co LTD',
+    short_name: 'Nganila',
+    description: 'Professional Waste Management & Sanitation Company in Kicukiro, Kigali, Rwanda — Verified Member of ASSERWA',
     start_url: '/',
     display: 'standalone',
-    background_color: '#ffffff',
-    theme_color: '#a0c452',
+    background_color: '#0f172a',
+    theme_color: '#0284c7',
     icons: [
       {
         src: '/favicon.ico',
