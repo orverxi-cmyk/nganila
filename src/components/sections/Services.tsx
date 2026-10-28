@@ -21,38 +21,9 @@ export function Services() {
   const servicesRef = React.useMemo(() => (db ? doc(db, "settings", "services") : null), [db]);
   const { data: servicesData, loading } = useDoc(servicesRef);
 
-  const defaultServices = [
-    { 
-      title: "Decentralized Wastewater Treatment", 
-      description: "Managing localized wastewater systems and treatment units for residential, commercial, and institutional clients.", 
-      imageUrl: "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1779722491089_B25A3102.jpg?alt=media", 
-      icon: "droplets" 
-    },
-    { 
-      title: "Liquid Waste Evacuation", 
-      description: "Providing professional septic tank emptying, pit latrine draining (kuvidura), and vacuum tanker services across Kigali and Rwanda.", 
-      imageUrl: "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1779723894783_vlcsnap-2025-04-19-16h01m39s409.png?alt=media", 
-      icon: "truck" 
-    },
-    { 
-      title: "Wastewater Transportation", 
-      description: "Operating a dedicated fleet of 5 modern vacuum tankers to transport liquid waste safely and responsibly to treatment facilities.", 
-      imageUrl: "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media", 
-      icon: "truck" 
-    },
-    { 
-      title: "Verified ASSERWA Member", 
-      description: "Proud member of ASSERWA (the Forum of Sewage Emptiers in Rwanda), certified for professional standards and public hygiene.", 
-      imageUrl: "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1779722938429_WhatsApp%20Image%202025-04-19%20at%2020.13.41.jpeg?alt=media", 
-      icon: "shield" 
-    }
-  ];
-
-  const content = {
-    title: servicesData?.title || "Our Core Services",
-    subtitle: servicesData?.subtitle || "Nganira Company LTD offers professional, reliable waste management and sanitation services in Kicukiro, Kigali, and across Rwanda.",
-    items: servicesData?.items?.length ? servicesData.items : defaultServices
-  };
+  const items: any[] = Array.isArray(servicesData?.items) ? servicesData.items : [];
+  const title = servicesData?.title || "";
+  const subtitle = servicesData?.subtitle || "";
 
   const getIcon = (name: string) => {
     const iconClass = "h-5 w-5 text-[#636679]";
@@ -83,6 +54,20 @@ export function Services() {
     }
   };
 
+  if (items.length === 0 && !title && !subtitle) {
+    if (isAdmin) {
+      return (
+        <section id="services" className="py-12 bg-[#f6f6f8] text-center">
+          <p className="text-sm text-muted-foreground mb-3">Services section has no content yet.</p>
+          <Button asChild className="bg-[#636679] text-white hover:bg-[#545667] text-xs font-bold">
+            <Link href="/admin/content?tab=services"><Edit3 className="mr-1.5 h-4 w-4" /> Edit Services</Link>
+          </Button>
+        </section>
+      );
+    }
+    return null;
+  }
+
   return (
     <section id="services" className="py-14 lg:py-20 bg-[#f6f6f8] relative group">
       {isAdmin && (
@@ -97,22 +82,28 @@ export function Services() {
 
       <div className="container mx-auto px-4 md:px-16">
         {/* Section Header */}
-        <div className="text-center mb-12 sm:mb-16 space-y-3">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[12px] font-bold uppercase tracking-wider bg-[#d9eaa4]/40 text-[#383944] border border-[#d9eaa4] shadow-xs">
-            <ShieldCheck className="h-4 w-4 text-[#636679]" />
-            <span>Certified ASSERWA Operations · Kicukiro, Kigali</span>
+        {(title || subtitle) && (
+          <div className="text-center mb-12 sm:mb-16 space-y-3">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[12px] font-bold uppercase tracking-wider bg-[#d9eaa4]/40 text-[#383944] border border-[#d9eaa4] shadow-xs">
+              <ShieldCheck className="h-4 w-4 text-[#636679]" />
+              <span>Certified ASSERWA Operations · Kicukiro, Kigali</span>
+            </div>
+            {title && (
+              <h2 className="text-[28px] sm:text-[34px] lg:text-[38px] font-extrabold text-[#26272e] tracking-tight">
+                {title}
+              </h2>
+            )}
+            {subtitle && (
+              <p className="text-[15px] sm:text-[16px] text-[#636679] max-w-[760px] mx-auto leading-relaxed">
+                {subtitle}
+              </p>
+            )}
           </div>
-          <h2 className="text-[28px] sm:text-[34px] lg:text-[38px] font-extrabold text-[#26272e] tracking-tight">
-            {content.title}
-          </h2>
-          <p className="text-[15px] sm:text-[16px] text-[#636679] max-w-[760px] mx-auto leading-relaxed">
-            {content.subtitle}
-          </p>
-        </div>
+        )}
 
         {/* Side-by-Side Operational Featurettes */}
         <div className="space-y-10 lg:space-y-14">
-          {content.items.map((service: any, i: number) => {
+          {items.map((service: any, i: number) => {
             const isReversed = i % 2 === 1;
             return (
               <div 

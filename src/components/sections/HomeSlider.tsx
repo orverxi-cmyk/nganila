@@ -27,28 +27,7 @@ export function HomeSlider() {
   const sliderRef = React.useMemo(() => (db ? doc(db, "settings", "slider") : null), [db]);
   const { data: sliderData } = useDoc(sliderRef);
 
-  const defaultItems = [
-    { 
-      title: "Nganira Company LTD", 
-      description: "<p>Professional waste management and sanitation company in Kicukiro, Kigali, Rwanda. Verified member of ASSERWA operating a fleet of 5 vacuum tankers.</p>", 
-      imageUrl: "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1779714862617_SANEX_VIDEO_higlights%20-%20Copy.mp4?alt=media",
-      width: 2000,
-      height: 1080,
-      link: "/services",
-      buttonText: "Our Core Services"
-    },
-    { 
-      title: "Liquid Waste Evacuation & Transport", 
-      description: "<p>Professional septic tank emptying, pit latrine draining (kuvidura), and vacuum tanker transportation with rapid dispatch across Kigali.</p>", 
-      imageUrl: "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media",
-      width: 1200,
-      height: 600,
-      link: "/book",
-      buttonText: "Book an Exhauster Truck"
-    }
-  ];
-
-  // Immediate local backup to prevent reverting to defaults during localhost refresh / initial load
+  // Immediate local backup to prevent flicker during localhost refresh
   const [localBackup, setLocalBackup] = React.useState<any[] | null>(null);
 
   React.useEffect(() => {
@@ -56,7 +35,7 @@ export function HomeSlider() {
       const stored = localStorage.getItem("nganila_setting_slider");
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed?.items) && parsed.items.length > 0) {
+        if (Array.isArray(parsed?.items)) {
           setLocalBackup(parsed.items);
         }
       }
@@ -65,16 +44,17 @@ export function HomeSlider() {
 
   // Sync to local storage whenever fresh data arrives from Firestore
   React.useEffect(() => {
-    if (sliderData?.items && Array.isArray(sliderData.items) && sliderData.items.length > 0) {
+    if (sliderData?.items && Array.isArray(sliderData.items)) {
       try {
         localStorage.setItem("nganila_setting_slider", JSON.stringify({ items: sliderData.items }));
       } catch {}
     }
   }, [sliderData]);
 
-  const items = (sliderData?.items && sliderData.items.length > 0)
-    ? sliderData.items
-    : (localBackup || defaultItems);
+  // Purely Firestore driven: no hardcoded defaults
+  const items = Array.isArray(sliderData?.items) 
+    ? sliderData.items 
+    : (localBackup || []);
 
   const isVideo = (url: string) => {
     if (!url) return false;
@@ -128,6 +108,20 @@ export function HomeSlider() {
     window.addEventListener("hashchange", handleAnchorNavigation);
     return () => window.removeEventListener("hashchange", handleAnchorNavigation);
   }, [carouselApi, items]);
+
+  if (items.length === 0) {
+    if (isAdmin) {
+      return (
+        <section id="slider" className="w-full py-16 bg-[#26272e] flex flex-col items-center justify-center text-center px-4">
+          <p className="text-slate-300 text-sm mb-3">Homepage Slider is empty. Add your slides in Content Management.</p>
+          <Button asChild className="bg-[#d9eaa4] text-[#26272e] hover:bg-[#cbe090] font-bold text-xs">
+            <Link href="/admin/content?tab=slider"><Edit3 className="mr-1.5 h-4 w-4" /> Add Slides</Link>
+          </Button>
+        </section>
+      );
+    }
+    return null;
+  }
 
   return (
     <section id="slider" className="w-full overflow-hidden relative group bg-[#26272e] scroll-mt-24">

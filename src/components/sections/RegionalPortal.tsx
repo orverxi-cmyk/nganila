@@ -17,17 +17,23 @@ export function RegionalPortal() {
   const regionalRef = React.useMemo(() => (db ? doc(db, "settings", "regional") : null), [db]);
   const { data: regionalData } = useDoc(regionalRef);
 
-  const defaultRegions = [
-    { name: "Kigali", status: "Operational Headquarters", capacity: "Full Fleet" },
-    { name: "Musanze", status: "Strategic Hub", capacity: "Service Center" },
-    { name: "Huye", status: "Planned Expansion", capacity: "Regional Office" }
-  ];
+  const items: any[] = Array.isArray(regionalData?.items) ? regionalData.items : [];
+  const title = regionalData?.title || "";
+  const description = regionalData?.description || "";
 
-  const content = {
-    title: regionalData?.title || "Our Presence",
-    description: regionalData?.description || "Establishing operational offices in key towns across Rwanda...",
-    items: regionalData?.items?.length ? regionalData.items : defaultRegions
-  };
+  if (items.length === 0 && !title && !description) {
+    if (isAdmin) {
+      return (
+        <div className="p-6 border border-dashed rounded-2xl text-center">
+          <p className="text-xs text-muted-foreground mb-2">Our Presence section has no items yet.</p>
+          <Button asChild size="sm" className="bg-[#636679] text-white hover:bg-[#545667] text-[10px] font-bold">
+            <Link href="/admin/content?tab=regional"><Edit3 className="mr-1 h-3 w-3" /> Edit Our Presence</Link>
+          </Button>
+        </div>
+      );
+    }
+    return null;
+  }
 
   return (
     <div className="relative group">
@@ -41,11 +47,13 @@ export function RegionalPortal() {
         </div>
       )}
       
-      <div className="space-y-2 mb-8">
-        <span className="text-xs font-bold uppercase tracking-wider text-[#636679]">Operational Reach</span>
-        <h2 className="text-xl font-extrabold text-[#26272e] tracking-tight">{content.title}</h2>
-        <p className="text-xs text-[#636679] leading-relaxed">{content.description}</p>
-      </div>
+      {(title || description) && (
+        <div className="space-y-2 mb-8">
+          <span className="text-xs font-bold uppercase tracking-wider text-[#636679]">Operational Reach</span>
+          {title && <h2 className="text-xl font-extrabold text-[#26272e] tracking-tight">{title}</h2>}
+          {description && <p className="text-xs text-[#636679] leading-relaxed">{description}</p>}
+        </div>
+      )}
 
       <div className="space-y-4">
         {/* Nationwide Status Card */}
@@ -63,7 +71,7 @@ export function RegionalPortal() {
 
         {/* Vertical Stack of Regions */}
         <div className="space-y-3">
-          {content.items.map((region: any, i: number) => (
+          {items.map((region: any, i: number) => (
             <div key={i} className="bg-white p-4 rounded-2xl border border-[#d9dadf] shadow-xs hover:border-[#636679]/40 transition-all group/card">
               <div className="flex justify-between items-center mb-3">
                 <h3 className="text-sm font-bold text-[#26272e] group-hover/card:text-[#636679] transition-colors">{region.name}</h3>

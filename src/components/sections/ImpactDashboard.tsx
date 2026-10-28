@@ -17,37 +17,24 @@ export function ImpactDashboard() {
   const impactRef = React.useMemo(() => (db ? doc(db, "settings", "impact") : null), [db]);
   const { data: impactData } = useDoc(impactRef);
 
-  const defaultImpacts = [
-    { 
-      title: "Environmental Preservation", 
-      points: [
-        "<p>We have successfully treated and managed thousands of cubic meters of liquid waste, preventing harmful pollutants from contaminating natural ecosystems.</p>",
-        "<p>Our decentralized wastewater treatment systems (DWTS) have contributed to cleaner water sources, promoting biodiversity and reducing environmental degradation.</p>"
-      ]
-    },
-    { 
-      title: "Public Health Improvement", 
-      points: [
-        "<p>By reducing the risks associated with poor liquid waste management, we have helped to mitigate waterborne diseases, improving the overall health and well-being of the communities we serve.</p>",
-        "<p>Our awareness campaigns on waste management have empowered local populations to adopt safer practices, fostering healthier living.</p>"
-      ]
-    },
-    { 
-      title: "Job Creation & Community", 
-      points: [
-        "<p>Nganira Company LTD directly creates employment for professional drivers, sanitation operators, and technical staff in Kigali.</p>",
-        "<p>We work closely with local authorities and communities to raise sanitation awareness and prevent unhygienic waste dumping.</p>"
-      ]
-    }
-  ];
+  const items: any[] = Array.isArray(impactData?.items) ? impactData.items : [];
+  const title = impactData?.title || "";
+  const subtitle = impactData?.subtitle || "";
+  const stats: any[] = Array.isArray(impactData?.stats) ? impactData.stats : [];
 
-  const content = {
-    title: impactData?.title || "Our Environmental & Community Impact",
-    subtitle: impactData?.subtitle || "Operating from Kicukiro, Kigali, Nganira Company LTD provides responsible sanitation solutions that protect water sources and keep Rwandan communities clean.",
-    items: (impactData?.items && impactData.items.length > 0 && impactData.items[0]?.points?.length > 1) 
-      ? impactData.items 
-      : defaultImpacts
-  };
+  if (items.length === 0 && !title && !subtitle) {
+    if (isAdmin) {
+      return (
+        <section className="py-12 bg-white text-center border-t border-[#d9dadf]">
+          <p className="text-sm text-muted-foreground mb-3">Impact section has no content yet.</p>
+          <Button asChild className="bg-[#636679] text-white hover:bg-[#545667] text-xs font-bold">
+            <Link href="/admin/content?tab=impact"><Edit3 className="mr-1.5 h-4 w-4" /> Edit Impact</Link>
+          </Button>
+        </section>
+      );
+    }
+    return null;
+  }
 
   return (
     <section className="py-14 lg:py-20 bg-gradient-to-b from-white via-[#f6f6f8] to-white relative group overflow-hidden border-t border-[#d9dadf]">
@@ -63,55 +50,45 @@ export function ImpactDashboard() {
 
       <div className="container mx-auto px-4 md:px-16 relative z-10">
         {/* Section Header */}
-        <div className="max-w-3xl mx-auto text-center mb-12 space-y-3">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-[#d9eaa4]/40 text-[#383944] border border-[#d9eaa4]">
-            <Droplets className="h-3.5 w-3.5 text-[#636679]" />
-            <span>Sustainable Environmental Stewardship</span>
+        {(title || subtitle) && (
+          <div className="max-w-3xl mx-auto text-center mb-12 space-y-3">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-[#d9eaa4]/40 text-[#383944] border border-[#d9eaa4]">
+              <Droplets className="h-3.5 w-3.5 text-[#636679]" />
+              <span>Sustainable Environmental Stewardship</span>
+            </div>
+            {title && (
+              <h2 className="text-[28px] sm:text-[34px] lg:text-[38px] font-extrabold text-[#26272e] tracking-tight leading-tight">
+                {title}
+              </h2>
+            )}
+            {subtitle && (
+              <p className="text-[15px] sm:text-[16px] text-[#636679] leading-relaxed">
+                {subtitle}
+              </p>
+            )}
           </div>
-          <h2 className="text-[28px] sm:text-[34px] lg:text-[38px] font-extrabold text-[#26272e] tracking-tight leading-tight">
-            {content.title}
-          </h2>
-          <p className="text-[15px] sm:text-[16px] text-[#636679] leading-relaxed">
-            {content.subtitle}
-          </p>
-        </div>
+        )}
 
-        {/* Live Metrics Row */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-10">
-          <div className="bg-white rounded-2xl p-6 border border-[#d9dadf] shadow-md flex items-center gap-4">
-            <div className="h-12 w-12 rounded-xl bg-[#d9eaa4]/30 border border-[#d9eaa4] flex items-center justify-center text-[#636679] shrink-0">
-              <Truck className="h-6 w-6" />
-            </div>
-            <div>
-              <div className="text-[24px] font-extrabold text-[#26272e]">5 Tankers</div>
-              <div className="text-[12px] text-[#636679] font-medium">Dedicated Active Fleet</div>
-            </div>
+        {/* Live Metrics Row (from Firestore if present) */}
+        {stats.length > 0 && (
+          <div className={`grid grid-cols-1 sm:grid-cols-${Math.min(stats.length, 4)} gap-5 mb-10`}>
+            {stats.map((stat: any, si: number) => (
+              <div key={si} className="bg-white rounded-2xl p-6 border border-[#d9dadf] shadow-md flex items-center gap-4">
+                <div className="h-12 w-12 rounded-xl bg-[#d9eaa4]/30 border border-[#d9eaa4] flex items-center justify-center text-[#636679] shrink-0">
+                  <Truck className="h-6 w-6" />
+                </div>
+                <div>
+                  <div className="text-[24px] font-extrabold text-[#26272e]">{stat.value}</div>
+                  <div className="text-[12px] text-[#636679] font-medium">{stat.label}</div>
+                </div>
+              </div>
+            ))}
           </div>
-
-          <div className="bg-white rounded-2xl p-6 border border-[#d9dadf] shadow-md flex items-center gap-4">
-            <div className="h-12 w-12 rounded-xl bg-[#d9eaa4]/30 border border-[#d9eaa4] flex items-center justify-center text-[#636679] shrink-0">
-              <ShieldCheck className="h-6 w-6" />
-            </div>
-            <div>
-              <div className="text-[24px] font-extrabold text-[#26272e]">100% Certified</div>
-              <div className="text-[12px] text-[#636679] font-medium">Verified ASSERWA Member</div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-6 border border-[#d9dadf] shadow-md flex items-center gap-4">
-            <div className="h-12 w-12 rounded-xl bg-[#d9eaa4]/30 border border-[#d9eaa4] flex items-center justify-center text-[#636679] shrink-0">
-              <MapPin className="h-6 w-6" />
-            </div>
-            <div>
-              <div className="text-[24px] font-extrabold text-[#26272e]">Kicukiro, Kigali</div>
-              <div className="text-[12px] text-[#636679] font-medium">Centralized Strategic Hub</div>
-            </div>
-          </div>
-        </div>
+        )}
 
         {/* Impact Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {content.items.map((impact: any, i: number) => (
+          {items.map((impact: any, i: number) => (
             <div 
               key={i} 
               className="p-8 rounded-3xl bg-white text-slate-800 border border-[#d9dadf] hover:border-[#636679]/40 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 shadow-md flex flex-col space-y-4 relative group/card"

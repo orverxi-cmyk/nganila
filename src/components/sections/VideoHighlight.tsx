@@ -12,8 +12,8 @@ export function VideoHighlight() {
   const { data: videoData, loading } = useDoc(videoRef);
 
   const content = {
-    title: videoData?.title || "Nganira Company LTD in Action",
-    description: videoData?.description || "Watch our specialized fleet of 5 vacuum tankers and localized wastewater systems delivering professional sanitation services in Kigali and across Rwanda.",
+    title: videoData?.title || "",
+    description: videoData?.description || "",
     videoUrl: videoData?.videoUrl || ""
   };
 

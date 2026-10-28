@@ -2,7 +2,6 @@
 
 import React from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Droplets, Menu, X, Calendar, Globe, Phone, MapPin, ShieldCheck, Truck } from "lucide-react";
@@ -43,12 +42,20 @@ export function Navbar({ isAdmin }: NavbarProps = {}) {
     { name: "Contact", href: "/contact" },
   ];
 
-  const navLinks = generalData?.navLinks?.length ? generalData.navLinks : defaultNavLinks;
-  const siteName = generalData?.siteName || "Nganira Company LTD";
-  const logoUrl = generalData?.logoUrl;
-  const logoWidth = generalData?.logoWidth || 160;
-  const logoHeight = generalData?.logoHeight || 40;
-  const logoSpacing = generalData?.logoSpacing ?? 8;
+  const navLinks = Array.isArray(generalData?.navLinks) ? generalData.navLinks : defaultNavLinks;
+
+  const phones: string[] = React.useMemo(() => {
+    if (Array.isArray(generalData?.phones) && generalData.phones.length > 0) {
+      const valid = generalData.phones.filter((p: any) => typeof p === "string" && p.trim() !== "");
+      if (valid.length > 0) return valid;
+    }
+    if (typeof generalData?.phone === "string" && generalData.phone.trim()) {
+      return [generalData.phone.trim()];
+    }
+    return [];
+  }, [generalData]);
+
+  const locationText = generalData?.address || generalData?.location || "Kicukiro, Kigali, Rwanda";
 
   return (
     <header className="sticky top-0 z-50 w-full">
@@ -59,7 +66,7 @@ export function Navbar({ isAdmin }: NavbarProps = {}) {
             <div className="flex items-center gap-4 flex-wrap">
               <span className="inline-flex items-center gap-1.5 text-white/90">
                 <MapPin className="h-3.5 w-3.5 text-[#d9eaa4] shrink-0" />
-                <span>Kicukiro, Kigali, Rwanda</span>
+                <span>{locationText}</span>
               </span>
               <span className="hidden sm:inline-block text-white/40">•</span>
               <span className="inline-flex items-center gap-1.5 text-[#d9eaa4] font-semibold">
@@ -73,22 +80,28 @@ export function Navbar({ isAdmin }: NavbarProps = {}) {
               </span>
             </div>
 
-            <div className="flex items-center gap-4">
-              <a 
-                href="tel:+250788450120" 
-                className="inline-flex items-center gap-1.5 text-[#d9eaa4] hover:text-white transition-colors font-semibold"
-              >
-                <Phone className="h-3.5 w-3.5" />
-                <span>+250 788 450 120</span>
-              </a>
-              <span className="text-white/40 hidden sm:inline">|</span>
-              <a 
-                href="tel:+250788668855" 
-                className="hidden sm:inline-flex items-center gap-1.5 text-white/90 hover:text-[#d9eaa4] transition-colors"
-              >
-                <span>+250 788 668 855</span>
-              </a>
-            </div>
+            {phones.length > 0 && (
+              <div className="flex items-center gap-4">
+                <a 
+                  href={`tel:${phones[0].replace(/[^0-9+]/g, '')}`} 
+                  className="inline-flex items-center gap-1.5 text-[#d9eaa4] hover:text-white transition-colors font-semibold"
+                >
+                  <Phone className="h-3.5 w-3.5" />
+                  <span>{phones[0]}</span>
+                </a>
+                {phones[1] && (
+                  <>
+                    <span className="text-white/40 hidden sm:inline">|</span>
+                    <a 
+                      href={`tel:${phones[1].replace(/[^0-9+]/g, '')}`} 
+                      className="hidden sm:inline-flex items-center gap-1.5 text-white/90 hover:text-[#d9eaa4] transition-colors"
+                    >
+                      <span>{phones[1]}</span>
+                    </a>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -105,19 +118,10 @@ export function Navbar({ isAdmin }: NavbarProps = {}) {
         <div className={isAdminPage ? "w-full px-4 lg:px-8" : "container mx-auto px-4 md:px-16"}>
           <div className="flex items-center justify-between">
             {/* Logo + Brand Name */}
-            <Link href={isAdminPage ? "/admin" : "/"} className="flex items-center" style={{ gap: `${logoSpacing}px` }}>
-              {logoUrl ? (
-                <div
-                  className={cn("relative overflow-hidden shrink-0 transition-all duration-300", scrolled ? "opacity-90" : "opacity-100")}
-                  style={{ width: logoWidth, height: scrolled ? logoHeight * 0.85 : logoHeight }}
-                >
-                  <Image src={logoUrl} alt={siteName} width={logoWidth} height={logoHeight} className="object-contain w-full h-full" />
-                </div>
-              ) : (
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#636679] text-[#d9eaa4] shadow-md shadow-[#636679]/20">
-                  <Droplets className="h-6 w-6" />
-                </div>
-              )}
+            <Link href={isAdminPage ? "/admin" : "/"} className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#636679] text-[#d9eaa4] shadow-md shadow-[#636679]/20 border border-[#d9eaa4]/30 shrink-0">
+                <Droplets className="h-6 w-6" />
+              </div>
               <div className="flex flex-col">
                 <div className="flex items-center gap-1.5">
                   <span className="font-extrabold text-[17px] tracking-tight text-[#636679]">

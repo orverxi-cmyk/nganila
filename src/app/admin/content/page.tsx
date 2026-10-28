@@ -602,48 +602,16 @@ function ArticleManager({ articles, loading }: { articles: any, loading: boolean
   );
 }
 
-const DEFAULT_SLIDER_ITEMS = [
-  { 
-    title: "Nganira Company LTD", 
-    description: "<p>Professional waste management and sanitation company in Kicukiro, Kigali, Rwanda. Verified member of ASSERWA operating a fleet of 5 vacuum tankers.</p>", 
-    imageUrl: "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1779714862617_SANEX_VIDEO_higlights%20-%20Copy.mp4?alt=media",
-    width: 2000,
-    height: 1080,
-    link: "/services",
-    buttonText: "Our Core Services"
-  },
-  { 
-    title: "Liquid Waste Evacuation & Transport", 
-    description: "<p>Professional septic tank emptying, pit latrine draining (kuvidura), and vacuum tanker transportation with rapid dispatch across Kigali.</p>", 
-    imageUrl: "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media",
-    width: 1200,
-    height: 600,
-    link: "/book",
-    buttonText: "Book an Exhauster Truck"
-  }
-];
-
 function SliderEditor({ initialData, onSave }: { initialData: any, onSave: (data: any) => void }) {
   const [items, setItems] = React.useState<any[]>(() => {
-    if (initialData?.items && Array.isArray(initialData.items) && initialData.items.length > 0) {
+    if (Array.isArray(initialData?.items)) {
       return initialData.items;
     }
-    if (typeof window !== "undefined") {
-      try {
-        const local = localStorage.getItem("nganila_setting_slider");
-        if (local) {
-          const parsed = JSON.parse(local);
-          if (Array.isArray(parsed?.items) && parsed.items.length > 0) {
-            return parsed.items;
-          }
-        }
-      } catch {}
-    }
-    return DEFAULT_SLIDER_ITEMS;
+    return [];
   });
 
   React.useEffect(() => {
-    if (initialData?.items && Array.isArray(initialData.items) && initialData.items.length > 0) {
+    if (Array.isArray(initialData?.items)) {
       setItems(initialData.items);
     }
   }, [initialData]);
@@ -699,39 +667,41 @@ function SliderEditor({ initialData, onSave }: { initialData: any, onSave: (data
   );
 }
 
-function parseArrayField(arr: any, fallbackStr: any, defaultValue: string): string[] {
-  if (Array.isArray(arr) && arr.length > 0) {
+function parseArrayField(arr: any, fallbackStr: any, defaultValue: string = ""): string[] {
+  if (Array.isArray(arr)) {
     const filtered = arr.filter((x: any) => typeof x === "string");
-    if (filtered.length > 0) return filtered;
+    return filtered;
   }
   if (typeof fallbackStr === "string" && fallbackStr.trim()) {
     return [fallbackStr.trim()];
   }
-  return [defaultValue];
+  return defaultValue ? [defaultValue] : [];
 }
 
 function GeneralEditor({ initialData, onSave }: { initialData: any, onSave: (data: any) => void }) {
   const [formData, setFormData] = React.useState({ 
-    siteName: initialData?.siteName || "Nganira Company LTD", 
+    siteName: initialData?.siteName || "", 
+    description: initialData?.description || "",
     logoUrl: initialData?.logoUrl || "", 
     logoWidth: initialData?.logoWidth || 160, 
     logoHeight: initialData?.logoHeight || 40, 
     logoSpacing: initialData?.logoSpacing ?? 8, 
-    phones: parseArrayField(initialData?.phones, initialData?.phone, "+250 788 840 000"), 
-    emails: parseArrayField(initialData?.emails, initialData?.email, "info@nganira.rw"),
+    phones: parseArrayField(initialData?.phones, initialData?.phone, ""), 
+    emails: parseArrayField(initialData?.emails, initialData?.email, ""),
     socials: initialData?.socials || { twitter: "", linkedin: "", facebook: "", instagram: "", whatsapp: "", youtube: "" }
   });
   
   React.useEffect(() => { 
     if (initialData) {
       setFormData({
-        siteName: initialData.siteName || "Nganira Company LTD",
+        siteName: initialData.siteName || "",
+        description: initialData.description || "",
         logoUrl: initialData.logoUrl || "",
         logoWidth: initialData.logoWidth || 160,
         logoHeight: initialData.logoHeight || 40,
         logoSpacing: initialData.logoSpacing ?? 8,
-        phones: parseArrayField(initialData.phones, initialData.phone, "+250 788 840 000"),
-        emails: parseArrayField(initialData.emails, initialData.email, "info@nganira.rw"),
+        phones: parseArrayField(initialData.phones, initialData.phone, ""),
+        emails: parseArrayField(initialData.emails, initialData.email, ""),
         socials: initialData.socials || { twitter: "", linkedin: "", facebook: "", instagram: "", whatsapp: "", youtube: "" }
       });
     }
@@ -848,6 +818,10 @@ function GeneralEditor({ initialData, onSave }: { initialData: any, onSave: (dat
               <Input className="h-9 text-xs" value={formData.siteName} onChange={e => setFormData({...formData, siteName: e.target.value})} />
             </div>
             <MediaPicker label="Company Logo" value={formData.logoUrl} onChange={(url) => setFormData({...formData, logoUrl: url})} />
+            <div className="space-y-1 md:col-span-2">
+              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Company Tagline / Brief Description</Label>
+              <Input className="h-9 text-xs" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="e.g. Professional waste management and sanitation company in Kigali, Rwanda" />
+            </div>
           </div>
           
           <div className="grid grid-cols-3 gap-4">
@@ -1202,13 +1176,26 @@ function ServicesEditor({ initialData, onSave }: { initialData: any, onSave: (da
 }
 
 function ImpactEditor({ initialData, onSave }: { initialData: any, onSave: (data: any) => void }) {
-  const [formData, setFormData] = React.useState(initialData || { items: [] });
-  React.useEffect(() => { if (initialData) setFormData(initialData); }, [initialData]);
+  const [formData, setFormData] = React.useState({
+    title: initialData?.title || "",
+    subtitle: initialData?.subtitle || "",
+    items: Array.isArray(initialData?.items) ? initialData.items : []
+  });
+
+  React.useEffect(() => {
+    if (initialData) {
+      setFormData({
+        title: initialData.title || "",
+        subtitle: initialData.subtitle || "",
+        items: Array.isArray(initialData.items) ? initialData.items : []
+      });
+    }
+  }, [initialData]);
 
   const addItem = () => {
     setFormData({
       ...formData,
-      items: [...formData.items, { title: "New Impact", icon: "sparkles", points: ["<p>Describe impact point here.</p>"] }]
+      items: [...formData.items, { title: "", icon: "sparkles", points: [""] }]
     });
   };
 
@@ -1235,6 +1222,28 @@ function ImpactEditor({ initialData, onSave }: { initialData: any, onSave: (data
         </Button>
       </CardHeader>
       <CardContent className="space-y-5">
+        <div className="space-y-4 p-4 border rounded-xl bg-primary/5">
+          <div className="space-y-1">
+            <Label className="text-[10px] font-bold uppercase text-muted-foreground">Section Title</Label>
+            <Input 
+              className="h-9 text-sm font-bold" 
+              value={formData.title} 
+              onChange={e => setFormData({...formData, title: e.target.value})} 
+              placeholder="e.g. Our Environmental & Community Impact"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-[10px] font-bold uppercase text-muted-foreground">Section Subtitle / Tagline</Label>
+            <Textarea 
+              className="text-xs" 
+              rows={2}
+              value={formData.subtitle} 
+              onChange={e => setFormData({...formData, subtitle: e.target.value})} 
+              placeholder="Subtitle describing the impact"
+            />
+          </div>
+        </div>
+
         <div className="space-y-6">
           {formData.items.map((item: any, i: number) => (
             <div key={i} className="p-4 border rounded-xl border-primary/20 bg-muted/5 relative group">
@@ -1291,18 +1300,22 @@ function ImpactEditor({ initialData, onSave }: { initialData: any, onSave: (data
 
 function MilestonesEditor({ initialData, onSave }: { initialData: any, onSave: (data: any) => void }) {
   const [formData, setFormData] = React.useState({ 
-    title: initialData?.title || "Who We Are", 
+    title: initialData?.title || "", 
     description: initialData?.description || "",
-    items: initialData?.items || [] 
+    vision: initialData?.vision || "",
+    mission: initialData?.mission || "",
+    items: Array.isArray(initialData?.items) ? initialData.items : [] 
   });
 
   React.useEffect(() => { 
     if (initialData) {
       setFormData({ 
-        title: initialData.title || "Who We Are",
+        title: initialData.title || "",
         description: initialData.description || "",
-        items: initialData.items || [] 
-  });
+        vision: initialData.vision || "",
+        mission: initialData.mission || "",
+        items: Array.isArray(initialData.items) ? initialData.items : [] 
+      });
     }
   }, [initialData]);
   
@@ -1350,6 +1363,28 @@ function MilestonesEditor({ initialData, onSave }: { initialData: any, onSave: (
             value={formData.description} 
             onChange={html => setFormData({...formData, description: html})} 
           />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Our Vision</Label>
+              <Textarea 
+                className="text-xs" 
+                rows={3}
+                value={formData.vision} 
+                onChange={e => setFormData({...formData, vision: e.target.value})} 
+                placeholder="Vision statement"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Our Mission</Label>
+              <Textarea 
+                className="text-xs" 
+                rows={3}
+                value={formData.mission} 
+                onChange={e => setFormData({...formData, mission: e.target.value})} 
+                placeholder="Mission statement"
+              />
+            </div>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 gap-5">

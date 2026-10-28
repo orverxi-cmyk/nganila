@@ -7,8 +7,20 @@ import { Footer } from "@/components/sections/Footer";
 import { MilestoneTracker } from "@/components/sections/MilestoneTracker";
 import { Highlights } from "@/components/sections/Highlights";
 import { RegionalPortal } from "@/components/sections/RegionalPortal";
+import { useDoc, useFirestore } from "@/firebase";
+import { doc } from "firebase/firestore";
 
 export default function AboutPage() {
+  const db = useFirestore();
+  const generalRef = React.useMemo(() => (db ? doc(db, "settings", "general") : null), [db]);
+  const milestonesRef = React.useMemo(() => (db ? doc(db, "settings", "milestones") : null), [db]);
+  const { data: generalData } = useDoc(generalRef);
+  const { data: milestonesData } = useDoc(milestonesRef);
+
+  const siteName = generalData?.siteName || "Nganira Company LTD";
+  const title = milestonesData?.title || `About ${siteName}`;
+  const subtitle = generalData?.description || "";
+
   return (
     <div className="min-h-screen flex flex-col font-sans">
       <Navbar />
@@ -17,12 +29,14 @@ export default function AboutPage() {
           <div className="container mx-auto px-4 md:px-16 text-center">
             <div className="inline-flex items-center gap-2 px-3.5 py-1 bg-[#d9eaa4]/20 border border-[#d9eaa4]/40 rounded-full text-xs font-semibold text-[#d9eaa4] mb-3">
               <span className="h-2 w-2 rounded-full bg-[#d9eaa4] animate-pulse" />
-              <span>Verified ASSERWA Member · Strategic Hub in Kicukiro</span>
+              <span>Verified ASSERWA Member</span>
             </div>
-            <h1 className="text-2xl md:text-4xl font-extrabold text-white tracking-tight">About Nganira Company LTD</h1>
-            <p className="mt-3 text-slate-200 max-w-2xl mx-auto text-sm md:text-base leading-relaxed">
-              Professional waste management and sanitation company operating in Kicukiro, Kigali, Rwanda. Operating a specialized fleet of 5 vacuum tankers for residential and commercial sanitation.
-            </p>
+            <h1 className="text-2xl md:text-4xl font-extrabold text-white tracking-tight">{title}</h1>
+            {subtitle && (
+              <p className="mt-3 text-slate-200 max-w-2xl mx-auto text-sm md:text-base leading-relaxed">
+                {subtitle}
+              </p>
+            )}
           </div>
         </div>
         

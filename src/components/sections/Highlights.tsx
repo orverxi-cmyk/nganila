@@ -41,13 +41,9 @@ export function Highlights() {
   const highlightsRef = React.useMemo(() => (db ? doc(db, "settings", "highlights") : null), [db]);
   const { data: highlightsData, loading } = useDoc(highlightsRef);
 
-  const defaultHighlights = [
-    { icon: "shield", title: "Verified ASSERWA Member", description: "Official member of the Forum of Sewage Emptiers in Rwanda, ensuring compliant and certified liquid waste disposal." },
-    { icon: "truck", title: "Fleet of 5 Vacuum Tankers", description: "Equipped with 5 specialized vacuum tankers for prompt residential, commercial, and industrial waste evacuation." },
-    { icon: "globe", title: "Kicukiro & Greater Kigali", description: "Operating centrally in Kicukiro, serving residential properties and commercial establishments across Kigali and Rwanda." }
-  ];
-
-  const items = highlightsData?.items?.length ? highlightsData.items : defaultHighlights;
+  const items: any[] = Array.isArray(highlightsData?.items) ? highlightsData.items : [];
+  const title = highlightsData?.title || "";
+  const subtitle = highlightsData?.subtitle || "";
 
   const getIcon = (name: string) => {
     const iconClass = "h-6 w-6 text-primary";
@@ -79,6 +75,20 @@ export function Highlights() {
     }
   };
 
+  if (items.length === 0 && !title) {
+    if (isAdmin) {
+      return (
+        <div className="p-6 border border-dashed rounded-2xl text-center">
+          <p className="text-xs text-muted-foreground mb-2">Highlights section has no items yet.</p>
+          <Button asChild size="sm" className="bg-[#636679] text-white hover:bg-[#545667] text-[10px] font-bold">
+            <Link href="/admin/content?tab=highlights"><Edit3 className="mr-1 h-3 w-3" /> Edit Highlights</Link>
+          </Button>
+        </div>
+      );
+    }
+    return null;
+  }
+
   return (
     <div className="relative group">
       {isAdmin && (
@@ -90,10 +100,12 @@ export function Highlights() {
           </Button>
         </div>
       )}
-      <div className="space-y-2 mb-8">
-        <span className="text-xs font-bold uppercase tracking-wider text-[#636679]">Why Nganira Company LTD</span>
-        <h2 className="text-xl font-extrabold text-[#26272e] tracking-tight">Our Operational Highlights</h2>
-      </div>
+      {(title || subtitle) && (
+        <div className="space-y-2 mb-8">
+          {subtitle && <span className="text-xs font-bold uppercase tracking-wider text-[#636679]">{subtitle}</span>}
+          {title && <h2 className="text-xl font-extrabold text-[#26272e] tracking-tight">{title}</h2>}
+        </div>
+      )}
       <div className="space-y-6">
         {items.map((item: any, i: number) => (
           <div key={i} className="flex gap-4 items-start p-4 rounded-2xl bg-white border border-[#d9dadf] shadow-sm hover:border-[#636679]/40 transition-all">

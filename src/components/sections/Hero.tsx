@@ -19,17 +19,29 @@ export function Hero() {
   const heroRef = React.useMemo(() => (db ? doc(db, "settings", "hero") : null), [db]);
   const { data: heroData, loading } = useDoc(heroRef);
 
-  const content = {
-    badge: heroData?.badge || "Verified Member of ASSERWA",
-    title: heroData?.title || "Nganira Company LTD",
-    titleAccent: heroData?.titleAccent || "Waste Management & Sanitation",
-    description: heroData?.description || "Professional waste management and sanitation company in Kicukiro, Kigali, Rwanda. Operating a fleet of 5 vacuum tankers for septic tank emptying, pit latrine draining (kuvidura), and decentralized wastewater treatment.",
-    imageUrl: heroData?.imageUrl || "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1779799776154_B25A3083.jpg?alt=media",
-    imageWidth: heroData?.imageWidth || 800,
-    imageHeight: heroData?.imageHeight || 600,
-    ctaText: heroData?.ctaText || "Book an Exhauster Truck",
-    ctaLink: heroData?.ctaLink || "/book"
-  };
+  const badge = heroData?.badge || "";
+  const title = heroData?.title || "";
+  const titleAccent = heroData?.titleAccent || "";
+  const description = heroData?.description || "";
+  const imageUrl = heroData?.imageUrl || "";
+  const imageWidth = heroData?.imageWidth || 800;
+  const imageHeight = heroData?.imageHeight || 600;
+  const ctaText = heroData?.ctaText || "Book Service";
+  const ctaLink = heroData?.ctaLink || "/book";
+
+  if (!title && !description && !imageUrl) {
+    if (isAdmin) {
+      return (
+        <section className="py-12 bg-[#26272e] text-center border-b border-[#383944]">
+          <p className="text-slate-300 text-sm mb-3">Hero section has no content yet.</p>
+          <Button asChild className="bg-[#d9eaa4] text-[#26272e] hover:bg-[#cbe090] font-bold text-xs">
+            <Link href="/admin/content?tab=hero"><Edit3 className="mr-1.5 h-4 w-4" /> Edit Hero</Link>
+          </Button>
+        </section>
+      );
+    }
+    return null;
+  }
 
   return (
     <section className="relative overflow-hidden py-12 bg-[#26272e] text-white group font-sans border-b border-[#383944]">
@@ -46,29 +58,35 @@ export function Hero() {
       <div className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/2 w-[400px] h-[400px] bg-[#d9eaa4]/10 rounded-full blur-[120px] pointer-events-none" />
       
       <div className="container mx-auto px-4 md:px-16 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+        <div className={`grid grid-cols-1 ${imageUrl ? 'lg:grid-cols-2' : ''} gap-10 items-center`}>
           <div className="space-y-5 animate-in fade-in slide-in-from-left duration-700">
-            <div className="inline-flex items-center rounded-full border border-[#d9eaa4]/40 bg-[#d9eaa4]/15 px-4 py-1.5 text-xs font-semibold text-[#d9eaa4] uppercase tracking-wider backdrop-blur-sm">
-              <span className="relative flex h-2 w-2 mr-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#d9eaa4] opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#d9eaa4]"></span>
-              </span>
-              {content.badge}
-            </div>
+            {badge && (
+              <div className="inline-flex items-center rounded-full border border-[#d9eaa4]/40 bg-[#d9eaa4]/15 px-4 py-1.5 text-xs font-semibold text-[#d9eaa4] uppercase tracking-wider backdrop-blur-sm">
+                <span className="relative flex h-2 w-2 mr-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#d9eaa4] opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#d9eaa4]"></span>
+                </span>
+                {badge}
+              </div>
+            )}
             
-            <h1 className="text-3xl lg:text-5xl font-extrabold tracking-tight leading-tight text-white">
-              {content.title} <span className="text-[#d9eaa4]">{content.titleAccent}</span>
-            </h1>
+            {title && (
+              <h1 className="text-3xl lg:text-5xl font-extrabold tracking-tight leading-tight text-white">
+                {title} {titleAccent && <span className="text-[#d9eaa4]">{titleAccent}</span>}
+              </h1>
+            )}
             
-            <div className="text-sm font-normal text-slate-200 max-w-[600px] leading-relaxed prose prose-invert">
-              <div dangerouslySetInnerHTML={{ __html: content.description }} />
-            </div>
+            {description && (
+              <div className="text-sm font-normal text-slate-200 max-w-[600px] leading-relaxed prose prose-invert">
+                <div dangerouslySetInnerHTML={{ __html: description }} />
+              </div>
+            )}
             
             <div className="flex flex-wrap gap-3 pt-2">
               <Button asChild className="h-12 px-7 text-xs font-bold uppercase tracking-wider bg-[#d9eaa4] hover:bg-[#cbe090] text-[#26272e] rounded-xl gap-2 shadow-lg shadow-[#d9eaa4]/20 transition-all hover:scale-105 border border-[#cbe090]">
-                <Link href={content.ctaLink}>
+                <Link href={ctaLink}>
                   <Calendar className="h-4 w-4 text-[#26272e]" /> 
-                  {content.ctaText}
+                  {ctaText}
                 </Link>
               </Button>
               <Button asChild variant="outline" className="h-12 px-7 text-xs font-bold uppercase tracking-wider rounded-xl border-[#d9eaa4]/40 text-[#d9eaa4] hover:bg-[#d9eaa4]/20 hover:border-[#d9eaa4] hover:text-white transition-colors">
@@ -80,25 +98,21 @@ export function Hero() {
             </div>
           </div>
 
-          <div className="relative animate-in fade-in slide-in-from-right duration-1000">
-            <div className="relative z-10 rounded-2xl overflow-hidden shadow-2xl border border-[#545667] ring-1 ring-[#d9eaa4]/20">
-              {content.imageUrl ? (
+          {imageUrl && (
+            <div className="relative animate-in fade-in slide-in-from-right duration-1000">
+              <div className="relative z-10 rounded-2xl overflow-hidden shadow-2xl border border-[#545667] ring-1 ring-[#d9eaa4]/20">
                 <Image
-                  src={content.imageUrl}
-                  alt="Sanitation facility"
-                  width={content.imageWidth}
-                  height={content.imageHeight}
+                  src={imageUrl}
+                  alt={title || "Sanitation facility"}
+                  width={imageWidth}
+                  height={imageHeight}
                   className="object-cover w-full h-auto"
                   priority
                 />
-              ) : (
-                <div className="aspect-[4/3] bg-muted/10 flex items-center justify-center text-[12px] font-bold uppercase tracking-widest text-muted-foreground">
-                  Media Placeholder
-                </div>
-              )}
+              </div>
+              <div className="absolute -inset-4 bg-primary/10 blur-2xl rounded-[2rem] -z-10" />
             </div>
-            <div className="absolute -inset-4 bg-primary/10 blur-2xl rounded-[2rem] -z-10" />
-          </div>
+          )}
         </div>
       </div>
     </section>

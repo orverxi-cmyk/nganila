@@ -22,7 +22,10 @@ export default function ContactPage() {
       const valid = generalData.phones.filter((p: any) => typeof p === "string" && p.trim() !== "");
       if (valid.length > 0) return valid;
     }
-    return [generalData?.phone || "+250 788 450 120", "+250 788 668 855"];
+    if (typeof generalData?.phone === "string" && generalData.phone.trim()) {
+      return [generalData.phone.trim()];
+    }
+    return [];
   }, [generalData]);
 
   const emails: string[] = React.useMemo(() => {
@@ -30,7 +33,10 @@ export default function ContactPage() {
       const valid = generalData.emails.filter((e: any) => typeof e === "string" && e.trim() !== "");
       if (valid.length > 0) return valid;
     }
-    return [generalData?.email || "info@nganira.rw"];
+    if (typeof generalData?.email === "string" && generalData.email.trim()) {
+      return [generalData.email.trim()];
+    }
+    return [];
   }, [generalData]);
 
   return (

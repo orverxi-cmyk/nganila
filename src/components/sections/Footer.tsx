@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Linkedin, Twitter, Facebook, Instagram, Mail, Phone, MapPin, MessageCircle, Youtube, Calendar } from "lucide-react";
+import { Linkedin, Twitter, Facebook, Instagram, Mail, Phone, MapPin, MessageCircle, Youtube, Calendar, Droplets } from "lucide-react";
 import { useDoc, useFirestore } from "@/firebase";
 import { doc } from "firebase/firestore";
 import {
@@ -18,13 +18,20 @@ export function Footer() {
   const pathname = usePathname();
   const db = useFirestore();
   const { data: generalData } = useDoc(React.useMemo(() => (db ? doc(db, "settings", "general") : null), [db]));
+  const { data: servicesData } = useDoc(React.useMemo(() => (db ? doc(db, "settings", "services") : null), [db]));
+
+  const siteName = generalData?.siteName || "Nganira Company LTD";
+  const siteDescription = generalData?.description || generalData?.tagline || "";
 
   const phones: string[] = React.useMemo(() => {
     if (Array.isArray(generalData?.phones) && generalData.phones.length > 0) {
       const valid = generalData.phones.filter((p: any) => typeof p === "string" && p.trim() !== "");
       if (valid.length > 0) return valid;
     }
-    return [generalData?.phone || "+250 788 450 120", "+250 788 668 855"];
+    if (typeof generalData?.phone === "string" && generalData.phone.trim()) {
+      return [generalData.phone.trim()];
+    }
+    return [];
   }, [generalData]);
 
   const emails: string[] = React.useMemo(() => {
@@ -32,15 +39,14 @@ export function Footer() {
       const valid = generalData.emails.filter((e: any) => typeof e === "string" && e.trim() !== "");
       if (valid.length > 0) return valid;
     }
-    return [generalData?.email || "info@nganira.rw"];
+    if (typeof generalData?.email === "string" && generalData.email.trim()) {
+      return [generalData.email.trim()];
+    }
+    return [];
   }, [generalData]);
-  const navLinks = generalData?.navLinks || [
-    { name: "About Us", href: "/about" },
-    { name: "Solutions", href: "/services" },
-    { name: "Impact", href: "/articles" },
-    { name: "Publications", href: "/publications" },
-    { name: "Contact", href: "/contact" },
-  ];
+
+  const navLinks = Array.isArray(generalData?.navLinks) ? generalData.navLinks : [];
+  const servicesList: any[] = Array.isArray(servicesData?.items) ? servicesData.items : [];
 
   const socials = generalData?.socials || {};
 
@@ -116,18 +122,20 @@ export function Footer() {
           {/* Brand & ASSERWA Profile */}
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-[#636679] text-[#d9eaa4] border border-[#d9eaa4]/40 flex items-center justify-center font-extrabold text-lg shadow-md shadow-[#636679]/30">
-                N
+              <div className="h-11 w-11 rounded-xl bg-[#636679] text-[#d9eaa4] border border-[#d9eaa4]/40 flex items-center justify-center shadow-md shadow-[#636679]/30 shrink-0">
+                <Droplets className="h-6 w-6" />
               </div>
               <div>
-                <span className="font-extrabold text-base tracking-tight text-white block">NGANIRA COMPANY LTD</span>
+                <span className="font-extrabold text-base tracking-tight text-white block">{siteName}</span>
                 <span className="text-[11px] text-[#d9eaa4] font-semibold tracking-wider uppercase block">Sanitation & Liquid Waste</span>
               </div>
             </div>
 
-            <p className="text-xs text-[#bcbec8] leading-relaxed">
-              Professional waste management and sanitation company based in Kicukiro, Kigali. Operating a specialized fleet of 5 vacuum tankers for residential, commercial, and industrial liquid waste evacuation.
-            </p>
+            {siteDescription && (
+              <p className="text-xs text-[#bcbec8] leading-relaxed">
+                {siteDescription}
+              </p>
+            )}
 
             <div className="p-3 rounded-xl bg-[#383944] border border-[#545667] text-xs space-y-1">
               <div className="flex items-center gap-2 text-[#d9eaa4] font-semibold">
@@ -161,26 +169,24 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Core Services */}
+          {/* Core Services from Firestore */}
           <div className="space-y-4">
             <h4 className="text-xs font-bold uppercase tracking-wider text-[#d9eaa4]">Core Services</h4>
             <ul className="space-y-2.5 text-xs text-[#bcbec8]">
-              <li className="flex items-start gap-2">
-                <span className="text-[#d9eaa4] mt-0.5">•</span>
-                <span>Septic Tank Emptying & Pit Latrine Draining (Kuvidura)</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-[#d9eaa4] mt-0.5">•</span>
-                <span>Wastewater Transportation (Fleet of 5 Tankers)</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-[#d9eaa4] mt-0.5">•</span>
-                <span>Decentralized Wastewater Treatment (DWTS)</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-[#d9eaa4] mt-0.5">•</span>
-                <span>Commercial Liquid Waste Management Plans</span>
-              </li>
+              {servicesList.length > 0 ? (
+                servicesList.map((srv: any, idx: number) => (
+                  <li key={idx} className="flex items-start gap-2">
+                    <span className="text-[#d9eaa4] mt-0.5">•</span>
+                    <span>{srv.title}</span>
+                  </li>
+                ))
+              ) : (
+                <li>
+                  <Link href="/services" className="text-[#bcbec8] hover:text-[#d9eaa4] transition-colors">
+                    Explore Our Solutions &rarr;
+                  </Link>
+                </li>
+              )}
             </ul>
           </div>
 
