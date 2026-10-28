@@ -70,6 +70,7 @@ export function getClientIp(request: Request): string {
 }
 
 const MASTER_ADMIN_EMAILS = [
+  'tharushyamagara@gmail.com',
   'orverxi@gmail.com',
   'sanexcompany@gmail.com',
   (process.env.MASTER_ADMIN_EMAIL || '').toLowerCase().trim(),

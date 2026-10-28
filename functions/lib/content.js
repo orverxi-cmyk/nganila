@@ -59,8 +59,14 @@ function setCorsHeaders(req, res) {
     res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     res.set('Access-Control-Max-Age', '3600');
 }
+const MASTER_ADMIN_EMAILS = [
+    'tharushyamagara@gmail.com',
+    'sanexcompany@gmail.com',
+    'orverxi@gmail.com',
+];
 /**
- * Existing Callable assertAdmin
+ * Helper to verify admin privileges.
+ * Master root administrators are automatically authorized and self-bootstrapped.
  */
 async function assertAdmin(request) {
     var _a;
@@ -68,6 +74,24 @@ async function assertAdmin(request) {
         throw new https_1.HttpsError('unauthenticated', 'User must be logged in.');
     }
     const userId = request.auth.uid;
+    const email = (request.auth.token.email || '').toLowerCase().trim();
+    const isMaster = Boolean(email && MASTER_ADMIN_EMAILS.includes(email));
+    if (isMaster) {
+        try {
+            await db.collection('users').doc(userId).set({
+                email,
+                role: 'admin',
+                updatedAt: Date.now()
+            }, { merge: true });
+            if (!request.auth.token.admin) {
+                await admin.auth().setCustomUserClaims(userId, { admin: true });
+            }
+        }
+        catch (e) {
+            console.warn('Auto-bootstrap admin error:', e);
+        }
+        return userId;
+    }
     const userDoc = await db.collection('users').doc(userId).get();
     const isAdmin = userDoc.exists && ((_a = userDoc.data()) === null || _a === void 0 ? void 0 : _a.role) === 'admin';
     const hasAdminClaim = request.auth.token.admin === true;

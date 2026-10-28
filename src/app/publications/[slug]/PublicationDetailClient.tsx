@@ -124,7 +124,8 @@ export default function PublicationDetailClient({
 
   const isAuthorized =
     Boolean(user?.email) &&
-    (user?.email?.toLowerCase() === "orverxi@gmail.com" ||
+    (user?.email?.toLowerCase() === "tharushyamagara@gmail.com" ||
+      user?.email?.toLowerCase() === "orverxi@gmail.com" ||
       user?.email?.toLowerCase() === "sanexcompany@gmail.com");
 
   const [publication, setPublication] = useState<Publication | null>(initialPublication || null);

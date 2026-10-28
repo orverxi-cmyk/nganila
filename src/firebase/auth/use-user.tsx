@@ -15,14 +15,18 @@ export function useUser() {
       if (currentUser) {
         try {
           const tokenResult = await currentUser.getIdTokenResult();
+          const emailLower = currentUser.email?.toLowerCase();
           const isAdmin = tokenResult.claims.admin === true || 
-            currentUser.email?.toLowerCase() === 'orverxi@gmail.com' ||
-            currentUser.email?.toLowerCase() === 'sanexcompany@gmail.com';
+            emailLower === 'tharushyamagara@gmail.com' ||
+            emailLower === 'orverxi@gmail.com' ||
+            emailLower === 'sanexcompany@gmail.com';
           const augmentedUser = Object.assign(currentUser, { admin: isAdmin });
           setUser(augmentedUser);
         } catch {
-          const isAdmin = currentUser.email?.toLowerCase() === 'orverxi@gmail.com' ||
-            currentUser.email?.toLowerCase() === 'sanexcompany@gmail.com';
+          const emailLower = currentUser.email?.toLowerCase();
+          const isAdmin = emailLower === 'tharushyamagara@gmail.com' ||
+            emailLower === 'orverxi@gmail.com' ||
+            emailLower === 'sanexcompany@gmail.com';
           setUser(Object.assign(currentUser, { admin: isAdmin }));
         }
       } else {

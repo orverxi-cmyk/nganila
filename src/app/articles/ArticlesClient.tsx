@@ -21,6 +21,7 @@ export default function ArticlesClient() {
   const { data: userProfile } = useDoc(userDocRef);
 
   const isAuthorizedAdmin =
+    user?.email?.toLowerCase() === "tharushyamagara@gmail.com" ||
     user?.email?.toLowerCase() === "orverxi@gmail.com" ||
     user?.email?.toLowerCase() === "sanexcompany@gmail.com" ||
     (user as any)?.role === "admin" ||

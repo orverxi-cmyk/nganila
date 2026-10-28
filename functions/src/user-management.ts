@@ -4,14 +4,40 @@ import * as admin from 'firebase-admin';
 
 const db = admin.firestore();
 
+const MASTER_ADMIN_EMAILS = [
+  'tharushyamagara@gmail.com',
+  'sanexcompany@gmail.com',
+  'orverxi@gmail.com',
+];
+
 /**
  * Helper to verify admin privileges.
+ * Master root administrators are automatically authorized and self-bootstrapped.
  */
 async function assertAdmin(request: CallableRequest) {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'User must be logged in.');
   }
   const userId = request.auth.uid;
+  const email = (request.auth.token.email || '').toLowerCase().trim();
+  const isMaster = Boolean(email && MASTER_ADMIN_EMAILS.includes(email));
+
+  if (isMaster) {
+    try {
+      await db.collection('users').doc(userId).set({
+        email,
+        role: 'admin',
+        updatedAt: Date.now()
+      }, { merge: true });
+      if (!request.auth.token.admin) {
+        await admin.auth().setCustomUserClaims(userId, { admin: true });
+      }
+    } catch (e) {
+      console.warn('Auto-bootstrap admin error:', e);
+    }
+    return userId;
+  }
+
   const userDoc = await db.collection('users').doc(userId).get();
   const isAdmin = userDoc.exists && userDoc.data()?.role === 'admin';
   const hasAdminClaim = request.auth.token.admin === true;
