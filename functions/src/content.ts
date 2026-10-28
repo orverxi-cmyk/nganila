@@ -40,15 +40,15 @@ export const adminSeedInitialData = onCall({ cors: true }, async (request: Calla
   const batch = db.batch();
 
   batch.set(db.collection('settings').doc('general'), {
-    siteName: "Nganila Co LTD",
+    siteName: "Nganira Company LTD",
     logoUrl: "/logo.png",
     logoWidth: 160,
     logoHeight: 40,
     logoSpacing: 8,
-    phone: "+250 788 450 120",
-    phones: ["+250 788 450 120", "+250 788 668 855"],
-    email: "info@nganila.com",
-    emails: ["info@nganila.com"],
+    phone: "+250 788 840 000",
+    phones: ["+250 788 840 000", "+250 788 668 855"],
+    email: "info@nganira.rw",
+    emails: ["info@nganira.rw"],
     socials: {
       twitter: "https://asserwa.rw",
       linkedin: "https://asserwa.rw"
@@ -66,13 +66,13 @@ export const adminSeedInitialData = onCall({ cors: true }, async (request: Calla
   const articleRef = db.collection('articles').doc('kigali-waste-management-2024');
   batch.set(articleRef, {
     title: "Our Services",
-    excerpt: "At SANEX Company Ltd, we pride ourselves on offering a comprehensive suite of liquid waste management services tailored to meet the diverse needs of our clients.",
+    excerpt: "At Nganira Company LTD, we pride ourselves on offering a comprehensive suite of liquid waste management services tailored to meet the diverse needs of our clients.",
     content: "Detailed story about our services and wastewater management across Rwanda...",
     imageUrl: "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1779810108618_ifoto15.jpg?alt=media",
     imageWidth: 1200,
     imageHeight: 600,
     category: "Impact",
-    author: "Nganila Editorial",
+    author: "Nganira Editorial",
     createdAt: Date.now(),
     updatedAt: Date.now()
   });
@@ -268,11 +268,12 @@ export const createBooking = onRequest({ cors: true, secrets: ['ZOHO_CPAAS_SEND_
 async function sendStatusNotificationEmail(booking: any, newStatus: string, bookingId: string) {
   if (!booking?.email || !booking.email.includes('@')) return;
 
-  const BRAND_COLOR = "#8DB833";
-  const BRAND_NAME = "SANEX Company Ltd";
-  const COMPANY_PHONE = "+250 788 385 838";
-  const SENDER_EMAIL = process.env.ZOHO_CPAAS_FROM_EMAIL || "info@sanex.rw";
-  const COMPANY_EMAIL = process.env.COMPANY_EMAIL || "info@sanex.rw";
+  const BRAND_COLOR = "#636679";
+  const BRAND_ACCENT = "#d9eaa4";
+  const BRAND_NAME = "Nganira Company LTD";
+  const COMPANY_PHONE = "+250 788 840 000";
+  const SENDER_EMAIL = process.env.ZOHO_CPAAS_FROM_EMAIL || "info@nganira.rw";
+  const COMPANY_EMAIL = process.env.COMPANY_EMAIL || "info@nganira.rw";
   const DEFAULT_FROM = process.env.EMAIL_FROM || `"${BRAND_NAME}" <${SENDER_EMAIL}>`;
 
   const isPending = (newStatus || '').toLowerCase() === 'pending';
@@ -282,17 +283,17 @@ async function sendStatusNotificationEmail(booking: any, newStatus: string, book
 
   const text = isPending
     ? `Hello ${booking.customerName || 'Customer'},\n\nWe have received your service request for ${booking.serviceType || 'Liquid Waste Management'} (Reference ID: #${bookingId}).\n\nOur operations desk will review your details and coordinate dispatch shortly.\n\nThank you,\n${BRAND_NAME}\nPhone: ${COMPANY_PHONE}`
-    : `Hello ${booking.customerName || 'Customer'},\n\nYour service request (${booking.serviceType || 'Liquid Waste Management'}) status has been updated to: ${newStatus.toUpperCase()}.\n\nFor questions, contact SANEX at ${COMPANY_PHONE} or ${COMPANY_EMAIL}.\n\nThank you,\n${BRAND_NAME}`;
+    : `Hello ${booking.customerName || 'Customer'},\n\nYour service request (${booking.serviceType || 'Liquid Waste Management'}) status has been updated to: ${newStatus.toUpperCase()}.\n\nFor questions, contact Nganira at ${COMPANY_PHONE} or ${COMPANY_EMAIL}.\n\nThank you,\n${BRAND_NAME}`;
 
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
-      <div style="background-color: #0f172a; padding: 20px; border-radius: 8px; border-bottom: 4px solid ${BRAND_COLOR};">
-        <h2 style="color: ${BRAND_COLOR}; margin: 0; text-transform: uppercase;">SANEX <span style="color: #ffffff;">Company Ltd</span></h2>
-        <p style="color: #94a3b8; margin: 4px 0 0 0; font-size: 12px;">Sustainable Liquid Waste Management · Rwanda</p>
+      <div style="background-color: ${BRAND_COLOR}; padding: 20px; border-radius: 8px; border-bottom: 4px solid ${BRAND_ACCENT};">
+        <h2 style="color: #ffffff; margin: 0; text-transform: uppercase;">NGANIRA <span style="color: ${BRAND_ACCENT};">COMPANY LTD</span></h2>
+        <p style="color: #e2e8f0; margin: 4px 0 0 0; font-size: 12px;">Sustainable Liquid Waste Management · Kigali, Rwanda</p>
       </div>
       <div style="padding: 20px 0;">
         <p style="font-size: 16px; color: #0f172a;">Hello <strong>${booking.customerName || 'Valued Customer'}</strong>,</p>
-        <p style="color: #334155;">${isPending ? 'We have received your service request and our dispatch team is reviewing your schedule.' : `The status of your service request has been updated to: <span style="background-color: ${BRAND_COLOR}; color: #000; font-weight: bold; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; font-size: 12px;">${newStatus}</span>`}</p>
+        <p style="color: #334155;">${isPending ? 'We have received your service request and our dispatch team is reviewing your schedule.' : `The status of your service request has been updated to: <span style="background-color: ${BRAND_ACCENT}; color: #26272e; font-weight: bold; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; font-size: 12px;">${newStatus}</span>`}</p>
         <div style="background-color: #f8fafc; padding: 15px; border-radius: 8px; margin: 20px 0;">
           <p style="margin: 0 0 8px 0; font-size: 14px;"><strong>Reference ID:</strong> #${bookingId}</p>
           <p style="margin: 0 0 8px 0; font-size: 14px;"><strong>Service:</strong> ${booking.serviceType || 'Liquid Waste Management'}</p>
