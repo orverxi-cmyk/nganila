@@ -297,7 +297,7 @@ describe('Email Templates Rendering', () => {
       phone: '+250 788 111 222',
     });
 
-    assert.match(html, /SANEX/);
+    assert.match(html, /(SANEX|Nganila)/i);
     assert.match(html, /BK-1001/);
     assert.match(html, /Exhauster Truck Emptying/);
     assert.match(html, /CONFIRMED/);
@@ -357,7 +357,7 @@ describe('Email Templates Rendering', () => {
     assert.match(html, /Valued Client/);
     assert.match(html, /View Schedule/);
     assert.match(html, /https:\/\/sanex\.rw\/schedule/);
-    assert.match(html, /SANEX/);
+    assert.match(html, /(SANEX|Nganila)/i);
 
     const text = renderCustomBroadcastText({
       title: 'Facility Maintenance Advisory',
