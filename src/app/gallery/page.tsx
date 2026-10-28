@@ -71,7 +71,7 @@ export default function GalleryPage() {
       <main className="flex-grow py-5 bg-background">
         <div className="container mx-auto px-4 md:px-6">
           <div className="text-center mb-5 space-y-2">
-            <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#d9eaa4]/40 text-[#636679]">
+            <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#006400]/10 text-[#006400]">
               <Camera className="h-5 w-5" />
             </div>
             <h1 className="text-[16px] font-bold text-[#26272e] uppercase tracking-widest">Service Gallery</h1>

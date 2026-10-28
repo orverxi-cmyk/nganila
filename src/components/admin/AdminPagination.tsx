@@ -86,7 +86,7 @@ export function AdminPagination({
                 className={cn(
                   "h-8 min-w-[32px] px-2 rounded-lg text-xs font-bold transition-all",
                   isCurrent
-                    ? "bg-primary text-black shadow-sm"
+                    ? "bg-primary text-white shadow-sm"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}
               >

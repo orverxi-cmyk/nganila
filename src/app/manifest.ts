@@ -5,11 +5,11 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'Nganira Company LTD',
     short_name: 'Nganira',
-    description: 'Professional Waste Management & Sanitation Company in Kicukiro, Kigali, Rwanda — Verified Member of ASSERWA',
+    description: 'Professional Waste Management & Sanitation Company in Kicukiro, Kigali, Rwanda',
     start_url: '/',
     display: 'standalone',
     background_color: '#636679',
-    theme_color: '#d9eaa4',
+    theme_color: '#006400',
     icons: [
       {
         src: '/favicon.svg',

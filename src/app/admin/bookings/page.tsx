@@ -281,7 +281,7 @@ export default function BookingsManagementPage() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'confirmed': return <Badge className="bg-primary text-black font-bold">Confirmed</Badge>;
+      case 'confirmed': return <Badge className="bg-primary text-white font-bold">Confirmed</Badge>;
       case 'completed': return <Badge className="bg-black text-white font-bold">Completed</Badge>;
       case 'cancelled': return <Badge variant="outline" className="border-black text-black font-bold">Cancelled</Badge>;
       default: return <Badge variant="secondary" className="font-bold">Pending</Badge>;
@@ -367,7 +367,7 @@ export default function BookingsManagementPage() {
                 <FileDown className="h-3.5 w-3.5" />
                 Export Excel
                 {filteredBookings.length > 0 && (
-                  <span className="ml-1 bg-[#8DB833] text-black rounded-full px-1.5 py-0.5 text-[9px] font-black leading-none">
+                  <span className="ml-1 bg-primary text-white rounded-full px-1.5 py-0.5 text-[9px] font-black leading-none">
                     {filteredBookings.length}
                   </span>
                 )}
@@ -416,7 +416,7 @@ export default function BookingsManagementPage() {
                     className={cn(
                       "px-2.5 py-1 rounded-lg text-xs font-bold transition-all shrink-0",
                       statusFilter === item.key 
-                        ? "bg-primary text-black shadow-sm" 
+                        ? "bg-primary text-white shadow-sm" 
                         : "bg-muted text-muted-foreground hover:text-foreground"
                     )}
                   >
@@ -561,7 +561,7 @@ export default function BookingsManagementPage() {
                         <Button 
                           size="sm" 
                           variant="secondary" 
-                          className="gap-2 bg-primary text-black font-bold h-9"
+                          className="gap-2 bg-primary text-white hover:bg-primary/90 font-bold h-9"
                           onClick={() => handleUpdateStatus(booking.id, 'confirmed')}
                           disabled={updatingId === booking.id}
                         >

@@ -46,10 +46,6 @@ export default function ContactPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-8">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1 bg-[#d9eaa4]/40 border border-[#d9eaa4] rounded-full text-xs font-semibold text-[#383944] mb-3">
-                <span className="h-2 w-2 rounded-full bg-[#636679] animate-pulse" />
-                <span>Verified ASSERWA Member · Fleet of 5 Vacuum Tankers</span>
-              </div>
               <h1 className="text-3xl lg:text-4xl font-extrabold tracking-tight text-[#26272e] mb-3">Contact Nganira Company LTD</h1>
               <p className="text-[#636679] text-sm max-w-xl mx-auto">We're here to solve your liquid waste evacuation, septic tank emptying, and wastewater treatment challenges.</p>
             </div>
@@ -61,7 +57,7 @@ export default function ContactPage() {
                 </CardHeader>
                 <CardContent className="p-6 space-y-6">
                   <div className="flex items-start gap-4">
-                    <div className="h-11 w-11 rounded-xl bg-[#d9eaa4]/30 border border-[#d9eaa4] flex items-center justify-center text-[#636679] shrink-0 mt-0.5">
+                    <div className="h-11 w-11 rounded-xl bg-[#006400]/10 border border-[#006400]/30 flex items-center justify-center text-[#006400] shrink-0 mt-0.5">
                       <Phone className="h-5 w-5" />
                     </div>
                     <div>
@@ -81,7 +77,7 @@ export default function ContactPage() {
                   </div>
 
                   <div className="flex items-start gap-4">
-                    <div className="h-11 w-11 rounded-xl bg-[#d9eaa4]/30 border border-[#d9eaa4] flex items-center justify-center text-[#636679] shrink-0 mt-0.5">
+                    <div className="h-11 w-11 rounded-xl bg-[#006400]/10 border border-[#006400]/30 flex items-center justify-center text-[#006400] shrink-0 mt-0.5">
                       <Mail className="h-5 w-5" />
                     </div>
                     <div>
@@ -101,13 +97,12 @@ export default function ContactPage() {
                   </div>
 
                   <div className="flex items-start gap-4">
-                    <div className="h-11 w-11 rounded-xl bg-[#d9eaa4]/30 border border-[#d9eaa4] flex items-center justify-center text-[#636679] shrink-0 mt-0.5">
+                    <div className="h-11 w-11 rounded-xl bg-[#006400]/10 border border-[#006400]/30 flex items-center justify-center text-[#006400] shrink-0 mt-0.5">
                       <MapPin className="h-5 w-5" />
                     </div>
                     <div>
                       <div className="text-xs font-bold uppercase tracking-wider text-[#9698a7] mb-1">Office Location</div>
                       <p className="text-base font-bold text-[#26272e]">Kicukiro, Kigali, Rwanda</p>
-                      <p className="text-xs text-[#636679] font-medium mt-0.5">Verified Member of ASSERWA</p>
                     </div>
                   </div>
                 </CardContent>
@@ -116,16 +111,16 @@ export default function ContactPage() {
               <div className="flex flex-col justify-center">
                 <Card className="border border-[#d9dadf] bg-white rounded-2xl shadow-md">
                   <CardContent className="p-8 text-center space-y-5">
-                    <div className="h-14 w-14 rounded-2xl bg-[#636679] text-[#d9eaa4] flex items-center justify-center mx-auto shadow-md shadow-[#636679]/20">
+                    <div className="h-14 w-14 rounded-2xl bg-[#006400] text-white flex items-center justify-center mx-auto shadow-md shadow-[#006400]/20">
                       <Calendar className="h-7 w-7" />
                     </div>
-                    <h3 className="text-xl font-extrabold text-[#26272e]">Need an Exhauster Truck?</h3>
+                    <h3 className="text-xl font-extrabold text-[#26272e]">Need Our Services?</h3>
                     <p className="text-[#636679] text-xs leading-relaxed">
-                      Are you looking to book an exhauster truck for a residential property, or do you need a commercial liquid waste management plan? Let us know so we can guide you on the next steps.
+                      Looking to book a service for a residential property, or do you need a commercial liquid waste management plan? Let us know so we can guide you on the next steps.
                     </p>
                     <div className="pt-2">
-                      <Button asChild className="h-11 px-8 text-xs bg-[#d9eaa4] hover:bg-[#cbe090] text-[#26272e] font-bold uppercase tracking-wider rounded-xl shadow-md shadow-[#d9eaa4]/20 transition-all hover:scale-105 border border-[#cbe090]">
-                        <Link href="/book">Schedule an Exhauster <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                      <Button asChild className="h-11 px-8 text-xs bg-[#006400] hover:bg-[#005000] text-white font-bold uppercase tracking-wider rounded-xl shadow-md shadow-[#006400]/20 transition-all hover:scale-105 border border-[#006400]">
+                        <Link href="/book">Book a Service <ArrowRight className="ml-2 h-4 w-4" /></Link>
                       </Button>
                     </div>
                   </CardContent>

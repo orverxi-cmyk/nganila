@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/carousel";
 import { Button } from "@/components/ui/button";
 import { Edit3 } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 export function HomeSlider() {
   const db = useFirestore();
@@ -27,34 +26,33 @@ export function HomeSlider() {
   const sliderRef = React.useMemo(() => (db ? doc(db, "settings", "slider") : null), [db]);
   const { data: sliderData } = useDoc(sliderRef);
 
-  // Immediate local backup to prevent flicker during localhost refresh
-  const [localBackup, setLocalBackup] = React.useState<any[] | null>(null);
+  const [serverItems, setServerItems] = React.useState<any[] | null>(null);
 
+  // Load server-persisted settings immediately on mount
   React.useEffect(() => {
-    try {
-      const stored = localStorage.getItem("nganila_setting_slider");
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed?.items)) {
-          setLocalBackup(parsed.items);
+    let active = true;
+    fetch("/api/settings?section=slider")
+      .then((res) => res.json())
+      .then((data) => {
+        if (active && data?.success && Array.isArray(data?.data?.items)) {
+          setServerItems(data.data.items);
         }
-      }
-    } catch {}
+      })
+      .catch(() => {});
+    return () => { active = false; };
   }, []);
 
-  // Sync to local storage whenever fresh data arrives from Firestore
+  // Sync whenever fresh Firestore data arrives
   React.useEffect(() => {
     if (sliderData?.items && Array.isArray(sliderData.items)) {
-      try {
-        localStorage.setItem("nganila_setting_slider", JSON.stringify({ items: sliderData.items }));
-      } catch {}
+      setServerItems(sliderData.items);
     }
   }, [sliderData]);
 
-  // Purely Firestore driven: no hardcoded defaults
+  // Purely dynamic: strictly only the saved items
   const items = Array.isArray(sliderData?.items) 
     ? sliderData.items 
-    : (localBackup || []);
+    : (serverItems || []);
 
   const isVideo = (url: string) => {
     if (!url) return false;
@@ -63,17 +61,6 @@ export function HomeSlider() {
   };
 
   const [carouselApi, setCarouselApi] = React.useState<CarouselApi>();
-  const [current, setCurrent] = React.useState(0);
-  const [count, setCount] = React.useState(0);
-
-  React.useEffect(() => {
-    if (!carouselApi) return;
-    setCount(carouselApi.scrollSnapList().length);
-    setCurrent(carouselApi.selectedScrollSnap());
-    carouselApi.on("select", () => {
-      setCurrent(carouselApi.selectedScrollSnap());
-    });
-  }, [carouselApi]);
 
   // Smoothly scroll and advance slider to the video slide when arriving via #slider or #video
   React.useEffect(() => {
@@ -112,9 +99,9 @@ export function HomeSlider() {
   if (items.length === 0) {
     if (isAdmin) {
       return (
-        <section id="slider" className="w-full py-16 bg-[#26272e] flex flex-col items-center justify-center text-center px-4">
-          <p className="text-slate-300 text-sm mb-3">Homepage Slider is empty. Add your slides in Content Management.</p>
-          <Button asChild className="bg-[#d9eaa4] text-[#26272e] hover:bg-[#cbe090] font-bold text-xs">
+        <section id="slider" className="w-full py-16 bg-[#006400] flex flex-col items-center justify-center text-center px-4">
+          <p className="text-slate-100 text-sm mb-3">Homepage Slider is empty. Add your slides in Content Management.</p>
+          <Button asChild className="bg-white text-[#006400] hover:bg-slate-100 font-bold text-xs">
             <Link href="/admin/content?tab=slider"><Edit3 className="mr-1.5 h-4 w-4" /> Add Slides</Link>
           </Button>
         </section>
@@ -124,14 +111,14 @@ export function HomeSlider() {
   }
 
   return (
-    <section id="slider" className="w-full overflow-hidden relative group bg-[#26272e] scroll-mt-24">
+    <section id="slider" className="w-full overflow-hidden relative group bg-[#006400] scroll-mt-24">
       <span id="video" className="scroll-mt-24 absolute -top-24 pointer-events-none" />
       
       {isAdmin && (
         <div className="absolute top-4 right-4 z-30 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Button asChild className="pointer-events-auto bg-[#636679] text-white hover:bg-[#545667] gap-2 font-bold text-xs rounded-xl shadow-xl border border-[#7d8094] backdrop-blur-md">
+          <Button asChild className="pointer-events-auto bg-[#005000] text-white hover:bg-[#004000] gap-2 font-bold text-xs rounded-xl shadow-xl border border-white/20 backdrop-blur-md">
             <Link href="/admin/content?tab=slider">
-              <Edit3 className="h-4 w-4 text-[#d9eaa4]" /> Edit Showcase
+              <Edit3 className="h-4 w-4 text-white" /> Edit Showcase
             </Link>
           </Button>
         </div>
@@ -142,10 +129,10 @@ export function HomeSlider() {
         <CarouselContent className="m-0">
           {items.map((slide: any, i: number) => (
             <CarouselItem key={i} className="h-full pl-0">
-              <div className="grid grid-cols-1 lg:grid-cols-12 w-full bg-[#26272e] items-stretch">
+              <div className="grid grid-cols-1 lg:grid-cols-12 w-full bg-[#006400] items-stretch">
                 
                 {/* Media Stage (7 Cols / 8 Cols on XL) */}
-                <div className="relative w-full min-h-[320px] sm:min-h-[420px] md:min-h-[500px] lg:h-[580px] xl:h-[620px] lg:col-span-7 xl:col-span-8 bg-black flex items-center justify-center overflow-hidden">
+                <div className="relative w-full min-h-[320px] sm:min-h-[420px] md:min-h-[500px] lg:h-[580px] xl:h-[620px] lg:col-span-7 xl:col-span-8 bg-[#004d00] flex items-center justify-center overflow-hidden">
                   {slide.imageUrl && isVideo(slide.imageUrl) ? (
                     <video 
                       src={slide.imageUrl} 
@@ -164,16 +151,16 @@ export function HomeSlider() {
                       priority={i === 0} 
                     />
                   ) : (
-                    <div className="h-full w-full bg-[#383944] flex items-center justify-center text-[#bcbec8] text-sm uppercase font-bold">
+                    <div className="h-full w-full bg-[#004d00] flex items-center justify-center text-white/80 text-sm uppercase font-bold">
                       Media Pending
                     </div>
                   )}
                 </div>
 
                 {/* Text Part (5 Cols / 4 Cols on XL) - Contains ONLY Title and Description */}
-                <div className="flex flex-col justify-center p-8 sm:p-12 lg:p-14 xl:p-16 lg:col-span-5 xl:col-span-4 bg-gradient-to-br from-[#636679] via-[#454755] to-[#26272e] text-white relative border-t lg:border-t-0 lg:border-l border-[#545667]/80">
+                <div className="flex flex-col justify-center p-8 sm:p-12 lg:p-14 xl:p-16 lg:col-span-5 xl:col-span-4 bg-gradient-to-br from-[#006400] via-[#005500] to-[#004600] text-white relative border-t lg:border-t-0 lg:border-l border-[#005000]">
                   {/* Subtle ambient background glow */}
-                  <div className="absolute -top-12 -right-12 w-64 h-64 bg-[#d9eaa4]/10 rounded-full blur-3xl pointer-events-none" />
+                  <div className="absolute -top-12 -right-12 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none" />
 
                   <div className="space-y-4 relative z-10 max-w-xl">
                     <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight leading-tight">
@@ -181,7 +168,7 @@ export function HomeSlider() {
                     </h2>
 
                     <div 
-                      className="text-slate-200 text-sm sm:text-base font-normal leading-relaxed prose prose-invert prose-p:leading-relaxed"
+                      className="text-white/95 text-sm sm:text-base font-normal leading-relaxed prose prose-invert prose-p:leading-relaxed [&_*]:!text-white [&_*]:!bg-transparent"
                       dangerouslySetInnerHTML={{ __html: slide.description }}
                     />
                   </div>
@@ -193,27 +180,8 @@ export function HomeSlider() {
         </CarouselContent>
 
         {/* Navigation Controls */}
-        <CarouselPrevious className="hidden md:flex left-4 lg:left-6 border-[#545667] bg-[#383944]/80 text-white hover:bg-[#d9eaa4] hover:text-[#26272e] hover:border-[#d9eaa4] shadow-2xl backdrop-blur-md z-30 h-12 w-12 rounded-full transition-all" />
-        <CarouselNext className="hidden md:flex right-4 lg:right-6 border-[#545667] bg-[#383944]/80 text-white hover:bg-[#d9eaa4] hover:text-[#26272e] hover:border-[#d9eaa4] shadow-2xl backdrop-blur-md z-30 h-12 w-12 rounded-full transition-all" />
-
-        {/* Slide Dots Indicator */}
-        {count > 1 && (
-          <div className="flex items-center justify-center gap-2 py-3.5 bg-[#26272e] border-t border-[#383944]">
-            {Array.from({ length: count }).map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => carouselApi?.scrollTo(idx)}
-                aria-label={`Go to slide ${idx + 1}`}
-                className={cn(
-                  "h-2 rounded-full transition-all duration-300",
-                  current === idx 
-                    ? "w-8 bg-[#d9eaa4]" 
-                    : "w-2 bg-[#636679] hover:bg-[#9698a7]"
-                )}
-              />
-            ))}
-          </div>
-        )}
+        <CarouselPrevious className="hidden md:flex left-4 lg:left-6 border-white/25 bg-black/40 text-white hover:bg-white hover:text-[#006400] hover:border-white shadow-2xl backdrop-blur-md z-30 h-12 w-12 rounded-full transition-all" />
+        <CarouselNext className="hidden md:flex right-4 lg:right-6 border-white/25 bg-black/40 text-white hover:bg-white hover:text-[#006400] hover:border-white shadow-2xl backdrop-blur-md z-30 h-12 w-12 rounded-full transition-all" />
       </Carousel>
     </section>
   );

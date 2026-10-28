@@ -299,7 +299,7 @@ export default function AdminDashboard() {
     const s = (status || 'pending').toLowerCase();
     switch (s) {
       case 'confirmed':
-        return <Badge className="bg-primary text-black font-bold text-[10px]">Confirmed</Badge>;
+        return <Badge className="bg-primary text-white font-bold text-[10px]">Confirmed</Badge>;
       case 'completed':
         return <Badge className="bg-black text-white font-bold text-[10px]">Completed</Badge>;
       case 'cancelled':
@@ -563,7 +563,7 @@ export default function AdminDashboard() {
               {codeError ? (
                 <div className="space-y-4">
                   <Button 
-                    className="w-full h-12 bg-primary text-black font-bold uppercase tracking-widest text-[12px] rounded-full"
+                    className="w-full h-12 bg-primary text-white font-bold uppercase tracking-widest text-[12px] rounded-full hover:bg-primary/90"
                     onClick={() => {
                       setResetCode(null);
                       setCodeError(null);
@@ -612,7 +612,7 @@ export default function AdminDashboard() {
                   <Button 
                     type="submit" 
                     disabled={isConfirmingReset} 
-                    className="w-full h-12 gap-2 bg-primary text-black font-bold uppercase tracking-widest text-[12px] rounded-full"
+                    className="w-full h-12 gap-2 bg-primary text-white font-bold uppercase tracking-widest text-[12px] rounded-full hover:bg-primary/90"
                   >
                     {isConfirmingReset ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />} Save & Sign In
                   </Button>
@@ -680,7 +680,7 @@ export default function AdminDashboard() {
                     />
                   </div>
                   <div className="pt-2 flex flex-col gap-3 w-full">
-                    <Button type="submit" disabled={isLoggingIn} className="w-full h-12 gap-2 bg-primary text-black font-bold uppercase tracking-widest text-[12px] rounded-full">
+                    <Button type="submit" disabled={isLoggingIn} className="w-full h-12 gap-2 bg-primary text-white font-bold uppercase tracking-widest text-[12px] rounded-full hover:bg-primary/90">
                       {isLoggingIn ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogIn className="h-4 w-4" />} Sign In to Operations
                     </Button>
                     
@@ -725,7 +725,7 @@ export default function AdminDashboard() {
                     />
                   </div>
                   <div className="pt-2 flex flex-col gap-2 w-full">
-                    <Button type="submit" disabled={isResetting} className="w-full h-12 gap-2 bg-primary text-black font-bold uppercase tracking-widest text-[12px] rounded-full">
+                    <Button type="submit" disabled={isResetting} className="w-full h-12 gap-2 bg-primary text-white font-bold uppercase tracking-widest text-[12px] rounded-full hover:bg-primary/90">
                       {isResetting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />} Send Recovery Link
                     </Button>
                     <Button type="button" variant="ghost" onClick={() => setShowResetForm(false)} className="w-full h-10 font-bold uppercase tracking-widest text-[10px]">
@@ -806,7 +806,7 @@ export default function AdminDashboard() {
                 <div className="flex items-center gap-2">
                   <Button 
                     onClick={() => setActiveMenu('requests')}
-                    className="h-9 text-xs font-bold gap-2 bg-primary text-black hover:bg-primary/90"
+                    className="h-9 text-xs font-bold gap-2 bg-primary text-white hover:bg-primary/90"
                   >
                     <ClipboardList className="h-4 w-4" /> View Requests ({statusCounts.all})
                   </Button>
@@ -1087,13 +1087,13 @@ export default function AdminDashboard() {
                   <div className="flex items-center justify-between mb-2">
                     <div className={cn(
                       "h-9 w-9 rounded-lg flex items-center justify-center font-bold transition-colors",
-                      statusFilter === 'pending' ? "bg-primary text-black" : "bg-black/5 text-black"
+                      statusFilter === 'pending' ? "bg-primary text-white" : "bg-black/5 text-black"
                     )}>
                       <Clock className="h-4 w-4" />
                     </div>
                     <Badge className={cn(
                       "text-[10px] font-bold transition-colors",
-                      statusFilter === 'pending' ? "bg-primary text-black" : "bg-muted text-black border border-border"
+                      statusFilter === 'pending' ? "bg-primary text-white" : "bg-muted text-black border border-border"
                     )}>
                       {statusFilter === 'pending' ? 'Active Filter' : 'Filter'}
                     </Badge>
@@ -1117,13 +1117,13 @@ export default function AdminDashboard() {
                   <div className="flex items-center justify-between mb-2">
                     <div className={cn(
                       "h-9 w-9 rounded-lg flex items-center justify-center font-bold transition-colors",
-                      statusFilter === 'confirmed' ? "bg-primary text-black" : "bg-black/5 text-black"
+                      statusFilter === 'confirmed' ? "bg-primary text-white" : "bg-black/5 text-black"
                     )}>
                       <Calendar className="h-4 w-4" />
                     </div>
                     <Badge className={cn(
                       "text-[10px] font-bold transition-colors",
-                      statusFilter === 'confirmed' ? "bg-primary text-black" : "bg-muted text-black border border-border"
+                      statusFilter === 'confirmed' ? "bg-primary text-white" : "bg-muted text-black border border-border"
                     )}>
                       {statusFilter === 'confirmed' ? 'Active Filter' : 'Filter'}
                     </Badge>
@@ -1217,7 +1217,7 @@ export default function AdminDashboard() {
                           className={cn(
                             "px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 border",
                             statusFilter === tab.key 
-                              ? "bg-primary text-black border-primary shadow-sm" 
+                              ? "bg-primary text-white border-primary shadow-sm" 
                               : "bg-white text-muted-foreground border-border hover:text-foreground"
                           )}
                         >

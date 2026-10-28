@@ -16,10 +16,6 @@ export default function TermsPage() {
       {/* Top Banner */}
       <div className="bg-gradient-to-r from-[#636679] via-[#454755] to-[#26272e] py-10 border-b border-[#545667]">
         <div className="container mx-auto px-4 md:px-16 text-center">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 bg-[#d9eaa4]/20 border border-[#d9eaa4]/40 rounded-full text-xs font-semibold text-[#d9eaa4] mb-3">
-            <span className="h-2 w-2 rounded-full bg-[#d9eaa4] animate-pulse" />
-            <span>Verified ASSERWA Member · Fleet of 5 Vacuum Tankers</span>
-          </div>
           <h1 className="text-2xl md:text-4xl font-extrabold text-white tracking-tight">
             Terms of Service
           </h1>
@@ -35,7 +31,7 @@ export default function TermsPage() {
           <Card className="border border-[#d9dadf] bg-white shadow-md rounded-2xl overflow-hidden">
             <CardHeader className="border-b border-slate-100 bg-[#f6f6f8] p-6 md:p-8">
               <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-2xl bg-[#d9eaa4]/30 border border-[#d9eaa4] flex items-center justify-center text-[#636679] shrink-0">
+                <div className="h-12 w-12 rounded-2xl bg-[#006400]/10 border border-[#006400]/30 flex items-center justify-center text-[#006400] shrink-0">
                   <Scale className="h-6 w-6" />
                 </div>
                 <div>
@@ -53,7 +49,7 @@ export default function TermsPage() {
               {/* Introduction */}
               <div>
                 <p className="text-[#636679]">
-                  Welcome to Nganira Company LTD. These Terms of Service outline the operational agreement between you (the &quot;Service Requester&quot; or &quot;Client&quot;) and Nganira Company LTD (&quot;Nganira&quot;, &quot;we&quot;, &quot;our&quot;, or &quot;us&quot;) regarding the provision of liquid waste collection, septic tank emptying, pit latrine draining (kuvidura), wastewater transportation with our fleet of 5 vacuum tankers, Decentralized Wastewater Treatment Systems (DWTS) management, and environmental sanitation solutions.
+                  Welcome to Nganira Company LTD. These Terms of Service outline the operational agreement between you (the &quot;Service Requester&quot; or &quot;Client&quot;) and Nganira Company LTD (&quot;Nganira&quot;, &quot;we&quot;, &quot;our&quot;, or &quot;us&quot;) regarding the provision of liquid waste collection, septic tank emptying, pit latrine draining (kuvidura), wastewater transportation with our modern vacuum tankers, Decentralized Wastewater Treatment Systems (DWTS) management, and environmental sanitation solutions.
                 </p>
               </div>
 
@@ -137,9 +133,9 @@ export default function TermsPage() {
                     Contact us
                   </Link>.
                 </div>
-                <Button asChild className="h-10 px-5 text-xs font-bold uppercase tracking-wider bg-[#d9eaa4] hover:bg-[#cbe090] text-[#26272e] rounded-xl shadow-md border border-[#cbe090] shrink-0 transition-all hover:scale-105">
+                <Button asChild className="h-10 px-5 text-xs font-bold uppercase tracking-wider bg-[#006400] hover:bg-[#005000] text-white rounded-xl shadow-md border border-[#006400] shrink-0 transition-all hover:scale-105">
                   <Link href="/book">
-                    Book an Exhauster <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                    Book a Service <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
                   </Link>
                 </Button>
               </div>

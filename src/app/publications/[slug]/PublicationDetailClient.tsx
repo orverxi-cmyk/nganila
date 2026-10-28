@@ -539,7 +539,7 @@ export default function PublicationDetailClient({
                 <Button
                   size="sm"
                   onClick={() => handleShare("copy")}
-                  className="h-8 text-xs font-bold bg-[#d9eaa4] text-[#26272e] hover:bg-[#cde092] gap-1.5"
+                  className="h-8 text-xs font-bold bg-[#006400] text-white hover:bg-[#005000] gap-1.5"
                 >
                   {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
                   <span>{copied ? "Link Copied!" : "Copy Special Link"}</span>
@@ -610,13 +610,13 @@ export default function PublicationDetailClient({
               <h3 className="text-lg sm:text-xl font-bold font-headline text-white">
                 Interested in tailored wastewater management for your facility?
               </h3>
-              <p className="text-xs text-[#d9eaa4]/80 max-w-xl">
+              <p className="text-xs text-slate-300 max-w-xl">
                 Nganira Company LTD provides industrial vacuum exhauster services, decentralized wastewater treatment plants
                 (DWTS), and maintenance across Rwanda.
               </p>
             </div>
             <div className="flex items-center gap-3 shrink-0">
-              <Button asChild className="bg-[#d9eaa4] hover:bg-[#cde092] text-[#26272e] font-extrabold text-xs h-9 px-5 rounded-full shadow-sm">
+              <Button asChild className="bg-[#006400] hover:bg-[#005000] text-white font-extrabold text-xs h-9 px-5 rounded-full shadow-sm">
                 <Link href="/book">Schedule a Consultation</Link>
               </Button>
               <Button asChild variant="outline" className="border-[#636679] bg-white/5 hover:bg-white/10 text-white font-bold text-xs h-9 px-4 rounded-full">

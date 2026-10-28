@@ -52,7 +52,7 @@ export default function ArticlesClient() {
       <main className="flex-grow py-5 bg-muted/10">
         <div className="container mx-auto px-4">
           <div className="text-center mb-5 space-y-4">
-            <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#636679] text-[#d9eaa4] shadow-sm">
+            <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#006400] text-white shadow-sm">
               <FileText className="h-6 w-6" />
             </div>
             <h1 className="text-4xl lg:text-5xl font-bold font-headline text-[#26272e]">Impact & Case Studies</h1>
@@ -89,7 +89,7 @@ export default function ArticlesClient() {
                     </Link>
                     <div className="p-5 flex-grow flex flex-col">
                       <div className="flex items-center gap-2 mb-3 flex-wrap">
-                        <span className="text-[9px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-[#d9eaa4] text-[#26272e]">
+                        <span className="text-[9px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-[#006400] text-white">
                           {article.category || 'Impact'}
                         </span>
                         {(showViewsOnFrontend || isAuthorizedAdmin) && (

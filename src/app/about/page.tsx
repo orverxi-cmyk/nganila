@@ -27,10 +27,6 @@ export default function AboutPage() {
       <main className="flex-grow">
         <div className="bg-gradient-to-r from-[#636679] via-[#454755] to-[#26272e] py-10 border-b border-[#545667]">
           <div className="container mx-auto px-4 md:px-16 text-center">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 bg-[#d9eaa4]/20 border border-[#d9eaa4]/40 rounded-full text-xs font-semibold text-[#d9eaa4] mb-3">
-              <span className="h-2 w-2 rounded-full bg-[#d9eaa4] animate-pulse" />
-              <span>Verified ASSERWA Member</span>
-            </div>
             <h1 className="text-2xl md:text-4xl font-extrabold text-white tracking-tight">{title}</h1>
             {subtitle && (
               <p className="mt-3 text-slate-200 max-w-2xl mx-auto text-sm md:text-base leading-relaxed">

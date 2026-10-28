@@ -105,22 +105,37 @@ function ContentManagementContent() {
 
   const handleUpdateSection = async (sectionId: string, content: any) => {
     setIsSubmitting(true);
+    let apiSaved = false;
     let firestoreSaved = false;
 
-    // 1. Direct write to Firestore for instant and persistent saving in Cloud & client cache
+    // 1. Save to Next.js server API endpoint (persists to server disk and backend Firestore)
+    try {
+      const res = await fetch("/api/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sectionId, content })
+      });
+      if (res.ok) {
+        apiSaved = true;
+      }
+    } catch (apiErr) {
+      console.warn(`Server API save error for ${sectionId}:`, apiErr);
+    }
+
+    // 2. Direct write to Firestore for instant and persistent saving in Cloud & client cache
     if (db) {
       try {
         await setDoc(doc(db, "settings", sectionId), {
           ...content,
           updatedAt: Date.now()
-        }, { merge: true });
+        });
         firestoreSaved = true;
       } catch (dbErr: any) {
         console.warn(`Direct Firestore write error for ${sectionId}:`, dbErr);
       }
     }
 
-    // 2. Also save to browser localStorage for immediate localhost persistence across refreshes
+    // 3. Clear/sync localStorage
     try {
       if (typeof window !== "undefined") {
         localStorage.setItem(`nganila_setting_${sectionId}`, JSON.stringify(content));
@@ -129,7 +144,7 @@ function ContentManagementContent() {
       // ignore
     }
 
-    // 3. Invoke Cloud Function for backend audit/synchronization
+    // 4. Invoke Cloud Function for backend audit/synchronization
     let funcSuccess = false;
     if (functions) {
       try {
@@ -143,7 +158,7 @@ function ContentManagementContent() {
 
     setIsSubmitting(false);
 
-    if (firestoreSaved || funcSuccess) {
+    if (apiSaved || firestoreSaved || funcSuccess) {
       toast({ 
         title: "Changes Saved", 
         description: `${sectionId.toUpperCase()} configuration has been permanently saved.` 
@@ -286,11 +301,28 @@ export default function ContentManagementPage() {
   );
 }
 
+const DEFAULT_SITE_NAV_LINKS = [
+  { name: "Home", href: "/" },
+  { name: "About", href: "/about" },
+  { name: "Services", href: "/services" },
+  { name: "Articles", href: "/articles" },
+  { name: "Publications", href: "/publications" },
+  { name: "Gallery", href: "/gallery" },
+  { name: "Contact", href: "/contact" },
+];
+
 function NavigationEditor({ initialData, onSave }: { initialData: any, onSave: (data: any) => void }) {
-  const [navLinks, setNavLinks] = React.useState<any[]>(initialData?.navLinks || []);
+  const [navLinks, setNavLinks] = React.useState<any[]>(() => {
+    if (Array.isArray(initialData?.navLinks) && initialData.navLinks.length > 0) {
+      return initialData.navLinks;
+    }
+    return DEFAULT_SITE_NAV_LINKS;
+  });
 
   React.useEffect(() => {
-    if (initialData?.navLinks) setNavLinks(initialData.navLinks);
+    if (Array.isArray(initialData?.navLinks) && initialData.navLinks.length > 0) {
+      setNavLinks(initialData.navLinks);
+    }
   }, [initialData]);
 
   const addLink = () => {
@@ -307,6 +339,10 @@ function NavigationEditor({ initialData, onSave }: { initialData: any, onSave: (
     setNavLinks(newLinks);
   };
 
+  const resetToDefault = () => {
+    setNavLinks(DEFAULT_SITE_NAV_LINKS);
+  };
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -314,7 +350,12 @@ function NavigationEditor({ initialData, onSave }: { initialData: any, onSave: (
           <CardTitle className="text-xl">Navigation Menu</CardTitle>
           <CardDescription className="text-xs">Manage links in the top header and footer.</CardDescription>
         </div>
-        <Button size="sm" onClick={addLink} className="gap-2 h-9 text-[10px] font-bold uppercase tracking-widest"><Plus className="h-4 w-4" /> Add Link</Button>
+        <div className="flex items-center gap-2">
+          <Button size="sm" variant="outline" onClick={resetToDefault} className="gap-1.5 h-9 text-[10px] font-bold uppercase tracking-widest">
+            <RefreshCw className="h-3.5 w-3.5" /> Reset Defaults
+          </Button>
+          <Button size="sm" onClick={addLink} className="gap-2 h-9 text-[10px] font-bold uppercase tracking-widest"><Plus className="h-4 w-4" /> Add Link</Button>
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -603,65 +644,240 @@ function ArticleManager({ articles, loading }: { articles: any, loading: boolean
 }
 
 function SliderEditor({ initialData, onSave }: { initialData: any, onSave: (data: any) => void }) {
+  const makeId = () => `slide_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+
   const [items, setItems] = React.useState<any[]>(() => {
     if (Array.isArray(initialData?.items)) {
-      return initialData.items;
+      return initialData.items.map((it: any) => ({ ...it, _id: it._id || it.id || makeId() }));
     }
     return [];
   });
 
+  const isUserEditingRef = React.useRef(false);
+
+  // Load from server API on mount if initialData is not yet populated
   React.useEffect(() => {
-    if (Array.isArray(initialData?.items)) {
-      setItems(initialData.items);
+    let active = true;
+    fetch("/api/settings?section=slider")
+      .then(res => res.json())
+      .then(d => {
+        if (active && d?.success && Array.isArray(d?.data?.items) && !isUserEditingRef.current) {
+          setItems(d.data.items.map((it: any) => ({ ...it, _id: it._id || it.id || makeId() })));
+        }
+      })
+      .catch(() => {});
+    return () => { active = false; };
+  }, []);
+
+  // Sync from initialData only when fresh data arrives and user hasn't made uncommitted edits
+  React.useEffect(() => {
+    if (Array.isArray(initialData?.items) && !isUserEditingRef.current) {
+      setItems(initialData.items.map((it: any) => ({ ...it, _id: it._id || it.id || makeId() })));
     }
   }, [initialData]);
 
   const updateItem = (index: number, field: string, value: any) => {
+    isUserEditingRef.current = true;
     const newItems = [...items];
     newItems[index] = { ...newItems[index], [field]: value };
     setItems(newItems);
   };
 
-  const addItem = () => setItems([...items, { title: "", description: "", imageUrl: "", width: 1200, height: 600, link: "/articles", buttonText: "Learn More" }]);
-  const removeItem = (index: number) => setItems(items.filter((_, i) => i !== index));
+  const addItem = () => {
+    isUserEditingRef.current = true;
+    setItems([
+      ...items, 
+      { 
+        _id: makeId(),
+        title: "", 
+        description: "", 
+        imageUrl: "", 
+        width: 1200, 
+        height: 600, 
+        link: "/services", 
+        buttonText: "Learn More" 
+      }
+    ]);
+  };
+
+  const removeItem = (index: number) => {
+    isUserEditingRef.current = true;
+    setItems(items.filter((_, i) => i !== index));
+  };
+
+  const clearAllSlides = () => {
+    if (confirm("Are you sure you want to remove all slides? This will leave the slider clean.")) {
+      isUserEditingRef.current = true;
+      setItems([]);
+      onSave({ items: [] });
+    }
+  };
+
+  const moveSlide = (index: number, direction: 'up' | 'down') => {
+    const target = direction === 'up' ? index - 1 : index + 1;
+    if (target < 0 || target >= items.length) return;
+    isUserEditingRef.current = true;
+    const updated = [...items];
+    const temp = updated[index];
+    updated[index] = updated[target];
+    updated[target] = temp;
+    setItems(updated);
+  };
+
+  const handleSave = () => {
+    isUserEditingRef.current = false;
+    // Strip temporary UI identifiers before saving
+    const cleanItems = items.map(({ _id, ...rest }) => rest);
+    onSave({ items: cleanItems });
+  };
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader className="flex flex-row items-center justify-between pb-4 border-b">
         <div>
-          <CardTitle className="text-xl">Homepage Slider</CardTitle>
-          <CardDescription className="text-xs">Manage featured carousel slides.</CardDescription>
+          <CardTitle className="text-xl">Homepage Slider Carousel</CardTitle>
+          <CardDescription className="text-xs">
+            Manage slides for the full-width homepage carousel. Only slides you configure here will be displayed.
+          </CardDescription>
         </div>
-        <Button size="sm" onClick={addItem} className="gap-2 h-9 text-[10px] font-bold uppercase tracking-widest"><Plus className="h-4 w-4" /> Add Slide</Button>
+        <div className="flex items-center gap-2">
+          {items.length > 0 && (
+            <Button size="sm" variant="outline" onClick={clearAllSlides} className="gap-1.5 h-9 text-[10px] font-bold uppercase tracking-widest text-destructive hover:bg-destructive/10">
+              <Trash2 className="h-3.5 w-3.5" /> Clear All
+            </Button>
+          )}
+          <Button size="sm" onClick={addItem} className="gap-1.5 h-9 text-[10px] font-bold uppercase tracking-widest bg-primary text-black">
+            <Plus className="h-4 w-4" /> Add Slide
+          </Button>
+        </div>
       </CardHeader>
-      <CardContent className="space-y-5">
-        <div className="grid grid-cols-1 gap-5">
-          {items.map((item, i) => (
-            <Card key={i} className="p-5 space-y-4 bg-muted/20 relative group border-primary/20">
-              <Button size="icon" variant="destructive" className="absolute top-4 right-4 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => removeItem(i)}><Trash2 className="h-4 w-4" /></Button>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div className="space-y-4">
-                  <div className="space-y-1"><Label className="text-[10px] font-bold uppercase text-muted-foreground">Title</Label><Input className="h-9 text-xs" value={item.title} onChange={e => updateItem(i, 'title', e.target.value)} /></div>
-                  <RichTextEditor 
-                    label="Description" 
-                    value={item.description} 
-                    onChange={val => updateItem(i, 'description', val)} 
-                  />
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1"><Label className="text-[10px] font-bold uppercase text-muted-foreground">Width (px)</Label><Input type="number" className="h-9 text-xs" value={item.width} onChange={e => updateItem(i, 'width', Number(e.target.value))} /></div>
-                    <div className="space-y-1"><Label className="text-[10px] font-bold uppercase text-muted-foreground">Height (px)</Label><Input type="number" className="h-9 text-xs" value={item.height} onChange={e => updateItem(i, 'height', Number(e.target.value))} /></div>
+      <CardContent className="space-y-6 pt-5">
+        {items.length === 0 ? (
+          <div className="text-center py-12 border-2 border-dashed rounded-2xl bg-muted/10 space-y-3">
+            <Layers className="h-10 w-10 text-muted-foreground mx-auto" />
+            <p className="text-sm font-semibold text-muted-foreground">No slides configured yet.</p>
+            <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+              Click &quot;Add Slide&quot; above to create your first custom slide with your preferred title, description, and photo/video.
+            </p>
+            <Button size="sm" onClick={addItem} className="gap-2 h-9 text-xs font-bold bg-primary text-black">
+              <Plus className="h-4 w-4" /> Add Your First Slide
+            </Button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-6">
+            {items.map((item, i) => (
+              <Card key={item._id || i} className="p-6 space-y-5 bg-card relative border-2 border-primary/20 rounded-2xl shadow-sm">
+                {/* Header row with slide index and controls */}
+                <div className="flex items-center justify-between pb-3 border-b">
+                  <div className="flex items-center gap-2">
+                    <span className="h-6 w-6 rounded-full bg-primary text-black font-extrabold text-xs flex items-center justify-center">
+                      {i + 1}
+                    </span>
+                    <h4 className="font-extrabold text-sm text-foreground">
+                      {item.title ? item.title : `Slide #${i + 1}`}
+                    </h4>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1"><Label className="text-[10px] font-bold uppercase text-muted-foreground">Btn Text</Label><Input className="h-9 text-xs" value={item.buttonText} onChange={e => updateItem(i, 'buttonText', e.target.value)} /></div>
-                    <div className="space-y-1"><Label className="text-[10px] font-bold uppercase text-muted-foreground">Link</Label><Input className="h-9 text-xs" value={item.link} onChange={e => updateItem(i, 'link', e.target.value)} /></div>
+                  <div className="flex items-center gap-1">
+                    <Button 
+                      size="icon" 
+                      variant="ghost" 
+                      className="h-8 w-8 disabled:opacity-20" 
+                      disabled={i === 0} 
+                      onClick={() => moveSlide(i, 'up')}
+                      title="Move slide up"
+                    >
+                      <ChevronUp className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      size="icon" 
+                      variant="ghost" 
+                      className="h-8 w-8 disabled:opacity-20" 
+                      disabled={i === items.length - 1} 
+                      onClick={() => moveSlide(i, 'down')}
+                      title="Move slide down"
+                    >
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      size="icon" 
+                      variant="destructive" 
+                      className="h-8 w-8 ml-2" 
+                      onClick={() => removeItem(i)}
+                      title="Delete this slide"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
-                <MediaPicker label="Slide Image/Video" value={item.imageUrl} onChange={(url) => updateItem(i, 'imageUrl', url)} />
-              </div>
-            </Card>
-          ))}
-        </div>
-        <Button onClick={() => onSave({ items })} className="gap-2 h-10 text-[10px] font-bold uppercase tracking-widest w-full bg-primary text-black"><Save className="h-4 w-4" /> Save Slider Config</Button>
+
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                  {/* Left Column: Text fields */}
+                  <div className="space-y-4 lg:col-span-7">
+                    <div className="space-y-1">
+                      <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                        Slide Title
+                      </Label>
+                      <Input 
+                        className="h-10 text-sm font-semibold" 
+                        value={item.title || ""} 
+                        onChange={e => updateItem(i, 'title', e.target.value)} 
+                        placeholder="e.g. Liquid Waste Evacuation & Transport" 
+                      />
+                    </div>
+
+                    <RichTextEditor 
+                      label="Slide Description" 
+                      value={item.description || ""} 
+                      onChange={val => updateItem(i, 'description', val)} 
+                      placeholder="Write brief description for this slide..."
+                    />
+
+                    <div className="grid grid-cols-2 gap-3 pt-1">
+                      <div className="space-y-1">
+                        <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                          Call-to-Action Link
+                        </Label>
+                        <Input 
+                          className="h-9 text-xs font-mono" 
+                          value={item.link || ""} 
+                          onChange={e => updateItem(i, 'link', e.target.value)} 
+                          placeholder="/book or /services" 
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                          Button Text
+                        </Label>
+                        <Input 
+                          className="h-9 text-xs" 
+                          value={item.buttonText || ""} 
+                          onChange={e => updateItem(i, 'buttonText', e.target.value)} 
+                          placeholder="e.g. Learn More" 
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right Column: Media */}
+                  <div className="lg:col-span-5 space-y-3">
+                    <MediaPicker 
+                      label="Slide Photo or Video" 
+                      value={item.imageUrl || ""} 
+                      onChange={(url) => updateItem(i, 'imageUrl', url)} 
+                    />
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        <Button 
+          onClick={handleSave} 
+          className="gap-2 h-11 text-xs font-bold uppercase tracking-widest w-full bg-primary text-black shadow-md hover:bg-primary/90"
+        >
+          <Save className="h-4 w-4" /> Save All Slides Config
+        </Button>
       </CardContent>
     </Card>
   );
@@ -794,6 +1010,7 @@ function GeneralEditor({ initialData, onSave }: { initialData: any, onSave: (dat
     const cleanEmails = formData.emails.map(em => em.trim()).filter(Boolean);
 
     onSave({
+      ...(initialData || {}),
       ...formData,
       phones: cleanPhones.length > 0 ? cleanPhones : [formData.phones[0] || ""],
       phone: cleanPhones[0] || formData.phones[0] || "",

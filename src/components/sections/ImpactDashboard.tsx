@@ -42,7 +42,7 @@ export function ImpactDashboard() {
         <div className="absolute inset-0 z-20 bg-[#636679]/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
           <Button asChild className="pointer-events-auto bg-[#636679] text-white hover:bg-[#545667] gap-2 font-bold text-[14px] rounded-xl shadow-lg">
             <Link href="/admin/content?tab=impact">
-              <Edit3 className="h-4 w-4 text-[#d9eaa4]" /> Edit Impact
+              <Edit3 className="h-4 w-4 text-[#006400]" /> Edit Impact
             </Link>
           </Button>
         </div>
@@ -52,8 +52,8 @@ export function ImpactDashboard() {
         {/* Section Header */}
         {(title || subtitle) && (
           <div className="max-w-3xl mx-auto text-center mb-12 space-y-3">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-[#d9eaa4]/40 text-[#383944] border border-[#d9eaa4]">
-              <Droplets className="h-3.5 w-3.5 text-[#636679]" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-[#006400]/10 text-[#006400] border border-[#006400]/30">
+              <Droplets className="h-3.5 w-3.5 text-[#006400]" />
               <span>Sustainable Environmental Stewardship</span>
             </div>
             {title && (
@@ -74,7 +74,7 @@ export function ImpactDashboard() {
           <div className={`grid grid-cols-1 sm:grid-cols-${Math.min(stats.length, 4)} gap-5 mb-10`}>
             {stats.map((stat: any, si: number) => (
               <div key={si} className="bg-white rounded-2xl p-6 border border-[#d9dadf] shadow-md flex items-center gap-4">
-                <div className="h-12 w-12 rounded-xl bg-[#d9eaa4]/30 border border-[#d9eaa4] flex items-center justify-center text-[#636679] shrink-0">
+                <div className="h-12 w-12 rounded-xl bg-[#006400]/10 border border-[#006400]/30 flex items-center justify-center text-[#006400] shrink-0">
                   <Truck className="h-6 w-6" />
                 </div>
                 <div>
@@ -86,8 +86,8 @@ export function ImpactDashboard() {
           </div>
         )}
 
-        {/* Impact Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Impact Cards: 1 column on mobile, 4 columns on desktop */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {items.map((impact: any, i: number) => (
             <div 
               key={i} 
@@ -97,7 +97,7 @@ export function ImpactDashboard() {
                 <h4 className="text-[18px] font-bold text-[#26272e] tracking-tight leading-tight">
                   {impact.title}
                 </h4>
-                <div className="h-8 w-8 rounded-lg bg-[#d9eaa4]/30 flex items-center justify-center text-[#636679] shrink-0">
+                <div className="h-8 w-8 rounded-lg bg-[#006400]/10 flex items-center justify-center text-[#006400] shrink-0">
                   <CheckCircle2 className="h-4 w-4" />
                 </div>
               </div>

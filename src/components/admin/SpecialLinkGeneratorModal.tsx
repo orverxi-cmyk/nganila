@@ -630,7 +630,7 @@ export function SpecialLinkGeneratorModal({
                             >
                               <div
                                 className={`h-4 w-4 rounded shrink-0 border flex items-center justify-center text-[10px] mt-0.5 ${
-                                  isSelected ? "bg-primary border-primary text-black" : "border-slate-300"
+                                  isSelected ? "bg-primary border-primary text-white" : "border-slate-300"
                                 }`}
                               >
                                 {isSelected && <Check className="h-3 w-3" />}

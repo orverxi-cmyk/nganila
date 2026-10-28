@@ -295,7 +295,7 @@ async function sendStatusNotificationEmail(booking: any, newStatus: string, book
   if (!booking?.email || !booking.email.includes('@')) return;
 
   const BRAND_COLOR = "#636679";
-  const BRAND_ACCENT = "#d9eaa4";
+  const BRAND_ACCENT = "#006400";
   const BRAND_NAME = "Nganira Company LTD";
   const COMPANY_PHONE = "+250 788 840 000";
   const SENDER_EMAIL = process.env.ZOHO_CPAAS_FROM_EMAIL || "info@nganira.rw";

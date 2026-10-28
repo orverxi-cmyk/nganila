@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     default: 'Nganira Company LTD | Waste Management & Sanitation in Kigali, Rwanda',
     template: '%s | Nganira Company LTD',
   },
-  description: 'Nganira Company LTD is a professional waste management and sanitation company operating in Kicukiro, Kigali, Rwanda. Verified member of ASSERWA operating a fleet of 5 vacuum tankers.',
+  description: 'Nganira Company LTD is a professional waste management and sanitation company operating in Kicukiro, Kigali, Rwanda.',
   keywords: [
     'Nganira Company LTD',
     'Nganira',
@@ -21,7 +21,6 @@ export const metadata: Metadata = {
     'vacuum tanker Kigali',
     'exhauster truck Rwanda',
     'decentralized wastewater treatment Kigali',
-    'ASSERWA member',
     'sanitation services Kicukiro',
   ],
   authors: [{ name: 'Nganira Company LTD', url: 'https://nganira.rw' }],
@@ -36,7 +35,7 @@ export const metadata: Metadata = {
     url: 'https://nganira.rw',
     siteName: 'Nganira Company LTD',
     title: 'Nganira Company LTD | Waste Management & Sanitation in Kigali, Rwanda',
-    description: 'Professional liquid waste evacuation, vacuum tankers, and decentralized wastewater treatment in Kicukiro, Kigali. Verified member of ASSERWA.',
+    description: 'Professional liquid waste evacuation, vacuum tankers, and decentralized wastewater treatment in Kicukiro, Kigali.',
     images: [
       {
         url: 'https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media',
@@ -50,7 +49,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Nganira Company LTD | Waste Management & Sanitation in Kigali, Rwanda',
-    description: 'Professional liquid waste evacuation, vacuum tankers, and wastewater treatment in Kigali. Verified ASSERWA member.',
+    description: 'Professional liquid waste evacuation, vacuum tankers, and wastewater treatment in Kigali.',
     creator: '@nganira_rw',
     images: [
       'https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media',
@@ -75,7 +74,7 @@ const localBusinessSchema = {
   "legalName": "Nganira Company LTD",
   "url": "https://nganira.rw",
   "logo": "https://nganira.rw/favicon.ico",
-  "description": "Nganira Company LTD is a professional waste management and sanitation company operating in Kicukiro, Kigali, Rwanda. Verified member of ASSERWA.",
+  "description": "Nganira Company LTD is a professional waste management and sanitation company operating in Kicukiro, Kigali, Rwanda.",
   "telephone": "+250788450120",
   "email": "info@nganira.rw",
   "address": {

@@ -209,7 +209,7 @@ function BookingPageContent() {
         <Navbar />
         <main className="flex-grow flex items-center justify-center bg-[#f6f6f8] px-4 py-12">
           <Card className="w-full max-w-md text-center py-8 px-6 border border-[#d9dadf] shadow-xl rounded-2xl bg-white">
-            <div className="h-16 w-16 bg-[#d9eaa4]/30 border border-[#d9eaa4] rounded-2xl flex items-center justify-center mx-auto mb-4 text-[#636679]">
+            <div className="h-16 w-16 bg-[#006400]/10 border border-[#006400]/30 rounded-2xl flex items-center justify-center mx-auto mb-4 text-[#006400]">
               <CheckCircle2 className="h-8 w-8" />
             </div>
             <CardTitle className="text-xl font-extrabold text-[#26272e] mb-1">Service Request Received</CardTitle>
@@ -217,8 +217,8 @@ function BookingPageContent() {
               Thank you, <strong>{formData.customerName}</strong>. Our dispatch team will contact you shortly regarding your <strong>{formData.serviceType}</strong> booking.
             </CardDescription>
 
-            <div className="mt-4 p-3.5 bg-[#d9eaa4]/30 rounded-xl border border-[#d9eaa4] text-xs text-[#26272e] text-left flex items-start gap-2.5">
-              <Mail className="h-4 w-4 text-[#636679] shrink-0 mt-0.5" />
+            <div className="mt-4 p-3.5 bg-[#006400]/10 rounded-xl border border-[#006400]/30 text-xs text-[#26272e] text-left flex items-start gap-2.5">
+              <Mail className="h-4 w-4 text-[#006400] shrink-0 mt-0.5" />
               <div>
                 <span className="font-bold">Email Updates Enabled:</span> Automated status change alerts will be sent to <strong>{formData.email}</strong>.
               </div>
@@ -240,7 +240,7 @@ function BookingPageContent() {
               </div>
             )}
 
-            <Button className="mt-6 bg-[#d9eaa4] hover:bg-[#cbe090] text-[#26272e] font-bold h-12 px-8 rounded-xl shadow-md border border-[#cbe090]" onClick={() => window.location.href = "/"}>
+            <Button className="mt-6 bg-[#006400] hover:bg-[#005000] text-white font-bold h-12 px-8 rounded-xl shadow-md border border-[#006400]" onClick={() => window.location.href = "/"}>
               Return to Home
             </Button>
           </Card>
@@ -257,19 +257,16 @@ function BookingPageContent() {
         <div className="container mx-auto px-4 md:px-16">
           <div className="max-w-xl mx-auto space-y-6">
             <div className="text-center space-y-2">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1 bg-[#d9eaa4]/40 rounded-full border border-[#d9eaa4] text-xs font-semibold text-[#383944]">
-                <ShieldCheck className="h-3.5 w-3.5 text-[#636679]" /> Verified ASSERWA Member · Fleet of 5 Vacuum Tankers
-              </div>
-              <h1 className="text-3xl font-extrabold text-[#26272e] tracking-tight">Book an Exhauster Truck</h1>
+              <h1 className="text-3xl font-extrabold text-[#26272e] tracking-tight">Book a Service</h1>
               <p className="text-[#636679] text-sm">
-                Are you looking to book an exhauster truck for a residential property, or do you need a commercial liquid waste management plan? Let us know so we can guide you on the next steps.
+                Looking to book a service for a residential property, or do you need a commercial liquid waste management plan? Let us know so we can guide you on the next steps.
               </p>
             </div>
 
             <Card className="shadow-xl border border-[#d9dadf] rounded-2xl overflow-hidden bg-white">
               <CardHeader className="bg-[#636679] text-white p-6">
                 <CardTitle className="text-base font-bold uppercase tracking-wider">Service Request Form</CardTitle>
-                <CardDescription className="text-[#d9eaa4] text-xs font-medium">Professional Liquid Waste Evacuation · Nationwide Coverage</CardDescription>
+                <CardDescription className="text-slate-200 text-xs font-medium">Professional Liquid Waste Evacuation · Nationwide Coverage</CardDescription>
               </CardHeader>
               <CardContent className="p-6 space-y-4">
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -475,7 +472,7 @@ function BookingPageContent() {
                     <Textarea id="desc" placeholder="Please describe your specific requirements..." className="min-h-[100px] text-sm" value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} />
                   </div>
 
-                  <Button type="submit" className="w-full h-12 text-xs font-bold uppercase tracking-wider gap-2 bg-[#d9eaa4] hover:bg-[#cbe090] text-[#26272e] rounded-xl shadow-md shadow-[#d9eaa4]/20 transition-all hover:scale-[1.01] border border-[#cbe090]" disabled={isSubmitting}>
+                  <Button type="submit" className="w-full h-12 text-xs font-bold uppercase tracking-wider gap-2 bg-[#006400] hover:bg-[#005000] text-white rounded-xl shadow-md shadow-[#006400]/20 transition-all hover:scale-[1.01] border border-[#006400]" disabled={isSubmitting}>
                     {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />} Submit Service Request
                   </Button>
 

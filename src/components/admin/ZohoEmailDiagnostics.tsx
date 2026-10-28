@@ -844,7 +844,7 @@ export function ZohoEmailHub() {
                               variant="outline"
                               className={`h-6 text-[10px] px-2 font-bold gap-1 transition-all ${
                                 isMatched
-                                  ? "bg-primary text-black border-primary ring-1 ring-primary"
+                                  ? "bg-primary text-white border-primary ring-1 ring-primary"
                                   : "bg-white text-slate-700"
                               }`}
                               onClick={() => handleAddAudience(list, grp.name)}
@@ -1338,7 +1338,7 @@ export function ZohoEmailHub() {
                                       }}
                                       className={`text-[10px] px-2 py-0.5 rounded-full border transition-all flex items-center gap-1 ${
                                         isSelected
-                                          ? "bg-primary text-black border-primary font-bold shadow-2xs"
+                                          ? "bg-primary text-white border-primary font-bold shadow-2xs"
                                           : "bg-slate-50 text-slate-700 border-slate-200 hover:border-slate-300"
                                       }`}
                                     >

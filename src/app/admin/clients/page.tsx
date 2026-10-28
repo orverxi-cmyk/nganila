@@ -80,8 +80,8 @@ function buildClientProfiles(bookings: any[]): ClientProfile[] {
 
 function TierBadge({ tier }: { tier: LifecycleTier }) {
   if (tier === "regular") return (
-    <span className="inline-flex items-center gap-1 bg-[#8DB833] text-black text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full">
-      <Star className="h-3 w-3 fill-black" /> Regular Client
+    <span className="inline-flex items-center gap-1 bg-primary text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full">
+      <Star className="h-3 w-3 fill-white" /> Regular Client
     </span>
   );
   if (tier === "client") return (
@@ -357,12 +357,12 @@ export default function ClientLifecyclePage() {
                   </p>
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <Button variant="outline" size="sm" className="gap-2 h-9 text-xs font-bold border-[#8DB833] text-[#4a6b1a] hover:bg-[#8DB833]/10"
+                  <Button variant="outline" size="sm" className="gap-2 h-9 text-xs font-bold border-primary text-primary hover:bg-primary/10"
                     onClick={handleExport} disabled={filteredProfiles.length === 0}>
                     <FileDown className="h-3.5 w-3.5" />
                     Export Excel
                     {filteredProfiles.length > 0 && (
-                      <span className="ml-1 bg-[#8DB833] text-black rounded-full px-1.5 py-0.5 text-[9px] font-black leading-none">{filteredProfiles.length}</span>
+                      <span className="ml-1 bg-primary text-white rounded-full px-1.5 py-0.5 text-[9px] font-black leading-none">{filteredProfiles.length}</span>
                     )}
                   </Button>
                   <Badge variant="outline" className="text-sm px-4 py-1.5">{filteredProfiles.length} of {totalContacts} Contacts</Badge>
@@ -375,7 +375,7 @@ export default function ClientLifecyclePage() {
             <FunnelStat icon={UserCheck} label="Clients" description="At least 1 successfully completed service"
               count={clientCount} total={totalContacts} accent="bg-black text-white border-black" />
             <FunnelStat icon={Star} label="Regular Clients" description={`${REGULAR_CLIENT_THRESHOLD}+ completed orders`}
-              count={regularCount} total={totalContacts} accent="bg-[#8DB833] text-black border-[#8DB833]" />
+              count={regularCount} total={totalContacts} accent="bg-primary text-white border-primary" />
           </div>
 
           {totalContacts > 0 && (
@@ -431,7 +431,7 @@ export default function ClientLifecyclePage() {
                 {([{ key: "all", label: "All" }, { key: "potential", label: "Potential" }, { key: "client", label: "Client" }, { key: "regular", label: "Regular" }] as const).map((item) => (
                   <button key={item.key} onClick={() => setTierFilter(item.key)}
                     className={cn("px-2.5 py-1 rounded-lg text-xs font-bold transition-all shrink-0",
-                      tierFilter === item.key ? "bg-[#8DB833] text-black shadow-sm" : "bg-muted text-muted-foreground hover:text-foreground")}>
+                      tierFilter === item.key ? "bg-primary text-white shadow-sm" : "bg-muted text-muted-foreground hover:text-foreground")}>
                     {item.label}
                   </button>
                 ))}

@@ -1,0 +1,76 @@
+{
+  "slider": {
+    "items": [
+      {
+        "width": 2000,
+        "link": "/articles/our-services",
+        "description": "<p>Modern vacuum trucks for efficient waste collection, pit emptying, and service to schools, hospitals, hotels, and commercial buildings. </p>",
+        "height": 1080,
+        "title": "Our Services ",
+        "buttonText": "Our Services",
+        "imageUrl": "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1793213599238_B25A0618.webp?alt=media&token=e50baac4-20b5-4c82-9f07-7e59bb05ac2e"
+      },
+      {
+        "height": 600,
+        "link": "/articles/our-journey",
+        "description": "<p>Nganira Company Ltd has made a significant impact in addressing the challenges of liquid waste management across Rwanda.</p>",
+        "buttonText": "Learn More",
+        "imageUrl": "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1793213144622_B25A0634.webp?alt=media&token=6d9e4a28-cc59-45b3-9f98-ffd1f4dea5df",
+        "width": 1200,
+        "title": "Our Journey"
+      },
+      {
+        "buttonText": "Learn More",
+        "imageUrl": "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1793211795742_B25A0663.webp?alt=media&token=8036e255-fcc7-45e6-95df-e3c7e03fed1c",
+        "link": "/articles/impact-since-our-inception",
+        "height": 600,
+        "width": 1200,
+        "title": "Our Impact",
+        "description": "<p>We have experienced remarkable growth, evolving from a small startup to a key player in Rwanda's liquid waste management sector.</p>"
+      }
+    ],
+    "updatedAt": 1793213638988
+  },
+  "services": {
+    "updatedAt": 1793214001302,
+    "id": "services",
+    "subtitle": "At SANEX, we offer a full suite of services designed to promote public health and sustainable environmental growth.",
+    "title": "Comprehensive Liquid Waste Solutions",
+    "items": [
+      {
+        "title": "Liquid Waste Collection and Transport ",
+        "icon": "truck",
+        "description": "Modern vacuum trucks for efficient waste collection, serving schools, hospitals, hotels, and commercial buildings. \n\n",
+        "imageUrl": "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1793213898090_B25A0663.webp?alt=media&token=a04fde20-c0b5-4d56-968e-de94faab3c52"
+      },
+      {
+        "imageUrl": "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1793213959170_B25A0618.webp?alt=media&token=eaf80e18-b511-4997-bc75-0fa31487389e",
+        "icon": "droplets",
+        "description": "Advanced systems for clean water reuse in irrigation, cleaning, flushing, and eco-friendly solutions using activated sludge technology. ",
+        "title": "Installation of Decentralized Wastewater Treatment Systems"
+      },
+      {
+        "icon": "settings",
+        "title": "Maintenance & Consultancy",
+        "description": "Quarterly maintenance services and expert advice for optimal wastewater management. \n",
+        "imageUrl": "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1793213995260_B25A0625.webp?alt=media&token=7ee8d8bb-db13-44ee-a2e4-0c58295c8da5"
+      },
+      {
+        "imageUrl": "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1793213761986_B25A0991.webp?alt=media&token=73484c1c-230d-416e-aa17-79ac30191987",
+        "description": "<p>Collaborating with government and private organizations and promoting public health and hygiene.\n</p>",
+        "title": "Sanitation Projects and Partnerships ",
+        "height": 600,
+        "width": 800,
+        "icon": "truck"
+      },
+      {
+        "height": 600,
+        "description": "<p><span style=\"background-color: rgb(255, 255, 255); color: rgb(15, 17, 21);\">Our portfolio also includes modern clean water tank trucks ready to deliver safe, reliable water to your doorstep—whether for schools, hospitals, hotels, commercial buildings, or residential use.</span></p>",
+        "imageUrl": "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1793213767697_B25A0625.webp?alt=media&token=96e2ca18-3612-4800-ac9e-430bc12e0f7d",
+        "title": "Clean Water Delivery",
+        "width": 800,
+        "icon": "truck"
+      }
+    ]
+  }
+}

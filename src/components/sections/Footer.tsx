@@ -45,8 +45,21 @@ export function Footer() {
     return [];
   }, [generalData]);
 
-  const navLinks = Array.isArray(generalData?.navLinks) ? generalData.navLinks : [];
-  const servicesList: any[] = Array.isArray(servicesData?.items) ? servicesData.items : [];
+  const defaultNavLinks = [
+    { name: "Home", href: "/" },
+    { name: "About", href: "/about" },
+    { name: "Services", href: "/services" },
+    { name: "Articles", href: "/articles" },
+    { name: "Publications", href: "/publications" },
+    { name: "Gallery", href: "/gallery" },
+    { name: "Contact", href: "/contact" },
+  ];
+
+  const navLinks = (Array.isArray(generalData?.navLinks) && generalData.navLinks.length > 0)
+    ? generalData.navLinks
+    : defaultNavLinks;
+  const servicesList: any[] = (Array.isArray(servicesData?.items) ? servicesData.items : [])
+    .filter((s: any) => !s?.title?.toLowerCase().includes("clean water"));
 
   const socials = generalData?.socials || {};
 
@@ -114,7 +127,7 @@ export function Footer() {
     <footer id="contact" className="bg-[#26272e] text-slate-100 pt-14 pb-8 border-t border-[#454755] relative overflow-hidden">
       {/* Subtle background ambient glow */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#636679]/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 right-10 w-80 h-80 bg-[#d9eaa4]/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 right-10 w-80 h-80 bg-[#006400]/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="container mx-auto px-4 md:px-16 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12 text-left">
@@ -122,12 +135,12 @@ export function Footer() {
           {/* Brand & ASSERWA Profile */}
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <div className="h-11 w-11 rounded-xl bg-[#636679] text-[#d9eaa4] border border-[#d9eaa4]/40 flex items-center justify-center shadow-md shadow-[#636679]/30 shrink-0">
+              <div className="h-11 w-11 rounded-xl bg-[#006400] text-white flex items-center justify-center shadow-md shadow-[#006400]/30 shrink-0">
                 <Droplets className="h-6 w-6" />
               </div>
               <div>
                 <span className="font-extrabold text-base tracking-tight text-white block">{siteName}</span>
-                <span className="text-[11px] text-[#d9eaa4] font-semibold tracking-wider uppercase block">Sanitation & Liquid Waste</span>
+                <span className="text-[11px] text-white/80 font-semibold tracking-wider uppercase block">Sanitation & Liquid Waste</span>
               </div>
             </div>
 
@@ -136,34 +149,24 @@ export function Footer() {
                 {siteDescription}
               </p>
             )}
-
-            <div className="p-3 rounded-xl bg-[#383944] border border-[#545667] text-xs space-y-1">
-              <div className="flex items-center gap-2 text-[#d9eaa4] font-semibold">
-                <span className="h-2 w-2 rounded-full bg-[#d9eaa4] animate-pulse" />
-                <span>Verified ASSERWA Member</span>
-              </div>
-              <p className="text-[11px] text-[#bcbec8]">
-                Forum of Sewage Emptiers in Rwanda
-              </p>
-            </div>
           </div>
 
           {/* Quick Links */}
           <div className="space-y-4">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-[#d9eaa4]">Quick Navigation</h4>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-white">Quick Navigation</h4>
             <ul className="space-y-2.5 text-xs font-medium">
               {navLinks.map((link: any) => (
                 <li key={link.name}>
-                  <Link href={link.href} className="text-[#bcbec8] hover:text-[#d9eaa4] transition-colors flex items-center gap-2 group">
-                    <span className="h-1 w-1 rounded-full bg-[#636679] group-hover:bg-[#d9eaa4] transition-colors" />
+                  <Link href={link.href} className="text-[#bcbec8] hover:text-white transition-colors flex items-center gap-2 group">
+                    <span className="h-1 w-1 rounded-full bg-[#006400] group-hover:bg-white transition-colors" />
                     <span>{link.name}</span>
                   </Link>
                 </li>
               ))}
               <li>
-                <Link href="/book" className="text-[#d9eaa4] hover:text-white transition-colors flex items-center gap-2 font-semibold">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#d9eaa4]" />
-                  <span>Book an Exhauster Truck</span>
+                <Link href="/book" className="text-white hover:text-white/90 transition-colors flex items-center gap-2 font-semibold">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#006400]" />
+                  <span>Book a Service</span>
                 </Link>
               </li>
             </ul>
@@ -171,18 +174,18 @@ export function Footer() {
 
           {/* Core Services from Firestore */}
           <div className="space-y-4">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-[#d9eaa4]">Core Services</h4>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-white">Core Services</h4>
             <ul className="space-y-2.5 text-xs text-[#bcbec8]">
               {servicesList.length > 0 ? (
                 servicesList.map((srv: any, idx: number) => (
                   <li key={idx} className="flex items-start gap-2">
-                    <span className="text-[#d9eaa4] mt-0.5">•</span>
+                    <span className="text-[#006400] mt-0.5">•</span>
                     <span>{srv.title}</span>
                   </li>
                 ))
               ) : (
                 <li>
-                  <Link href="/services" className="text-[#bcbec8] hover:text-[#d9eaa4] transition-colors">
+                  <Link href="/services" className="text-[#bcbec8] hover:text-white transition-colors">
                     Explore Our Solutions &rarr;
                   </Link>
                 </li>
@@ -192,10 +195,10 @@ export function Footer() {
 
           {/* Dispatch & Contact */}
           <div className="space-y-4">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-[#d9eaa4]">Dispatch & Contact</h4>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-white">Dispatch & Contact</h4>
             <ul className="space-y-3 text-xs text-[#bcbec8]">
               <li className="flex gap-2.5 items-start">
-                <MapPin className="h-4 w-4 text-[#d9eaa4] shrink-0 mt-0.5" />
+                <MapPin className="h-4 w-4 text-[#006400] shrink-0 mt-0.5" />
                 <div>
                   <div className="font-semibold text-white">Strategic Operating Hub</div>
                   <div className="text-[#bcbec8] text-[11px]">Kicukiro, Kigali, Rwanda</div>
@@ -203,14 +206,14 @@ export function Footer() {
               </li>
               {phones.map((phoneItem, idx) => (
                 <li key={`phone-${idx}`} className="flex gap-2.5 items-center">
-                  <Phone className="h-4 w-4 text-[#d9eaa4] shrink-0" />
-                  <a href={`tel:${phoneItem.replace(/[^0-9+]/g, '')}`} className="font-semibold text-white hover:text-[#d9eaa4] transition-colors">{phoneItem}</a>
+                  <Phone className="h-4 w-4 text-[#006400] shrink-0" />
+                  <a href={`tel:${phoneItem.replace(/[^0-9+]/g, '')}`} className="font-semibold text-white hover:text-white/80 transition-colors">{phoneItem}</a>
                 </li>
               ))}
               {emails.map((emailItem, idx) => (
                 <li key={`email-${idx}`} className="flex gap-2.5 items-center">
-                  <Mail className="h-4 w-4 text-[#d9eaa4] shrink-0" />
-                  <a href={`mailto:${emailItem}`} className="text-[#bcbec8] hover:text-[#d9eaa4] transition-colors break-all">{emailItem}</a>
+                  <Mail className="h-4 w-4 text-[#006400] shrink-0" />
+                  <a href={`mailto:${emailItem}`} className="text-[#bcbec8] hover:text-white transition-colors break-all">{emailItem}</a>
                 </li>
               ))}
             </ul>
@@ -220,7 +223,7 @@ export function Footer() {
                 href="https://eepurl.com/2gm-Vewnrw"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center w-full bg-[#d9eaa4] hover:bg-[#cbe090] text-[#26272e] font-bold px-4 py-2.5 rounded-xl text-xs transition-all shadow-md shadow-[#d9eaa4]/20"
+                className="inline-flex items-center justify-center w-full bg-[#006400] hover:bg-[#005000] text-white font-bold px-4 py-2.5 rounded-xl text-xs transition-all shadow-md shadow-[#006400]/20"
               >
                 Subscribe to Updates
               </a>
@@ -233,39 +236,37 @@ export function Footer() {
           <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-center sm:text-left">
             <span>© {new Date().getFullYear()} Nganira Company LTD. All rights reserved.</span>
             <span className="hidden sm:inline text-[#545667]">•</span>
-            <span className="text-[#bcbec8]">Verified ASSERWA Member</span>
-            <span className="hidden sm:inline text-[#545667]">•</span>
-            <Link href="/privacy" className="hover:text-[#d9eaa4] transition-colors">
+            <Link href="/privacy" className="hover:text-white transition-colors">
               Privacy Policy
             </Link>
             <span className="hidden sm:inline text-[#545667]">•</span>
-            <Link href="/terms" className="hover:text-[#d9eaa4] transition-colors">
+            <Link href="/terms" className="hover:text-white transition-colors">
               Terms of Service
             </Link>
           </div>
           <div className="flex gap-2.5">
             {socials.twitter && (
-              <a href={socials.twitter} target="_blank" rel="noopener noreferrer" className="h-8 w-8 rounded-lg bg-[#383944] border border-[#545667] flex items-center justify-center hover:bg-[#d9eaa4] hover:text-[#26272e] transition-all text-slate-300" title="Twitter / X">
+              <a href={socials.twitter} target="_blank" rel="noopener noreferrer" className="h-8 w-8 rounded-lg bg-[#383944] border border-[#545667] flex items-center justify-center hover:bg-[#006400] hover:text-white transition-all text-slate-300" title="Twitter / X">
                 <Twitter className="h-4 w-4" />
               </a>
             )}
             {socials.linkedin && (
-              <a href={socials.linkedin} target="_blank" rel="noopener noreferrer" className="h-8 w-8 rounded-lg bg-[#383944] border border-[#545667] flex items-center justify-center hover:bg-[#d9eaa4] hover:text-[#26272e] transition-all text-slate-300" title="LinkedIn">
+              <a href={socials.linkedin} target="_blank" rel="noopener noreferrer" className="h-8 w-8 rounded-lg bg-[#383944] border border-[#545667] flex items-center justify-center hover:bg-[#006400] hover:text-white transition-all text-slate-300" title="LinkedIn">
                 <Linkedin className="h-4 w-4" />
               </a>
             )}
             {socials.facebook && (
-              <a href={socials.facebook} target="_blank" rel="noopener noreferrer" className="h-8 w-8 rounded-lg bg-[#383944] border border-[#545667] flex items-center justify-center hover:bg-[#d9eaa4] hover:text-[#26272e] transition-all text-slate-300" title="Facebook">
+              <a href={socials.facebook} target="_blank" rel="noopener noreferrer" className="h-8 w-8 rounded-lg bg-[#383944] border border-[#545667] flex items-center justify-center hover:bg-[#006400] hover:text-white transition-all text-slate-300" title="Facebook">
                 <Facebook className="h-4 w-4" />
               </a>
             )}
             {socials.instagram && (
-              <a href={socials.instagram} target="_blank" rel="noopener noreferrer" className="h-8 w-8 rounded-lg bg-[#383944] border border-[#545667] flex items-center justify-center hover:bg-[#d9eaa4] hover:text-[#26272e] transition-all text-slate-300" title="Instagram">
+              <a href={socials.instagram} target="_blank" rel="noopener noreferrer" className="h-8 w-8 rounded-lg bg-[#383944] border border-[#545667] flex items-center justify-center hover:bg-[#006400] hover:text-white transition-all text-slate-300" title="Instagram">
                 <Instagram className="h-4 w-4" />
               </a>
             )}
             {socials.whatsapp && (
-              <a href={socials.whatsapp.startsWith('http') ? socials.whatsapp : `https://wa.me/${socials.whatsapp.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="h-8 w-8 rounded-lg bg-[#383944] border border-[#545667] flex items-center justify-center hover:bg-[#d9eaa4] hover:text-[#26272e] transition-all text-slate-300" title="WhatsApp">
+              <a href={socials.whatsapp.startsWith('http') ? socials.whatsapp : `https://wa.me/${socials.whatsapp.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="h-8 w-8 rounded-lg bg-[#383944] border border-[#545667] flex items-center justify-center hover:bg-[#006400] hover:text-white transition-all text-slate-300" title="WhatsApp">
                 <MessageCircle className="h-4 w-4" />
               </a>
             )}
@@ -282,7 +283,7 @@ export function Footer() {
         <DialogContent className="bg-[#26272e] text-white border-[#545667] sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold text-white flex items-center gap-2">
-              <Mail className="h-5 w-5 text-[#d9eaa4]" />
+              <Mail className="h-5 w-5 text-[#006400]" />
               Subscribe to Nganira Updates
             </DialogTitle>
             <DialogDescription className="text-[#bcbec8] text-sm">
@@ -299,7 +300,7 @@ export function Footer() {
                 value={newsletterEmail}
                 onChange={(e) => setNewsletterEmail(e.target.value)}
                 placeholder="your.email@example.com"
-                className="w-full bg-[#383944] border border-[#545667] rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#9698a7] focus:outline-none focus:border-[#d9eaa4] focus:ring-1 focus:ring-[#d9eaa4]"
+                className="w-full bg-[#383944] border border-[#545667] rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#9698a7] focus:outline-none focus:border-[#006400] focus:ring-1 focus:ring-[#006400]"
               />
             </div>
 
@@ -311,7 +312,7 @@ export function Footer() {
                   value={newsletterFirstName}
                   onChange={(e) => setNewsletterFirstName(e.target.value)}
                   placeholder="First Name"
-                  className="w-full bg-[#383944] border border-[#545667] rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#9698a7] focus:outline-none focus:border-[#d9eaa4] focus:ring-1 focus:ring-[#d9eaa4]"
+                  className="w-full bg-[#383944] border border-[#545667] rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#9698a7] focus:outline-none focus:border-[#006400] focus:ring-1 focus:ring-[#006400]"
                 />
               </div>
               <div className="space-y-1">
@@ -321,7 +322,7 @@ export function Footer() {
                   value={newsletterLastName}
                   onChange={(e) => setNewsletterLastName(e.target.value)}
                   placeholder="Last Name"
-                  className="w-full bg-[#383944] border border-[#545667] rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#9698a7] focus:outline-none focus:border-[#d9eaa4] focus:ring-1 focus:ring-[#d9eaa4]"
+                  className="w-full bg-[#383944] border border-[#545667] rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#9698a7] focus:outline-none focus:border-[#006400] focus:ring-1 focus:ring-[#006400]"
                 />
               </div>
             </div>
@@ -333,7 +334,7 @@ export function Footer() {
                 value={newsletterAddress}
                 onChange={(e) => setNewsletterAddress(e.target.value)}
                 placeholder="e.g. Kicukiro, Kigali"
-                className="w-full bg-[#383944] border border-[#545667] rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#9698a7] focus:outline-none focus:border-[#d9eaa4] focus:ring-1 focus:ring-[#d9eaa4]"
+                className="w-full bg-[#383944] border border-[#545667] rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#9698a7] focus:outline-none focus:border-[#006400] focus:ring-1 focus:ring-[#006400]"
               />
             </div>
 
@@ -344,7 +345,7 @@ export function Footer() {
                 value={newsletterPhone}
                 onChange={(e) => setNewsletterPhone(e.target.value)}
                 placeholder="+250 788 000 000"
-                className="w-full bg-[#383944] border border-[#545667] rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#9698a7] focus:outline-none focus:border-[#d9eaa4] focus:ring-1 focus:ring-[#d9eaa4]"
+                className="w-full bg-[#383944] border border-[#545667] rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#9698a7] focus:outline-none focus:border-[#006400] focus:ring-1 focus:ring-[#006400]"
               />
             </div>
 
@@ -369,7 +370,7 @@ export function Footer() {
               <button
                 type="submit"
                 disabled={newsletterStatus === "loading" || newsletterStatus === "success"}
-                className="bg-[#d9eaa4] hover:bg-[#cbe090] text-[#26272e] font-bold px-5 py-2 rounded-lg text-sm transition-all disabled:opacity-50"
+                className="bg-[#006400] hover:bg-[#005000] text-white font-bold px-5 py-2 rounded-lg text-sm transition-all disabled:opacity-50"
               >
                 {newsletterStatus === "loading" ? "Subscribing..." : newsletterStatus === "success" ? "Subscribed!" : "Confirm Subscription"}
               </button>
@@ -382,10 +383,10 @@ export function Footer() {
         {pathname !== "/book" && (
           <Link
             href="/book"
-            aria-label="Book an Exhauster"
-            className="md:hidden pointer-events-auto flex flex-col items-center gap-2 bg-[#636679] text-[#d9eaa4] border border-[#d9eaa4]/40 font-bold px-2.5 py-3 rounded-l-xl shadow-2xl hover:bg-[#545667] transition-all group"
+            aria-label="Book a Service"
+            className="md:hidden pointer-events-auto flex flex-col items-center gap-2 bg-[#006400] text-white font-bold px-2.5 py-3 rounded-l-xl shadow-2xl hover:bg-[#005000] transition-all group"
           >
-            <span className="[writing-mode:vertical-rl] rotate-180 text-[11px] font-bold tracking-widest uppercase">Book Truck</span>
+            <span className="[writing-mode:vertical-rl] rotate-180 text-[11px] font-bold tracking-widest uppercase">Book Service</span>
             <Calendar className="h-4 w-4 shrink-0 -rotate-90 transition-transform group-hover:scale-110" />
           </Link>
         )}
@@ -394,7 +395,7 @@ export function Footer() {
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Subscribe to Updates"
-          className="pointer-events-auto flex flex-col items-center gap-2 bg-[#d9eaa4] text-[#26272e] font-bold px-2.5 py-3.5 rounded-l-xl shadow-2xl hover:bg-[#cbe090] transition-all group"
+          className="pointer-events-auto flex flex-col items-center gap-2 bg-[#006400] text-white font-bold px-2.5 py-3.5 rounded-l-xl shadow-2xl hover:bg-[#005000] transition-all group"
         >
           <span className="[writing-mode:vertical-rl] rotate-180 text-[11px] font-bold tracking-widest uppercase">Subscribe</span>
           <Mail className="h-4 w-4 shrink-0 -rotate-90 transition-transform group-hover:scale-110" />

@@ -40,8 +40,8 @@ export function VideoHighlight() {
       <span id="operational-highlights" className="scroll-mt-24 absolute -top-24 pointer-events-none" />
       <div className="container mx-auto px-4 md:px-16">
         <div className="flex flex-col items-center text-center mb-8 space-y-2">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#d9eaa4]/40 text-[#383944] text-[11px] font-bold uppercase tracking-wider border border-[#d9eaa4]">
-            <Activity className="h-3 w-3 text-[#636679]" /> Operational Footage
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#006400]/10 text-[#006400] text-[11px] font-bold uppercase tracking-wider border border-[#006400]/30">
+            <Activity className="h-3 w-3 text-[#006400]" /> Operational Footage
           </div>
           <h2 className="text-[26px] sm:text-[32px] font-extrabold text-[#26272e] tracking-tight">{content.title}</h2>
           <p className="text-[15px] text-[#636679] max-w-2xl leading-relaxed">{content.description}</p>

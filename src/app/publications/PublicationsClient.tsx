@@ -179,7 +179,7 @@ export default function PublicationsClient() {
 
                     {/* Header Strip with Category and Date */}
                     <div className="p-5 pb-3 border-b border-slate-100 flex items-center justify-between gap-2 flex-wrap">
-                      <Badge className="bg-[#d9eaa4] hover:bg-[#cde092] text-[#26272e] border-[#d9eaa4] text-[10px] font-extrabold uppercase tracking-wider">
+                      <Badge className="bg-[#006400] hover:bg-[#005000] text-white border-[#006400] text-[10px] font-extrabold uppercase tracking-wider">
                         {pub.category || "Announcement"}
                       </Badge>
                       <div className="flex items-center gap-2">
@@ -232,7 +232,7 @@ export default function PublicationsClient() {
                       <Button
                         asChild
                         size="sm"
-                        className="h-8 text-xs font-bold bg-[#d9eaa4] text-[#26272e] hover:bg-[#cde092] gap-1.5 shadow-2xs rounded-lg"
+                        className="h-8 text-xs font-bold bg-[#006400] text-white hover:bg-[#005000] gap-1.5 shadow-2xs rounded-lg"
                       >
                         <Link href={pubUrl}>
                           <span>Read Online</span>

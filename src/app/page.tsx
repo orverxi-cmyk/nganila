@@ -2,7 +2,6 @@ import { Navbar } from "@/components/sections/Navbar";
 import { HomeSlider } from "@/components/sections/HomeSlider";
 import { MilestoneTracker } from "@/components/sections/MilestoneTracker";
 import { Services } from "@/components/sections/Services";
-import { ImpactDashboard } from "@/components/sections/ImpactDashboard";
 import { VideoHighlight } from "@/components/sections/VideoHighlight";
 import { Footer } from "@/components/sections/Footer";
 
@@ -15,7 +14,6 @@ export default function Home() {
         <MilestoneTracker />
         <Services />
         <VideoHighlight />
-        <ImpactDashboard />
       </main>
       <Footer />
     </div>

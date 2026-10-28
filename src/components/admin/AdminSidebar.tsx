@@ -67,7 +67,7 @@ export function AdminSidebar({ activeTab, onSelectTab, pendingRequestsCount }: A
       <div className="space-y-6">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Badge className="bg-primary/20 text-black border-primary/30 font-bold uppercase text-[9px] tracking-wider">
+            <Badge className="bg-primary/10 text-primary border-primary/20 font-bold uppercase text-[9px] tracking-wider">
               Control Center
             </Badge>
           </div>
@@ -83,20 +83,20 @@ export function AdminSidebar({ activeTab, onSelectTab, pendingRequestsCount }: A
             className={cn(
               "w-full flex items-center justify-between p-3 rounded-xl font-bold text-xs transition-all text-left",
               isContentActive
-                ? "bg-primary text-black shadow-sm"
+                ? "bg-primary text-white shadow-sm"
                 : "hover:bg-muted text-foreground"
             )}
           >
             <div className="flex items-center gap-3">
-              <ImageIcon className="h-4 w-4 shrink-0 text-black" />
+              <ImageIcon className={cn("h-4 w-4 shrink-0", isContentActive ? "text-white" : "text-muted-foreground")} />
               <div>
                 <div className="font-bold">Content Management</div>
-                <div className={cn("text-[10px] font-normal", isContentActive ? "text-black/80" : "text-muted-foreground")}>
+                <div className={cn("text-[10px] font-normal", isContentActive ? "text-white/80" : "text-muted-foreground")}>
                   Pages, Media & Articles
                 </div>
               </div>
             </div>
-            {isContentActive && <ChevronRight className="h-4 w-4 shrink-0" />}
+            {isContentActive && <ChevronRight className="h-4 w-4 shrink-0 text-white" />}
           </Link>
 
           {/* 2. Users (Second) */}
@@ -105,20 +105,20 @@ export function AdminSidebar({ activeTab, onSelectTab, pendingRequestsCount }: A
             className={cn(
               "w-full flex items-center justify-between p-3 rounded-xl font-bold text-xs transition-all text-left",
               isUsersActive
-                ? "bg-primary text-black shadow-sm"
+                ? "bg-primary text-white shadow-sm"
                 : "hover:bg-muted text-foreground"
             )}
           >
             <div className="flex items-center gap-3">
-              <Users className="h-4 w-4 shrink-0 text-black" />
+              <Users className={cn("h-4 w-4 shrink-0", isUsersActive ? "text-white" : "text-muted-foreground")} />
               <div>
                 <div className="font-bold">Users</div>
-                <div className={cn("text-[10px] font-normal", isUsersActive ? "text-black/80" : "text-muted-foreground")}>
+                <div className={cn("text-[10px] font-normal", isUsersActive ? "text-white/80" : "text-muted-foreground")}>
                   Accounts & Access Roles
                 </div>
               </div>
             </div>
-            {isUsersActive && <ChevronRight className="h-4 w-4 shrink-0" />}
+            {isUsersActive && <ChevronRight className="h-4 w-4 shrink-0 text-white" />}
           </Link>
 
           {/* 3. Bookings (Third) */}
@@ -127,20 +127,20 @@ export function AdminSidebar({ activeTab, onSelectTab, pendingRequestsCount }: A
             className={cn(
               "w-full flex items-center justify-between p-3 rounded-xl font-bold text-xs transition-all text-left",
               isBookingsActive
-                ? "bg-primary text-black shadow-sm"
+                ? "bg-primary text-white shadow-sm"
                 : "hover:bg-muted text-foreground"
             )}
           >
             <div className="flex items-center gap-3">
-              <ClipboardList className="h-4 w-4 shrink-0 text-black" />
+              <ClipboardList className={cn("h-4 w-4 shrink-0", isBookingsActive ? "text-white" : "text-muted-foreground")} />
               <div>
                 <div className="font-bold">Bookings</div>
-                <div className={cn("text-[10px] font-normal", isBookingsActive ? "text-black/80" : "text-muted-foreground")}>
+                <div className={cn("text-[10px] font-normal", isBookingsActive ? "text-white/80" : "text-muted-foreground")}>
                   Full Requests Pipeline
                 </div>
               </div>
             </div>
-            {isBookingsActive && <ChevronRight className="h-4 w-4 shrink-0" />}
+            {isBookingsActive && <ChevronRight className="h-4 w-4 shrink-0 text-white" />}
           </Link>
 
           {/* Client Lifecycle */}
@@ -149,20 +149,20 @@ export function AdminSidebar({ activeTab, onSelectTab, pendingRequestsCount }: A
             className={cn(
               "w-full flex items-center justify-between p-3 rounded-xl font-bold text-xs transition-all text-left",
               isClientsActive
-                ? "bg-primary text-black shadow-sm"
+                ? "bg-primary text-white shadow-sm"
                 : "hover:bg-muted text-foreground"
             )}
           >
             <div className="flex items-center gap-3">
-              <UserCheck className="h-4 w-4 shrink-0 text-black" />
+              <UserCheck className={cn("h-4 w-4 shrink-0", isClientsActive ? "text-white" : "text-muted-foreground")} />
               <div>
                 <div className="font-bold">Client Lifecycle</div>
-                <div className={cn("text-[10px] font-normal", isClientsActive ? "text-black/80" : "text-muted-foreground")}>
+                <div className={cn("text-[10px] font-normal", isClientsActive ? "text-white/80" : "text-muted-foreground")}>
                   Leads, Clients &amp; Regulars
                 </div>
               </div>
             </div>
-            {isClientsActive && <ChevronRight className="h-4 w-4 shrink-0" />}
+            {isClientsActive && <ChevronRight className="h-4 w-4 shrink-0 text-white" />}
           </Link>
 
           {/* Manage Contacts */}
@@ -171,20 +171,20 @@ export function AdminSidebar({ activeTab, onSelectTab, pendingRequestsCount }: A
             className={cn(
               "w-full flex items-center justify-between p-3 rounded-xl font-bold text-xs transition-all text-left",
               isContactsActive
-                ? "bg-primary text-black shadow-sm"
+                ? "bg-primary text-white shadow-sm"
                 : "hover:bg-muted text-foreground"
             )}
           >
             <div className="flex items-center gap-3">
-              <BookUser className="h-4 w-4 shrink-0 text-black" />
+              <BookUser className={cn("h-4 w-4 shrink-0", isContactsActive ? "text-white" : "text-muted-foreground")} />
               <div>
                 <div className="font-bold">Manage Contacts</div>
-                <div className={cn("text-[10px] font-normal", isContactsActive ? "text-black/80" : "text-muted-foreground")}>
+                <div className={cn("text-[10px] font-normal", isContactsActive ? "text-white/80" : "text-muted-foreground")}>
                   Groups &amp; Recipients
                 </div>
               </div>
             </div>
-            {isContactsActive && <ChevronRight className="h-4 w-4 shrink-0" />}
+            {isContactsActive && <ChevronRight className="h-4 w-4 shrink-0 text-white" />}
           </Link>
 
           {/* Send Email */}
@@ -193,20 +193,20 @@ export function AdminSidebar({ activeTab, onSelectTab, pendingRequestsCount }: A
             className={cn(
               "w-full flex items-center justify-between p-3 rounded-xl font-bold text-xs transition-all text-left",
               isEmailsActive
-                ? "bg-primary text-black shadow-sm"
+                ? "bg-primary text-white shadow-sm"
                 : "hover:bg-muted text-foreground"
             )}
           >
             <div className="flex items-center gap-3">
-              <Mail className="h-4 w-4 shrink-0 text-black" />
+              <Mail className={cn("h-4 w-4 shrink-0", isEmailsActive ? "text-white" : "text-muted-foreground")} />
               <div>
                 <div className="font-bold">Send Email</div>
-                <div className={cn("text-[10px] font-normal", isEmailsActive ? "text-black/80" : "text-muted-foreground")}>
+                <div className={cn("text-[10px] font-normal", isEmailsActive ? "text-white/80" : "text-muted-foreground")}>
                   Broadcasts &amp; Outbound
                 </div>
               </div>
             </div>
-            {isEmailsActive && <ChevronRight className="h-4 w-4 shrink-0" />}
+            {isEmailsActive && <ChevronRight className="h-4 w-4 shrink-0 text-white" />}
           </Link>
 
           {/* Publications & Newsletters */}
@@ -215,20 +215,20 @@ export function AdminSidebar({ activeTab, onSelectTab, pendingRequestsCount }: A
             className={cn(
               "w-full flex items-center justify-between p-3 rounded-xl font-bold text-xs transition-all text-left",
               isPublicationsActive
-                ? "bg-primary text-black shadow-sm"
+                ? "bg-primary text-white shadow-sm"
                 : "hover:bg-muted text-foreground"
             )}
           >
             <div className="flex items-center gap-3">
-              <BookOpen className="h-4 w-4 shrink-0 text-black" />
+              <BookOpen className={cn("h-4 w-4 shrink-0", isPublicationsActive ? "text-white" : "text-muted-foreground")} />
               <div>
                 <div className="font-bold">Publications</div>
-                <div className={cn("text-[10px] font-normal", isPublicationsActive ? "text-black/80" : "text-muted-foreground")}>
+                <div className={cn("text-[10px] font-normal", isPublicationsActive ? "text-white/80" : "text-muted-foreground")}>
                   Newsletters &amp; Special Links
                 </div>
               </div>
             </div>
-            {isPublicationsActive && <ChevronRight className="h-4 w-4 shrink-0" />}
+            {isPublicationsActive && <ChevronRight className="h-4 w-4 shrink-0 text-white" />}
           </Link>
 
           {/* Divider between primary modules and operational tabs */}
@@ -244,20 +244,20 @@ export function AdminSidebar({ activeTab, onSelectTab, pendingRequestsCount }: A
               className={cn(
                 "w-full flex items-center justify-between p-3 rounded-xl font-bold text-xs transition-all text-left",
                 isOperationsActive
-                  ? "bg-primary text-black shadow-sm"
+                  ? "bg-primary text-white shadow-sm"
                   : "hover:bg-muted text-foreground"
               )}
             >
               <div className="flex items-center gap-3">
-                <LayoutDashboard className="h-4 w-4 shrink-0" />
+                <LayoutDashboard className={cn("h-4 w-4 shrink-0", isOperationsActive ? "text-white" : "text-muted-foreground")} />
                 <div>
                   <div className="font-bold">Operation Center</div>
-                  <div className={cn("text-[10px] font-normal", isOperationsActive ? "text-black/80" : "text-muted-foreground")}>
+                  <div className={cn("text-[10px] font-normal", isOperationsActive ? "text-white/80" : "text-muted-foreground")}>
                     System Overview & Hub
                   </div>
                 </div>
               </div>
-              {isOperationsActive && <ChevronRight className="h-4 w-4 shrink-0" />}
+              {isOperationsActive && <ChevronRight className="h-4 w-4 shrink-0 text-white" />}
             </button>
           ) : (
             <Link
@@ -265,20 +265,20 @@ export function AdminSidebar({ activeTab, onSelectTab, pendingRequestsCount }: A
               className={cn(
                 "w-full flex items-center justify-between p-3 rounded-xl font-bold text-xs transition-all text-left",
                 isOperationsActive
-                  ? "bg-primary text-black shadow-sm"
+                  ? "bg-primary text-white shadow-sm"
                   : "hover:bg-muted text-foreground"
               )}
             >
               <div className="flex items-center gap-3">
-                <LayoutDashboard className="h-4 w-4 shrink-0" />
+                <LayoutDashboard className={cn("h-4 w-4 shrink-0", isOperationsActive ? "text-white" : "text-muted-foreground")} />
                 <div>
                   <div className="font-bold">Operation Center</div>
-                  <div className={cn("text-[10px] font-normal", isOperationsActive ? "text-black/80" : "text-muted-foreground")}>
+                  <div className={cn("text-[10px] font-normal", isOperationsActive ? "text-white/80" : "text-muted-foreground")}>
                     System Overview & Hub
                   </div>
                 </div>
               </div>
-              {isOperationsActive && <ChevronRight className="h-4 w-4 shrink-0" />}
+              {isOperationsActive && <ChevronRight className="h-4 w-4 shrink-0 text-white" />}
             </Link>
           )}
 
@@ -290,25 +290,25 @@ export function AdminSidebar({ activeTab, onSelectTab, pendingRequestsCount }: A
               className={cn(
                 "w-full flex items-center justify-between p-3 rounded-xl font-bold text-xs transition-all text-left",
                 isRequestsActive
-                  ? "bg-primary text-black shadow-sm"
+                  ? "bg-primary text-white shadow-sm"
                   : "hover:bg-muted text-foreground"
               )}
             >
               <div className="flex items-center gap-3">
-                <ClipboardList className="h-4 w-4 shrink-0" />
+                <ClipboardList className={cn("h-4 w-4 shrink-0", isRequestsActive ? "text-white" : "text-muted-foreground")} />
                 <div>
                   <div className="font-bold">Requests</div>
-                  <div className={cn("text-[10px] font-normal", isRequestsActive ? "text-black/80" : "text-muted-foreground")}>
+                  <div className={cn("text-[10px] font-normal", isRequestsActive ? "text-white/80" : "text-muted-foreground")}>
                     Service Status Filter
                   </div>
                 </div>
               </div>
               {pendingCount > 0 ? (
-                <Badge className={cn("text-[10px] font-bold px-2 py-0.5", isRequestsActive ? "bg-black text-white" : "bg-primary text-black border-primary")}>
+                <Badge className={cn("text-[10px] font-bold px-2 py-0.5", isRequestsActive ? "bg-white text-[#006400]" : "bg-primary text-white border-primary")}>
                   {pendingCount} new
                 </Badge>
               ) : isRequestsActive ? (
-                <ChevronRight className="h-4 w-4 shrink-0" />
+                <ChevronRight className="h-4 w-4 shrink-0 text-white" />
               ) : null}
             </button>
           ) : (
@@ -317,25 +317,25 @@ export function AdminSidebar({ activeTab, onSelectTab, pendingRequestsCount }: A
               className={cn(
                 "w-full flex items-center justify-between p-3 rounded-xl font-bold text-xs transition-all text-left",
                 isRequestsActive
-                  ? "bg-primary text-black shadow-sm"
+                  ? "bg-primary text-white shadow-sm"
                   : "hover:bg-muted text-foreground"
               )}
             >
               <div className="flex items-center gap-3">
-                <ClipboardList className="h-4 w-4 shrink-0" />
+                <ClipboardList className={cn("h-4 w-4 shrink-0", isRequestsActive ? "text-white" : "text-muted-foreground")} />
                 <div>
                   <div className="font-bold">Requests</div>
-                  <div className={cn("text-[10px] font-normal", isRequestsActive ? "text-black/80" : "text-muted-foreground")}>
+                  <div className={cn("text-[10px] font-normal", isRequestsActive ? "text-white/80" : "text-muted-foreground")}>
                     Service Status Filter
                   </div>
                 </div>
               </div>
               {pendingCount > 0 ? (
-                <Badge className={cn("text-[10px] font-bold px-2 py-0.5", isRequestsActive ? "bg-black text-white" : "bg-primary text-black border-primary")}>
+                <Badge className={cn("text-[10px] font-bold px-2 py-0.5", isRequestsActive ? "bg-white text-[#006400]" : "bg-primary text-white border-primary")}>
                   {pendingCount} new
                 </Badge>
               ) : isRequestsActive ? (
-                <ChevronRight className="h-4 w-4 shrink-0" />
+                <ChevronRight className="h-4 w-4 shrink-0 text-white" />
               ) : null}
             </Link>
           )}
@@ -348,20 +348,20 @@ export function AdminSidebar({ activeTab, onSelectTab, pendingRequestsCount }: A
               className={cn(
                 "w-full flex items-center justify-between p-3 rounded-xl font-bold text-xs transition-all text-left",
                 isAnalyticsActive
-                  ? "bg-primary text-black shadow-sm"
+                  ? "bg-primary text-white shadow-sm"
                   : "hover:bg-muted text-foreground"
               )}
             >
               <div className="flex items-center gap-3">
-                <TrendingUp className="h-4 w-4 shrink-0" />
+                <TrendingUp className={cn("h-4 w-4 shrink-0", isAnalyticsActive ? "text-white" : "text-muted-foreground")} />
                 <div>
                   <div className="font-bold">Platform Performance</div>
-                  <div className={cn("text-[10px] font-normal", isAnalyticsActive ? "text-black/80" : "text-muted-foreground")}>
+                  <div className={cn("text-[10px] font-normal", isAnalyticsActive ? "text-white/80" : "text-muted-foreground")}>
                     Channels & Attribution
                   </div>
                 </div>
               </div>
-              {isAnalyticsActive && <ChevronRight className="h-4 w-4 shrink-0" />}
+              {isAnalyticsActive && <ChevronRight className="h-4 w-4 shrink-0 text-white" />}
             </button>
           ) : (
             <Link
@@ -369,20 +369,20 @@ export function AdminSidebar({ activeTab, onSelectTab, pendingRequestsCount }: A
               className={cn(
                 "w-full flex items-center justify-between p-3 rounded-xl font-bold text-xs transition-all text-left",
                 isAnalyticsActive
-                  ? "bg-primary text-black shadow-sm"
+                  ? "bg-primary text-white shadow-sm"
                   : "hover:bg-muted text-foreground"
               )}
             >
               <div className="flex items-center gap-3">
-                <TrendingUp className="h-4 w-4 shrink-0" />
+                <TrendingUp className={cn("h-4 w-4 shrink-0", isAnalyticsActive ? "text-white" : "text-muted-foreground")} />
                 <div>
                   <div className="font-bold">Platform Performance</div>
-                  <div className={cn("text-[10px] font-normal", isAnalyticsActive ? "text-black/80" : "text-muted-foreground")}>
+                  <div className={cn("text-[10px] font-normal", isAnalyticsActive ? "text-white/80" : "text-muted-foreground")}>
                     Channels & Attribution
                   </div>
                 </div>
               </div>
-              {isAnalyticsActive && <ChevronRight className="h-4 w-4 shrink-0" />}
+              {isAnalyticsActive && <ChevronRight className="h-4 w-4 shrink-0 text-white" />}
             </Link>
           )}
 
@@ -410,7 +410,7 @@ export function AdminSidebar({ activeTab, onSelectTab, pendingRequestsCount }: A
       {/* Operator Auth Status at bottom of sidebar */}
       <div className="pt-4 border-t mt-6">
         <div className="bg-muted/50 p-3 rounded-xl flex items-center gap-3">
-          <div className="h-8 w-8 rounded-full bg-primary text-black flex items-center justify-center shrink-0 font-bold">
+          <div className="h-8 w-8 rounded-full bg-primary text-white flex items-center justify-center shrink-0 font-bold">
             <Shield className="h-4 w-4" />
           </div>
           <div className="overflow-hidden">

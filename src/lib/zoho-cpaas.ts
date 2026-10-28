@@ -541,7 +541,7 @@ export async function sendZohoEmailBatch(
 // ============================================================================
 
 const BRAND_COLOR = "#636679";
-const BRAND_ACCENT = "#d9eaa4";
+const BRAND_ACCENT = "#006400";
 const BRAND_NAME = "Nganira Company LTD";
 const COMPANY_PHONE = "+250 788 840 000";
 const COMPANY_PHONE_ALT = "+250 788 668 855";

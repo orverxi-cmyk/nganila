@@ -295,7 +295,7 @@ export default function ArticleDetailClient({ initialSlug, initialArticle }: Art
                 <User className="h-3 w-3 text-[#636679]" /> {article.author || "Nganira Team"}
               </span>
               {article.category && (
-                <span className="px-2.5 py-0.5 rounded-full bg-[#d9eaa4] text-[#26272e] font-bold">
+                <span className="px-2.5 py-0.5 rounded-full bg-[#006400] text-white font-bold">
                   {article.category}
                 </span>
               )}
@@ -343,7 +343,7 @@ export default function ArticleDetailClient({ initialSlug, initialArticle }: Art
           <div className="mt-10 pt-5 border-t border-[#636679]/20">
             <h3 className="text-[16px] font-bold font-headline mb-4">Want to learn more?</h3>
             <div className="flex flex-wrap gap-x-[12px] gap-y-[16px]">
-              <Button asChild className="h-12 px-8 bg-[#d9eaa4] text-[#26272e] hover:bg-[#cde092] font-bold text-[12px] uppercase tracking-widest rounded-full shadow-md">
+              <Button asChild className="h-12 px-8 bg-[#006400] text-white hover:bg-[#005000] font-bold text-[12px] uppercase tracking-widest rounded-full shadow-md">
                 <Link href="/book">Schedule a Consultation</Link>
               </Button>
               <Button asChild variant="outline" className="h-12 px-8 border-[#636679] text-[#636679] hover:bg-[#636679]/10 font-bold text-[12px] uppercase tracking-widest rounded-full">

@@ -95,7 +95,7 @@ export function Highlights() {
         <div className="absolute -inset-2 z-20 bg-[#636679]/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none rounded-2xl">
           <Button asChild className="pointer-events-auto bg-[#636679] text-white hover:bg-[#545667] gap-2 font-bold text-xs rounded-xl shadow-md">
             <Link href="/admin/content?tab=highlights">
-              <Edit3 className="h-4 w-4 text-[#d9eaa4]" /> Edit Highlights
+              <Edit3 className="h-4 w-4 text-[#006400]" /> Edit Highlights
             </Link>
           </Button>
         </div>
@@ -109,7 +109,7 @@ export function Highlights() {
       <div className="space-y-6">
         {items.map((item: any, i: number) => (
           <div key={i} className="flex gap-4 items-start p-4 rounded-2xl bg-white border border-[#d9dadf] shadow-sm hover:border-[#636679]/40 transition-all">
-            <div className="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-xl bg-[#d9eaa4]/30 border border-[#d9eaa4] text-[#636679] shadow-inner">
+            <div className="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-xl bg-[#006400]/10 border border-[#006400]/30 text-[#006400] shadow-inner">
               {getIcon(item.icon)}
             </div>
             <div className="space-y-1">

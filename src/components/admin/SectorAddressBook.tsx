@@ -774,7 +774,7 @@ export function SectorAddressBook() {
                     onClick={() => setSelectedSector(group.id)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 ${
                       isSelected
-                        ? "bg-primary text-black shadow-xs ring-1 ring-primary/40"
+                        ? "bg-primary text-white shadow-xs ring-1 ring-primary/40"
                         : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                     }`}
                   >
@@ -782,7 +782,7 @@ export function SectorAddressBook() {
                     <span>{group.name}</span>
                     <span
                       className={`text-[10px] font-extrabold px-1.5 py-0.2 rounded-full ${
-                        isSelected ? "bg-black/15 text-black" : "bg-slate-200 text-slate-700"
+                        isSelected ? "bg-white/20 text-white" : "bg-slate-200 text-slate-700"
                       }`}
                     >
                       {count}

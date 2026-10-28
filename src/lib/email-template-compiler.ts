@@ -102,7 +102,7 @@ export const SOCIAL_PLATFORMS: {
     name: "Official Website",
     iconText: "🌐",
     color: "#636679",
-    bg: "#d9eaa4",
+    bg: "#006400",
     defaultUrl: "https://nganira.rw",
     placeholder: "https://nganira.rw",
   },
@@ -121,7 +121,7 @@ export function getSocialPlatformMeta(platform: SocialPlatform) {
       name: platform,
       iconText: "🔗",
       color: "#636679",
-      bg: "#d9eaa4",
+      bg: "#006400",
       defaultUrl: "https://nganira.rw",
       placeholder: "https://...",
     }
@@ -268,8 +268,8 @@ export const INITIAL_SANEX_BLOCKS: EmailBlock[] = [
     buttonText: "BOOK SERVICE NOW >>",
     buttonUrl: "https://nganira.rw/book",
     buttonVariant: "filled",
-    buttonColor: "#d9eaa4",
-    buttonTextColor: "#26272e",
+    buttonColor: "#006400",
+    buttonTextColor: "#ffffff",
     bgColor: "#ffffff",
   },
   {
@@ -287,8 +287,8 @@ export const INITIAL_SANEX_BLOCKS: EmailBlock[] = [
       "We provide comprehensive DWTS solutions, from initial construction to ongoing management, designed to address the unique needs of communities and businesses lacking access to centralized wastewater infrastructure.",
     col2ButtonText: "Read More >>",
     col2ButtonUrl: "https://nganira.rw/services",
-    col2ButtonColor: "#d9eaa4",
-    col2ButtonTextColor: "#26272e",
+    col2ButtonColor: "#006400",
+    col2ButtonTextColor: "#ffffff",
   },
   {
     id: "col2-clean-water",
@@ -305,7 +305,7 @@ export const INITIAL_SANEX_BLOCKS: EmailBlock[] = [
     col2ButtonText: "Read More >>",
     col2ButtonUrl: "https://nganira.rw/services",
     col2ButtonColor: "#636679",
-    col2ButtonTextColor: "#d9eaa4",
+    col2ButtonTextColor: "#006400",
   },
   {
     id: "col2-liquid-waste",
@@ -322,7 +322,7 @@ export const INITIAL_SANEX_BLOCKS: EmailBlock[] = [
     col2ButtonText: "Read More >>",
     col2ButtonUrl: "https://nganira.rw/services",
     col2ButtonColor: "#636679",
-    col2ButtonTextColor: "#d9eaa4",
+    col2ButtonTextColor: "#006400",
   },
   {
     id: "video-highlights",
@@ -335,7 +335,7 @@ export const INITIAL_SANEX_BLOCKS: EmailBlock[] = [
     videoWatchUrl: "https://nganira.rw/gallery",
     videoThumbnail:
       "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media",
-    videoPlayButtonColor: "#d9eaa4",
+    videoPlayButtonColor: "#006400",
   },
   {
     id: "footer-1",
@@ -459,9 +459,9 @@ export function compileBlocksToHtml(blocks: EmailBlock[] = INITIAL_SANEX_BLOCKS)
                       <span style="color:#475569; margin:0 6px;">·</span>
                       <span>📞 <a href="tel:${phone.replace(/\s+/g, "")}" style="color:#cbd5e1; text-decoration:none;">${phone}</a></span>
                       <span style="color:#475569; margin:0 6px;">·</span>
-                      <span>✉️ <a href="mailto:${email}" style="color:#d9eaa4; text-decoration:none;">${email}</a></span>
+                      <span>✉️ <a href="mailto:${email}" style="color:#006400; text-decoration:none;">${email}</a></span>
                       <span style="color:#475569; margin:0 6px;">·</span>
-                      <span>🌐 <a href="${website}" target="_blank" rel="noopener noreferrer" style="color:#d9eaa4; text-decoration:none;">nganira.rw</a></span>
+                      <span>🌐 <a href="${website}" target="_blank" rel="noopener noreferrer" style="color:#006400; text-decoration:none;">nganira.rw</a></span>
                     </td>
                   </tr>
                 </table>
@@ -680,7 +680,7 @@ export function compileBlocksToHtml(blocks: EmailBlock[] = INITIAL_SANEX_BLOCKS)
           return `
             <tr>
               <td align="${block.align || "center"}" style="background-color:#ffffff; padding:16px 24px;">
-                <a href="${block.buttonUrl || "#"}" target="_blank" style="display:inline-block; background-color:${block.buttonColor || "#d9eaa4"}; color:${block.buttonTextColor || "#26272e"}; font-size:13px; font-weight:800; text-decoration:none; padding:11px 28px; border-radius:6px; text-transform:uppercase; letter-spacing:0.5px;">
+                <a href="${block.buttonUrl || "#"}" target="_blank" style="display:inline-block; background-color:${block.buttonColor || "#006400"}; color:${block.buttonTextColor || "#ffffff"}; font-size:13px; font-weight:800; text-decoration:none; padding:11px 28px; border-radius:6px; text-transform:uppercase; letter-spacing:0.5px;">
                   ${block.buttonText || "Call to Action"}
                 </a>
               </td>
