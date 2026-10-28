@@ -35,12 +35,20 @@ export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
         setError(null);
       },
       (serverError) => {
-        console.warn("Firestore doc error:", serverError);
-        const permissionError = new FirestorePermissionError({
-          path: docRef.path,
-          operation: 'get',
-        });
-        errorEmitter.emit('permission-error', permissionError);
+        const isPublicDoc =
+          docPath?.startsWith('settings') ||
+          docPath?.startsWith('articles') ||
+          docPath?.startsWith('publications') ||
+          docPath?.startsWith('gallery');
+
+        if (!isPublicDoc) {
+          console.warn(`Firestore doc error [${docPath}]:`, serverError);
+          const permissionError = new FirestorePermissionError({
+            path: docRef.path,
+            operation: 'get',
+          });
+          errorEmitter.emit('permission-error', permissionError);
+        }
         setError(serverError);
         setLoading(false);
       }

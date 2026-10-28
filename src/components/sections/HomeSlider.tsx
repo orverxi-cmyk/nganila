@@ -110,7 +110,7 @@ export function HomeSlider() {
             {items.map((slide: any, i: number) => (
               <CarouselItem key={i} className="h-full pl-0">
                 <div className="grid grid-cols-1 lg:grid-cols-4 rounded-xl overflow-hidden border bg-white shadow-lg items-stretch">
-                  <div className="relative w-full aspect-video lg:col-span-3 bg-black border-b lg:border-b-0 lg:border-r border-primary/10 flex items-center justify-center overflow-hidden">
+                  <div className="relative w-full min-h-[280px] sm:min-h-[380px] md:min-h-[460px] lg:h-[500px] lg:col-span-3 bg-black border-b lg:border-b-0 lg:border-r border-primary/10 flex items-center justify-center overflow-hidden">
                     {slide.imageUrl && isVideo(slide.imageUrl) ? (
                       <video 
                         src={slide.imageUrl} 
