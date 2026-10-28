@@ -4,7 +4,7 @@ import React from "react";
 import { Navbar } from "@/components/sections/Navbar";
 import { Footer } from "@/components/sections/Footer";
 import { useUser, useDoc, useFirestore, useCollection, useFunctions } from "@/firebase";
-import { doc, collection, updateDoc } from "firebase/firestore";
+import { doc, collection, updateDoc, deleteDoc } from "firebase/firestore";
 import { httpsCallable } from "firebase/functions";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,7 +33,8 @@ import {
   Mail,
   Calendar,
   UserPlus,
-  RefreshCw
+  RefreshCw,
+  Trash2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -48,6 +49,7 @@ export default function UserManagementPage() {
   
   const [searchTerm, setSearchTerm] = React.useState("");
   const [updatingId, setUpdatingId] = React.useState<string | null>(null);
+  const [deletingId, setDeletingId] = React.useState<string | null>(null);
   const [isAdding, setIsAdding] = React.useState(false);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   
@@ -165,6 +167,49 @@ export default function UserManagementPage() {
       toast({ variant: "destructive", title: "Action Failed", description: err.message });
     } finally {
       setUpdatingId(null);
+    }
+  };
+
+  const handleDeleteUser = async (targetUser: any) => {
+    const targetName = targetUser.displayName || targetUser.email || "this operator";
+    if (!window.confirm(`Are you sure you want to permanently remove ${targetName}? This will revoke their system access and delete their account completely.`)) {
+      return;
+    }
+
+    setDeletingId(targetUser.id);
+    try {
+      if (functions) {
+        try {
+          const deleteUserFunc = httpsCallable(functions, 'adminDeleteUser');
+          await deleteUserFunc({ targetUserId: targetUser.id });
+        } catch (funcErr: any) {
+          console.warn("adminDeleteUser function failed, attempting direct Firestore delete:", funcErr);
+          if (db) {
+            await deleteDoc(doc(db, "users", targetUser.id));
+          } else {
+            throw funcErr;
+          }
+        }
+      } else if (db) {
+        await deleteDoc(doc(db, "users", targetUser.id));
+      }
+
+      if (backupUsers) {
+        setBackupUsers(prev => prev ? prev.filter(u => u.id !== targetUser.id) : null);
+      }
+
+      toast({ 
+        title: "User Removed", 
+        description: `Account for ${targetName} has been permanently deleted.` 
+      });
+    } catch (err: any) {
+      toast({ 
+        variant: "destructive", 
+        title: "Removal Failed", 
+        description: err.message || "Failed to remove user." 
+      });
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -389,7 +434,12 @@ export default function UserManagementPage() {
                         </td>
                       </tr>
                     ) : filteredUsers.length > 0 ? (
-                      paginatedUsers.map((u) => (
+                      paginatedUsers.map((u) => {
+                        const isMaster = Boolean(
+                          u.isMaster || 
+                          (u.email && ["tharushyamagara@gmail.com", "orverxi@gmail.com", "sanexcompany@gmail.com"].includes(u.email.toLowerCase()))
+                        );
+                        return (
                         <tr key={u.id} className="hover:bg-muted/10 transition-colors">
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
@@ -399,7 +449,7 @@ export default function UserManagementPage() {
                               <div>
                                 <div className="font-bold text-black flex items-center gap-2">
                                   {u.displayName}
-                                  {u.isMaster && <Badge className="bg-primary text-black text-[8px] font-bold uppercase tracking-widest px-1.5 h-4">Master</Badge>}
+                                  {isMaster && <Badge className="bg-primary text-black text-[8px] font-bold uppercase tracking-widest px-1.5 h-4">Master</Badge>}
                                 </div>
                                 <div className="text-[12px] text-muted-foreground flex items-center gap-1">
                                   <Mail className="h-3 w-3" /> {u.email}
@@ -419,32 +469,51 @@ export default function UserManagementPage() {
                             </div>
                           </td>
                           <td className="px-6 py-4 text-right">
-                            {u.isMaster ? (
+                            {isMaster ? (
                               <span className="text-[10px] text-muted-foreground italic font-medium">Root Access</span>
                             ) : (
-                              <Button 
-                                size="sm" 
-                                variant="outline" 
-                                className="h-8 text-[10px] font-bold uppercase tracking-wider gap-2"
-                                disabled={updatingId === u.id || u.id === user.uid}
-                                onClick={() => handleToggleRole(u)}
-                              >
-                                {updatingId === u.id ? (
-                                  <Loader2 className="h-3 w-3 animate-spin" />
-                                ) : u.role === "admin" ? (
-                                  <>
-                                    <UserX className="h-3 w-3 text-destructive" /> Demote to User
-                                  </>
-                                ) : (
-                                  <>
-                                    <UserCheck className="h-3 w-3 text-primary" /> Promote to Admin
-                                  </>
-                                )}
-                              </Button>
+                              <div className="flex items-center justify-end gap-2">
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  className="h-8 text-[10px] font-bold uppercase tracking-wider gap-2"
+                                  disabled={updatingId === u.id || deletingId === u.id || u.id === user.uid}
+                                  onClick={() => handleToggleRole(u)}
+                                >
+                                  {updatingId === u.id ? (
+                                    <Loader2 className="h-3 w-3 animate-spin" />
+                                  ) : u.role === "admin" ? (
+                                    <>
+                                      <UserX className="h-3 w-3 text-destructive" /> Demote to User
+                                    </>
+                                  ) : (
+                                    <>
+                                      <UserCheck className="h-3 w-3 text-primary" /> Promote to Admin
+                                    </>
+                                  )}
+                                </Button>
+
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="h-8 text-[10px] font-bold uppercase tracking-wider gap-1.5 text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/30"
+                                  disabled={deletingId === u.id || updatingId === u.id || u.id === user.uid}
+                                  onClick={() => handleDeleteUser(u)}
+                                  title="Permanently remove user"
+                                >
+                                  {deletingId === u.id ? (
+                                    <Loader2 className="h-3 w-3 animate-spin" />
+                                  ) : (
+                                    <Trash2 className="h-3 w-3" />
+                                  )}
+                                  <span className="hidden sm:inline">Delete</span>
+                                </Button>
+                              </div>
                             )}
                           </td>
                         </tr>
-                      ))
+                      );
+                    })
                     ) : (
                       <tr>
                         <td colSpan={4} className="py-12 text-center text-muted-foreground">

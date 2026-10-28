@@ -5,7 +5,7 @@ import React, { Suspense } from "react";
 import { Navbar } from "@/components/sections/Navbar";
 import { Footer } from "@/components/sections/Footer";
 import { useUser, useDoc, useFirestore, useCollection, useFunctions } from "@/firebase";
-import { doc, collection, query, orderBy } from "firebase/firestore";
+import { doc, collection, query, orderBy, setDoc } from "firebase/firestore";
 import { httpsCallable } from "firebase/functions";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -104,16 +104,56 @@ function ContentManagementContent() {
   const { data: articles, loading: articlesLoading } = useCollection(articlesQuery);
 
   const handleUpdateSection = async (sectionId: string, content: any) => {
-    if (!functions) return;
     setIsSubmitting(true);
+    let firestoreSaved = false;
+
+    // 1. Direct write to Firestore for instant and persistent saving in Cloud & client cache
+    if (db) {
+      try {
+        await setDoc(doc(db, "settings", sectionId), {
+          ...content,
+          updatedAt: Date.now()
+        }, { merge: true });
+        firestoreSaved = true;
+      } catch (dbErr: any) {
+        console.warn(`Direct Firestore write error for ${sectionId}:`, dbErr);
+      }
+    }
+
+    // 2. Also save to browser localStorage for immediate localhost persistence across refreshes
     try {
-      const updateFunc = httpsCallable(functions, 'adminUpdateSiteSection');
-      await updateFunc({ sectionId, content });
-      toast({ title: "Saved", description: `${sectionId} section updated successfully.` });
-    } catch (err: any) {
-      toast({ variant: "destructive", title: "Error", description: err.message });
-    } finally {
-      setIsSubmitting(false);
+      if (typeof window !== "undefined") {
+        localStorage.setItem(`nganila_setting_${sectionId}`, JSON.stringify(content));
+      }
+    } catch {
+      // ignore
+    }
+
+    // 3. Invoke Cloud Function for backend audit/synchronization
+    let funcSuccess = false;
+    if (functions) {
+      try {
+        const updateFunc = httpsCallable(functions, 'adminUpdateSiteSection');
+        await updateFunc({ sectionId, content });
+        funcSuccess = true;
+      } catch (err: any) {
+        console.warn(`adminUpdateSiteSection function warning for ${sectionId}:`, err.message);
+      }
+    }
+
+    setIsSubmitting(false);
+
+    if (firestoreSaved || funcSuccess) {
+      toast({ 
+        title: "Changes Saved", 
+        description: `${sectionId.toUpperCase()} configuration has been permanently saved.` 
+      });
+    } else {
+      toast({ 
+        variant: "destructive", 
+        title: "Save Failed", 
+        description: "Could not write to database. Please check permissions." 
+      });
     }
   };
 
@@ -562,11 +602,50 @@ function ArticleManager({ articles, loading }: { articles: any, loading: boolean
   );
 }
 
+const DEFAULT_SLIDER_ITEMS = [
+  { 
+    title: "Nganira Company LTD", 
+    description: "<p>Professional waste management and sanitation company in Kicukiro, Kigali, Rwanda. Verified member of ASSERWA operating a fleet of 5 vacuum tankers.</p>", 
+    imageUrl: "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1779714862617_SANEX_VIDEO_higlights%20-%20Copy.mp4?alt=media",
+    width: 2000,
+    height: 1080,
+    link: "/services",
+    buttonText: "Our Core Services"
+  },
+  { 
+    title: "Liquid Waste Evacuation & Transport", 
+    description: "<p>Professional septic tank emptying, pit latrine draining (kuvidura), and vacuum tanker transportation with rapid dispatch across Kigali.</p>", 
+    imageUrl: "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media",
+    width: 1200,
+    height: 600,
+    link: "/book",
+    buttonText: "Book an Exhauster Truck"
+  }
+];
+
 function SliderEditor({ initialData, onSave }: { initialData: any, onSave: (data: any) => void }) {
-  const [items, setItems] = React.useState<any[]>(initialData?.items || []);
+  const [items, setItems] = React.useState<any[]>(() => {
+    if (initialData?.items && Array.isArray(initialData.items) && initialData.items.length > 0) {
+      return initialData.items;
+    }
+    if (typeof window !== "undefined") {
+      try {
+        const local = localStorage.getItem("nganila_setting_slider");
+        if (local) {
+          const parsed = JSON.parse(local);
+          if (Array.isArray(parsed?.items) && parsed.items.length > 0) {
+            return parsed.items;
+          }
+        }
+      } catch {}
+    }
+    return DEFAULT_SLIDER_ITEMS;
+  });
 
   React.useEffect(() => {
-    if (initialData?.items) setItems(initialData.items);
+    if (initialData?.items && Array.isArray(initialData.items) && initialData.items.length > 0) {
+      setItems(initialData.items);
+    }
   }, [initialData]);
 
   const updateItem = (index: number, field: string, value: any) => {

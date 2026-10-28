@@ -95,10 +95,9 @@ export const adminUpdateUserRole = onCall({ cors: true }, async (request: Callab
     throw new HttpsError('failed-precondition', 'You cannot change your own role.');
   }
   
-  const masterEmails = ['sanexcompany@gmail.com', 'orverxi@gmail.com', 'tharushyamagara@gmail.com']; 
-  
   const targetUserDoc = await db.collection('users').doc(targetUserId).get();
-  if (targetUserDoc.exists && masterEmails.includes(targetUserDoc.data()?.email)) {
+  const targetEmail = (targetUserDoc.data()?.email || '').toLowerCase().trim();
+  if (targetUserDoc.exists && MASTER_ADMIN_EMAILS.includes(targetEmail)) {
     throw new HttpsError('permission-denied', 'Cannot modify the master administrator.');
   }
   
@@ -107,14 +106,42 @@ export const adminUpdateUserRole = onCall({ cors: true }, async (request: Callab
   return { success: true };
 });
 
+export const adminDeleteUser = onCall({ cors: true }, async (request: CallableRequest) => {
+  const callerUid = await assertAdmin(request);
+  const { targetUserId } = request.data;
+  if (!targetUserId) throw new HttpsError('invalid-argument', 'Missing targetUserId.');
+
+  if (targetUserId === callerUid) {
+    throw new HttpsError('failed-precondition', 'You cannot delete your own account.');
+  }
+
+  const targetUserDoc = await db.collection('users').doc(targetUserId).get();
+  const targetEmail = (targetUserDoc.data()?.email || '').toLowerCase().trim();
+
+  if (MASTER_ADMIN_EMAILS.includes(targetEmail)) {
+    throw new HttpsError('permission-denied', 'Cannot delete a root master administrator.');
+  }
+
+  // 1. Delete from Firebase Authentication
+  try {
+    await admin.auth().deleteUser(targetUserId);
+  } catch (authErr: any) {
+    console.warn(`Auth delete warning for ${targetUserId}:`, authErr.message);
+  }
+
+  // 2. Delete from Firestore users collection
+  await db.collection('users').doc(targetUserId).delete();
+
+  return { success: true };
+});
+
 export const adminBootstrapMaster = onCall({ cors: true }, async (request: CallableRequest) => {
   if (!request.auth) throw new HttpsError('unauthenticated', 'Must be logged in.');
   
   const uid = request.auth.uid;
-  const email = request.auth.token.email;
-  const masterEmails = ['sanexcompany@gmail.com', 'orverxi@gmail.com', 'tharushyamagara@gmail.com'];
+  const email = (request.auth.token.email || '').toLowerCase().trim();
   
-  if (!email || !masterEmails.includes(email)) {
+  if (!email || !MASTER_ADMIN_EMAILS.includes(email)) {
     throw new HttpsError('permission-denied', 'Email not authorized to bootstrap.');
   }
   

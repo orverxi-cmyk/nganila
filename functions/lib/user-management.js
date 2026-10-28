@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.adminGetUsers = exports.adminBootstrapMaster = exports.adminUpdateUserRole = exports.adminCreateUser = void 0;
+exports.adminGetUsers = exports.adminBootstrapMaster = exports.adminDeleteUser = exports.adminUpdateUserRole = exports.adminCreateUser = void 0;
 const https_1 = require("firebase-functions/v2/https");
 const admin = __importStar(require("firebase-admin"));
 const db = admin.firestore();
@@ -123,22 +123,46 @@ exports.adminUpdateUserRole = (0, https_1.onCall)({ cors: true }, async (request
     if (targetUserId === callerUid) {
         throw new https_1.HttpsError('failed-precondition', 'You cannot change your own role.');
     }
-    const masterEmails = ['sanexcompany@gmail.com', 'orverxi@gmail.com', 'tharushyamagara@gmail.com'];
     const targetUserDoc = await db.collection('users').doc(targetUserId).get();
-    if (targetUserDoc.exists && masterEmails.includes((_a = targetUserDoc.data()) === null || _a === void 0 ? void 0 : _a.email)) {
+    const targetEmail = (((_a = targetUserDoc.data()) === null || _a === void 0 ? void 0 : _a.email) || '').toLowerCase().trim();
+    if (targetUserDoc.exists && MASTER_ADMIN_EMAILS.includes(targetEmail)) {
         throw new https_1.HttpsError('permission-denied', 'Cannot modify the master administrator.');
     }
     await db.collection('users').doc(targetUserId).update({ role: newRole });
     await admin.auth().setCustomUserClaims(targetUserId, { admin: newRole === 'admin' });
     return { success: true };
 });
+exports.adminDeleteUser = (0, https_1.onCall)({ cors: true }, async (request) => {
+    var _a;
+    const callerUid = await assertAdmin(request);
+    const { targetUserId } = request.data;
+    if (!targetUserId)
+        throw new https_1.HttpsError('invalid-argument', 'Missing targetUserId.');
+    if (targetUserId === callerUid) {
+        throw new https_1.HttpsError('failed-precondition', 'You cannot delete your own account.');
+    }
+    const targetUserDoc = await db.collection('users').doc(targetUserId).get();
+    const targetEmail = (((_a = targetUserDoc.data()) === null || _a === void 0 ? void 0 : _a.email) || '').toLowerCase().trim();
+    if (MASTER_ADMIN_EMAILS.includes(targetEmail)) {
+        throw new https_1.HttpsError('permission-denied', 'Cannot delete a root master administrator.');
+    }
+    // 1. Delete from Firebase Authentication
+    try {
+        await admin.auth().deleteUser(targetUserId);
+    }
+    catch (authErr) {
+        console.warn(`Auth delete warning for ${targetUserId}:`, authErr.message);
+    }
+    // 2. Delete from Firestore users collection
+    await db.collection('users').doc(targetUserId).delete();
+    return { success: true };
+});
 exports.adminBootstrapMaster = (0, https_1.onCall)({ cors: true }, async (request) => {
     if (!request.auth)
         throw new https_1.HttpsError('unauthenticated', 'Must be logged in.');
     const uid = request.auth.uid;
-    const email = request.auth.token.email;
-    const masterEmails = ['sanexcompany@gmail.com', 'orverxi@gmail.com', 'tharushyamagara@gmail.com'];
-    if (!email || !masterEmails.includes(email)) {
+    const email = (request.auth.token.email || '').toLowerCase().trim();
+    if (!email || !MASTER_ADMIN_EMAILS.includes(email)) {
         throw new https_1.HttpsError('permission-denied', 'Email not authorized to bootstrap.');
     }
     await db.collection('users').doc(uid).set({

@@ -48,7 +48,33 @@ export function HomeSlider() {
     }
   ];
 
-  const items = sliderData?.items || defaultItems;
+  // Immediate local backup to prevent reverting to defaults during localhost refresh / initial load
+  const [localBackup, setLocalBackup] = React.useState<any[] | null>(null);
+
+  React.useEffect(() => {
+    try {
+      const stored = localStorage.getItem("nganila_setting_slider");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed?.items) && parsed.items.length > 0) {
+          setLocalBackup(parsed.items);
+        }
+      }
+    } catch {}
+  }, []);
+
+  // Sync to local storage whenever fresh data arrives from Firestore
+  React.useEffect(() => {
+    if (sliderData?.items && Array.isArray(sliderData.items) && sliderData.items.length > 0) {
+      try {
+        localStorage.setItem("nganila_setting_slider", JSON.stringify({ items: sliderData.items }));
+      } catch {}
+    }
+  }, [sliderData]);
+
+  const items = (sliderData?.items && sliderData.items.length > 0)
+    ? sliderData.items
+    : (localBackup || defaultItems);
 
   const isVideo = (url: string) => {
     if (!url) return false;
