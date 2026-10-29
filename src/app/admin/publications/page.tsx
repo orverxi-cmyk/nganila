@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { Navbar } from "@/components/sections/Navbar";
 import { Footer } from "@/components/sections/Footer";
 import { useUser, useDoc, useFirestore, useCollection } from "@/firebase";
@@ -68,6 +68,7 @@ import {
   extractFirstImage,
   isCustomEmailPublication,
   isGenericSectorCampaign,
+  mergeAndFilterPublications,
   SEED_CAMPAIGN_IDS,
 } from "@/lib/publications";
 import { SpecialLinkGeneratorModal } from "@/components/admin/SpecialLinkGeneratorModal";
@@ -99,37 +100,96 @@ export default function AdminPublicationsPage() {
     return query(collection(db, "publications"), orderBy("publishedAt", "desc"));
   }, [db, user]);
 
-  const { data: rawPublications, loading: publicationsLoading } = useCollection(publicationsQuery);
+  const publicationsMetaRef = useMemo(
+    () => (db ? doc(db, "settings", "publications_meta") : null),
+    [db]
+  );
+  const { data: publicationsMeta } = useDoc(publicationsMetaRef);
+
+  const { data: rawPublications, loading: firestorePublicationsLoading } =
+    useCollection(publicationsQuery);
   const [apiPublications, setApiPublications] = useState<Publication[]>([]);
+  const [apiDeletedIds, setApiDeletedIds] = useState<string[]>([]);
+  const [apiLoading, setApiLoading] = useState<boolean>(true);
+  const prevFirestoreIdsRef = useRef<Set<string>>(new Set());
 
-  // If client Firestore hasn't returned publications or has permission delay, fetch from /api/publications
+  const getAdminAuthHeaders = useCallback(async (): Promise<Record<string, string>> => {
+    const token = user ? await user.getIdToken().catch(() => "") : "";
+    return {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+  }, [user]);
+
+  const refreshApiPublications = useCallback(() => {
+    fetch("/api/publications?status=all", { cache: "no-store" })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.success && Array.isArray(data.publications)) {
+          setApiPublications(data.publications);
+        }
+        if (Array.isArray(data?.deletedIds)) {
+          setApiDeletedIds(data.deletedIds);
+        }
+      })
+      .catch(() => {
+        // fallback gracefully
+      })
+      .finally(() => {
+        setApiLoading(false);
+      });
+  }, []);
+
+  // Always keep API store synchronized and detect live Firestore deletions immediately
   useEffect(() => {
-    if (!rawPublications || rawPublications.length === 0) {
-      fetch("/api/publications")
-        .then((res) => res.json())
-        .then((data) => {
-          if (data?.success && Array.isArray(data.publications) && data.publications.length > 0) {
-            setApiPublications(data.publications);
-          }
-        })
-        .catch(() => {
-          // fallback gracefully
-        });
+    if (Array.isArray(rawPublications)) {
+      const currentIds = new Set<string>(
+        rawPublications.map((d: any) => d?.id).filter(Boolean)
+      );
+      const removedFromFirestore: string[] = [];
+      prevFirestoreIdsRef.current.forEach((oldId) => {
+        if (!currentIds.has(oldId)) {
+          removedFromFirestore.push(oldId);
+        }
+      });
+      prevFirestoreIdsRef.current = currentIds;
+
+      if (removedFromFirestore.length > 0) {
+        const removedSet = new Set(removedFromFirestore);
+        setApiPublications((prev) => prev.filter((p) => !removedSet.has(p.id)));
+      }
     }
-  }, [rawPublications]);
 
-  // Exclusively include real custom emails (properly designed newsletters), exclude all generic seed templates
+    refreshApiPublications();
+  }, [rawPublications, refreshApiPublications]);
+
+  const combinedDeletedIds = useMemo<string[]>(() => {
+    const cloudDeleted = Array.isArray((publicationsMeta as any)?.deletedIds)
+      ? ((publicationsMeta as any).deletedIds as string[])
+      : [];
+    return Array.from(new Set([...apiDeletedIds, ...cloudDeleted].filter(Boolean)));
+  }, [apiDeletedIds, publicationsMeta]);
+
+  const publicationsLoading =
+    firestorePublicationsLoading ||
+    (apiLoading && (!rawPublications || rawPublications.length === 0));
+
+  // Authoritatively merge Firestore & API store publications, excluding deleted IDs & generic seeds
   const publications = useMemo<Publication[]>(() => {
-    const list =
-      rawPublications && rawPublications.length > 0
-        ? (rawPublications.map((d: any) => ({
-            id: d.id,
-            ...d,
-          })) as Publication[])
-        : apiPublications;
+    const mappedFirestore = Array.isArray(rawPublications)
+      ? (rawPublications.map((d: any) => ({
+          ...d,
+          id: d.id,
+        })) as Publication[])
+      : null;
 
-    return list.filter((p) => isCustomEmailPublication(p));
-  }, [rawPublications, apiPublications]);
+    return mergeAndFilterPublications({
+      firestorePublications: mappedFirestore,
+      apiPublications,
+      deletedIds: combinedDeletedIds,
+      includeAllStatuses: true,
+    });
+  }, [rawPublications, apiPublications, combinedDeletedIds]);
 
   // Auto-purge any legacy seed/generic newsletters from Firestore on load
   useEffect(() => {
@@ -151,6 +211,14 @@ export default function AdminPublicationsPage() {
     if (!db || genericTemplatesInDb.length === 0) return;
     setIsPurgingGeneric(true);
     try {
+      const idsToPurge = genericTemplatesInDb.map((item: any) => item.id).filter(Boolean);
+      const headers = await getAdminAuthHeaders();
+      await fetch("/api/publications", {
+        method: "DELETE",
+        headers,
+        body: JSON.stringify({ ids: idsToPurge }),
+      }).catch(() => {});
+
       for (const item of genericTemplatesInDb) {
         try {
           await deleteDoc(doc(db, "publications", item.id));
@@ -279,20 +347,67 @@ export default function AdminPublicationsPage() {
     }
   };
 
-  // Delete Publication
+  // Delete Publication across both backend store (.data/publications-store.json) and Firestore
   const handleDelete = async (pubId: string) => {
     if (!confirm("Are you sure you want to delete this publication from the website?")) return;
+    const targetPub = publications.find((p) => p.id === pubId);
+    const nextDeletedIds = Array.from(new Set([...combinedDeletedIds, pubId]));
+
+    // Optimistically update local admin state immediately
+    setApiDeletedIds(nextDeletedIds);
+    setApiPublications((prev) => prev.filter((p) => p.id !== pubId));
+
     try {
+      // 1. Authoritatively delete from server API & disk store (.data/publications-store.json)
+      const headers = await getAdminAuthHeaders();
+      const apiRes = await fetch(
+        `/api/publications?id=${encodeURIComponent(pubId)}${
+          targetPub?.slug ? `&slug=${encodeURIComponent(targetPub.slug)}` : ""
+        }`,
+        {
+          method: "DELETE",
+          headers,
+          body: JSON.stringify({ id: pubId, slug: targetPub?.slug }),
+        }
+      );
+
+      if (!apiRes.ok) {
+        const errData = await apiRes.json().catch(() => ({}));
+        throw new Error(errData?.error || "Failed to delete publication from server store.");
+      }
+
+      const apiData = await apiRes.json().catch(() => ({}));
+      if (Array.isArray(apiData?.allDeletedIds)) {
+        setApiDeletedIds(
+          Array.from(new Set([...nextDeletedIds, ...apiData.allDeletedIds]))
+        );
+      }
+
+      // 2. Delete from client Firestore & persist tombstone in settings/publications_meta
       if (db) {
         try {
           await deleteDoc(doc(db, "publications", pubId));
         } catch (dbErr: any) {
-          console.warn("Direct delete had permission delay, updating locally:", dbErr?.message);
+          console.warn("Direct delete had permission delay, synced via server:", dbErr?.message);
+        }
+
+        try {
+          await setDoc(
+            doc(db, "settings", "publications_meta"),
+            {
+              deletedIds: nextDeletedIds,
+              updatedAt: Date.now(),
+            },
+            { merge: true }
+          );
+        } catch {
+          // Non-fatal metadata sync
         }
       }
-      setApiPublications((prev) => prev.filter((p) => p.id !== pubId));
+
       toast({ title: "Publication Deleted", description: "The publication has been removed." });
     } catch (err: any) {
+      refreshApiPublications();
       toast({ variant: "destructive", title: "Error", description: err.message });
     }
   };
@@ -347,9 +462,10 @@ export default function AdminPublicationsPage() {
 
       // 1. Authoritatively save to backend publications API & disk store
       try {
+        const headers = await getAdminAuthHeaders();
         const apiRes = await fetch("/api/publications", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers,
           body: JSON.stringify(payload),
         });
         const apiData = await apiRes.json();
@@ -360,12 +476,30 @@ export default function AdminPublicationsPage() {
         console.warn("API save error:", apiErr?.message);
       }
 
-      // 2. Client-side Firestore best-effort sync
+      const nextDeletedIds = combinedDeletedIds.filter((id) => id !== pubId);
+      setApiDeletedIds(nextDeletedIds);
+
+      // 2. Client-side Firestore sync & clear tombstone if re-publishing
       if (db) {
         try {
           await setDoc(doc(db, "publications", pubId), payload, { merge: true });
         } catch (dbErr: any) {
           console.warn("Direct setDoc had permission delay, updating locally:", dbErr?.message);
+        }
+
+        if (combinedDeletedIds.includes(pubId)) {
+          try {
+            await setDoc(
+              doc(db, "settings", "publications_meta"),
+              {
+                deletedIds: nextDeletedIds,
+                updatedAt: Date.now(),
+              },
+              { merge: true }
+            );
+          } catch {
+            // Non-fatal metadata sync
+          }
         }
       }
 
@@ -1186,6 +1320,15 @@ export default function AdminPublicationsPage() {
         publications={publications}
         onPublicationUpdated={(updated) => {
           setLinkGenPub(updated);
+          setApiPublications((prev) => {
+            const idx = prev.findIndex((p) => p.id === updated.id);
+            if (idx >= 0) {
+              const next = [...prev];
+              next[idx] = updated;
+              return next;
+            }
+            return [updated, ...prev];
+          });
         }}
       />
 
@@ -1195,6 +1338,8 @@ export default function AdminPublicationsPage() {
         onOpenChange={setIsLoadSentModalOpen}
         existingPublications={publications}
         onImportComplete={(importedPubs) => {
+          const importedIds = new Set(importedPubs.map((p) => p.id));
+          setApiDeletedIds((prev) => prev.filter((id) => !importedIds.has(id)));
           setApiPublications((prev) => {
             const map = new Map<string, Publication>();
             [...importedPubs, ...prev].forEach((p) => map.set(p.id, p));

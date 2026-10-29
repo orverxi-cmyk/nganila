@@ -8,20 +8,20 @@
         "height": 1080,
         "title": "Our Services ",
         "buttonText": "Our Services",
-        "imageUrl": "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1793213599238_B25A0618.webp?alt=media&token=e50baac4-20b5-4c82-9f07-7e59bb05ac2e"
+        "imageUrl": "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1793256059898_B25A0618.webp?alt=media&token=68963a6f-7cf8-40bf-943e-74aa57793319"
       },
       {
         "height": 600,
         "link": "/articles/our-journey",
         "description": "<p>Nganira Company Ltd has made a significant impact in addressing the challenges of liquid waste management across Rwanda.</p>",
         "buttonText": "Learn More",
-        "imageUrl": "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1793213144622_B25A0634.webp?alt=media&token=6d9e4a28-cc59-45b3-9f98-ffd1f4dea5df",
+        "imageUrl": "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1793256068754_B25A0634.webp?alt=media&token=e986e2d1-5f74-4551-8bc1-d0fe785b7043",
         "width": 1200,
         "title": "Our Journey"
       },
       {
         "buttonText": "Learn More",
-        "imageUrl": "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1793211795742_B25A0663.webp?alt=media&token=8036e255-fcc7-45e6-95df-e3c7e03fed1c",
+        "imageUrl": "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1793256076502_B25A0663.webp?alt=media&token=04389bd3-06e0-4924-ab61-e115241b1c5a",
         "link": "/articles/impact-since-our-inception",
         "height": 600,
         "width": 1200,
@@ -29,7 +29,7 @@
         "description": "<p>We have experienced remarkable growth, evolving from a small startup to a key player in Rwanda's liquid waste management sector.</p>"
       }
     ],
-    "updatedAt": 1793213638988
+    "updatedAt": 1793256083968
   },
   "services": {
     "updatedAt": 1793214001302,
@@ -72,5 +72,37 @@
         "icon": "truck"
       }
     ]
+  },
+  "general": {
+    "secondaryColor": "#1e293b",
+    "tagline": "Waste Water Management",
+    "emails": [
+      "nganilacoltd@gmail.com"
+    ],
+    "phone": "+250 788 303 628",
+    "socials": {
+      "facebook": "",
+      "linkedin": "https://www.linkedin.com/in/sanex-company-ltd-420517443/",
+      "twitter": "https://x.com/SanexRw",
+      "instagram": "",
+      "youtube": "https://www.youtube.com/@sanexcompanyltd8040"
+    },
+    "navLinks": [],
+    "darkColor": "#000000",
+    "description": "Nganira Company LTD is a professional waste water management company operating in Kicukiro, Kigali, Rwanda.",
+    "siteName": "Nganira Company LTD",
+    "companyName": "Nganira Company LTD",
+    "logoWidth": 80,
+    "primaryColor": "#006400",
+    "logoHeight": 80,
+    "id": "general",
+    "phones": [
+      "+250 788 303 628",
+      "+250 787 159 989"
+    ],
+    "email": "nganilacoltd@gmail.com",
+    "logoSpacing": 8,
+    "logoUrl": "",
+    "updatedAt": 1793264948906
   }
 }

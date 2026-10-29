@@ -22,6 +22,15 @@
     --secondary: 232 10% 43%;
     --secondary-foreground: 0 0% 100%;
     
+    /* Brand custom variables */
+    --brand-primary: #006400;
+    --brand-primary-rgb: 0, 100, 0;
+    --brand-primary-dark: #005000;
+    --brand-secondary: #636679;
+    --brand-secondary-rgb: 99, 102, 121;
+    --brand-dark: #26272e;
+    --brand-dark-rgb: 38, 39, 46;
+    
     --muted: 232 12% 96%;
     --muted-foreground: 232 10% 43%;
     

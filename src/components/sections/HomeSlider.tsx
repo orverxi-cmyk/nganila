@@ -99,9 +99,13 @@ export function HomeSlider() {
   if (items.length === 0) {
     if (isAdmin) {
       return (
-        <section id="slider" className="w-full py-16 bg-[#006400] flex flex-col items-center justify-center text-center px-4">
+        <section 
+          id="slider" 
+          className="w-full py-16 flex flex-col items-center justify-center text-center px-4"
+          style={{ backgroundColor: "var(--brand-primary, #006400)" }}
+        >
           <p className="text-slate-100 text-sm mb-3">Homepage Slider is empty. Add your slides in Content Management.</p>
-          <Button asChild className="bg-white text-[#006400] hover:bg-slate-100 font-bold text-xs">
+          <Button asChild className="bg-white text-primary hover:bg-slate-100 font-bold text-xs">
             <Link href="/admin/content?tab=slider"><Edit3 className="mr-1.5 h-4 w-4" /> Add Slides</Link>
           </Button>
         </section>
@@ -111,12 +115,20 @@ export function HomeSlider() {
   }
 
   return (
-    <section id="slider" className="w-full overflow-hidden relative group bg-[#006400] scroll-mt-24">
+    <section 
+      id="slider" 
+      className="w-full overflow-hidden relative group scroll-mt-24"
+      style={{ backgroundColor: "var(--brand-primary, #006400)" }}
+    >
       <span id="video" className="scroll-mt-24 absolute -top-24 pointer-events-none" />
       
       {isAdmin && (
         <div className="absolute top-4 right-4 z-30 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Button asChild className="pointer-events-auto bg-[#005000] text-white hover:bg-[#004000] gap-2 font-bold text-xs rounded-xl shadow-xl border border-white/20 backdrop-blur-md">
+          <Button 
+            asChild 
+            className="pointer-events-auto text-white gap-2 font-bold text-xs rounded-xl shadow-xl border border-white/20 backdrop-blur-md hover:opacity-90"
+            style={{ backgroundColor: "var(--brand-primary-dark, #005000)" }}
+          >
             <Link href="/admin/content?tab=slider">
               <Edit3 className="h-4 w-4 text-white" /> Edit Showcase
             </Link>
@@ -129,10 +141,16 @@ export function HomeSlider() {
         <CarouselContent className="m-0">
           {items.map((slide: any, i: number) => (
             <CarouselItem key={i} className="h-full pl-0">
-              <div className="grid grid-cols-1 lg:grid-cols-12 w-full bg-[#006400] items-stretch">
+              <div 
+                className="grid grid-cols-1 lg:grid-cols-12 w-full items-stretch"
+                style={{ backgroundColor: "var(--brand-primary, #006400)" }}
+              >
                 
                 {/* Media Stage (7 Cols / 8 Cols on XL) */}
-                <div className="relative w-full min-h-[320px] sm:min-h-[420px] md:min-h-[500px] lg:h-[580px] xl:h-[620px] lg:col-span-7 xl:col-span-8 bg-[#004d00] flex items-center justify-center overflow-hidden">
+                <div 
+                  className="relative w-full min-h-[320px] sm:min-h-[420px] md:min-h-[500px] lg:h-[580px] xl:h-[620px] lg:col-span-7 xl:col-span-8 flex items-center justify-center overflow-hidden"
+                  style={{ backgroundColor: "var(--brand-primary-dark, #004d00)" }}
+                >
                   {slide.imageUrl && isVideo(slide.imageUrl) ? (
                     <video 
                       src={slide.imageUrl} 
@@ -151,14 +169,23 @@ export function HomeSlider() {
                       priority={i === 0} 
                     />
                   ) : (
-                    <div className="h-full w-full bg-[#004d00] flex items-center justify-center text-white/80 text-sm uppercase font-bold">
+                    <div 
+                      className="h-full w-full flex items-center justify-center text-white/80 text-sm uppercase font-bold"
+                      style={{ backgroundColor: "var(--brand-primary-dark, #004d00)" }}
+                    >
                       Media Pending
                     </div>
                   )}
                 </div>
 
                 {/* Text Part (5 Cols / 4 Cols on XL) - Contains ONLY Title and Description */}
-                <div className="flex flex-col justify-center p-8 sm:p-12 lg:p-14 xl:p-16 lg:col-span-5 xl:col-span-4 bg-gradient-to-br from-[#006400] via-[#005500] to-[#004600] text-white relative border-t lg:border-t-0 lg:border-l border-[#005000]">
+                <div 
+                  className="flex flex-col justify-center p-8 sm:p-12 lg:p-14 xl:p-16 lg:col-span-5 xl:col-span-4 text-white relative border-t lg:border-t-0 lg:border-l"
+                  style={{
+                    background: "linear-gradient(135deg, var(--brand-primary, #006400) 0%, var(--brand-primary-dark, #004600) 100%)",
+                    borderColor: "var(--brand-primary-dark, #005000)"
+                  }}
+                >
                   {/* Subtle ambient background glow */}
                   <div className="absolute -top-12 -right-12 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -180,8 +207,12 @@ export function HomeSlider() {
         </CarouselContent>
 
         {/* Navigation Controls */}
-        <CarouselPrevious className="hidden md:flex left-4 lg:left-6 border-white/25 bg-black/40 text-white hover:bg-white hover:text-[#006400] hover:border-white shadow-2xl backdrop-blur-md z-30 h-12 w-12 rounded-full transition-all" />
-        <CarouselNext className="hidden md:flex right-4 lg:right-6 border-white/25 bg-black/40 text-white hover:bg-white hover:text-[#006400] hover:border-white shadow-2xl backdrop-blur-md z-30 h-12 w-12 rounded-full transition-all" />
+        <CarouselPrevious 
+          className="hidden md:flex left-4 lg:left-6 border-white/25 bg-black/40 text-white hover:bg-white hover:border-white shadow-2xl backdrop-blur-md z-30 h-12 w-12 rounded-full transition-all" 
+        />
+        <CarouselNext 
+          className="hidden md:flex right-4 lg:right-6 border-white/25 bg-black/40 text-white hover:bg-white hover:border-white shadow-2xl backdrop-blur-md z-30 h-12 w-12 rounded-full transition-all" 
+        />
       </Carousel>
     </section>
   );

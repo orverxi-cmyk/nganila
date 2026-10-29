@@ -280,6 +280,56 @@ export function isCustomEmailPublication(pub: Partial<Publication>): boolean {
   return true;
 }
 
+/**
+ * Authoritatively merges and filters publications from Firestore and the server API store,
+ * excluding any deleted publication IDs so Admin and Public pages always reflect the exact same state.
+ */
+export function mergeAndFilterPublications(options: {
+  firestorePublications?: Publication[] | null;
+  apiPublications?: Publication[] | null;
+  deletedIds?: string[] | null;
+  includeAllStatuses?: boolean;
+}): Publication[] {
+  const {
+    firestorePublications,
+    apiPublications,
+    deletedIds,
+    includeAllStatuses = false,
+  } = options;
+
+  const deletedSet = new Set((deletedIds || []).filter(Boolean));
+  const mergedMap = new Map<string, Publication>();
+
+  (apiPublications || []).forEach((pub) => {
+    if (!pub || !pub.id || deletedSet.has(pub.id)) return;
+    mergedMap.set(pub.id, pub);
+  });
+
+  (firestorePublications || []).forEach((pub) => {
+    if (!pub || !pub.id || deletedSet.has(pub.id)) return;
+    const existing = mergedMap.get(pub.id);
+    if (!existing || (pub.updatedAt || 0) >= (existing.updatedAt || 0)) {
+      mergedMap.set(pub.id, pub);
+    }
+  });
+
+  let result = Array.from(mergedMap.values()).filter((p) =>
+    isCustomEmailPublication(p)
+  );
+
+  if (!includeAllStatuses) {
+    result = result.filter((p) => !p.status || p.status === "published");
+  }
+
+  result.sort((a, b) => {
+    const timeA = a.publishedAt || a.createdAt || a.updatedAt || 0;
+    const timeB = b.publishedAt || b.createdAt || b.updatedAt || 0;
+    return timeB - timeA;
+  });
+
+  return result;
+}
+
 
 /**
  * Returns the official Nganira custom designed newsletter ready for 1-click publishing.

@@ -52,8 +52,13 @@ import {
   MessageCircle,
   Youtube,
   ExternalLink,
-  Eye
+  Eye,
+  Palette,
+  Droplets,
+  RotateCcw,
+  Check
 } from "lucide-react";
+import { DEFAULT_BRAND_SETTINGS, generateBrandCss } from "@/lib/brand-theme";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
@@ -135,10 +140,19 @@ function ContentManagementContent() {
       }
     }
 
-    // 3. Clear/sync localStorage
+    // 3. Clear/sync localStorage & apply instant theme update if general branding
     try {
       if (typeof window !== "undefined") {
         localStorage.setItem(`nganila_setting_${sectionId}`, JSON.stringify(content));
+        if (sectionId === "general") {
+          let styleEl = document.getElementById("brand-theme-styles") as HTMLStyleElement | null;
+          if (!styleEl) {
+            styleEl = document.createElement("style");
+            styleEl.id = "brand-theme-styles";
+            document.head.appendChild(styleEl);
+          }
+          styleEl.innerHTML = generateBrandCss(content);
+        }
       }
     } catch {
       // ignore
@@ -227,7 +241,7 @@ function ContentManagementContent() {
           <Tabs defaultValue={defaultTab} className="space-y-5">
             <div className="overflow-x-auto pb-2">
               <TabsList className="bg-white border p-1 h-auto flex-nowrap justify-start gap-2 min-w-max">
-                <TabsTrigger value="general" className="gap-2 text-[10px] font-bold uppercase"><Settings className="h-3 w-3 text-primary" /> Branding & Socials</TabsTrigger>
+                <TabsTrigger value="general" className="gap-2 text-[10px] font-bold uppercase"><Palette className="h-3.5 w-3.5 text-primary" /> Branding & Customization</TabsTrigger>
                 <TabsTrigger value="navigation" className="gap-2 text-[10px] font-bold uppercase"><NavigationIcon className="h-3 w-3 text-primary" /> Menu</TabsTrigger>
                 <TabsTrigger value="articles" className="gap-2 text-[10px] font-bold uppercase"><FileText className="h-3 w-3 text-primary" /> Articles</TabsTrigger>
                 <TabsTrigger value="slider" className="gap-2 text-[10px] font-bold uppercase"><Layers className="h-3 w-3 text-primary" /> Slider</TabsTrigger>
@@ -895,29 +909,39 @@ function parseArrayField(arr: any, fallbackStr: any, defaultValue: string = ""):
 
 function GeneralEditor({ initialData, onSave }: { initialData: any, onSave: (data: any) => void }) {
   const [formData, setFormData] = React.useState({ 
-    siteName: initialData?.siteName || "", 
-    description: initialData?.description || "",
+    siteName: initialData?.siteName || initialData?.companyName || DEFAULT_BRAND_SETTINGS.siteName, 
+    companyName: initialData?.companyName || initialData?.siteName || DEFAULT_BRAND_SETTINGS.companyName,
+    tagline: initialData?.tagline || DEFAULT_BRAND_SETTINGS.tagline,
+    description: initialData?.description || DEFAULT_BRAND_SETTINGS.description,
+    primaryColor: initialData?.primaryColor || DEFAULT_BRAND_SETTINGS.primaryColor,
+    secondaryColor: initialData?.secondaryColor || DEFAULT_BRAND_SETTINGS.secondaryColor,
+    darkColor: initialData?.darkColor || DEFAULT_BRAND_SETTINGS.darkColor,
     logoUrl: initialData?.logoUrl || "", 
     logoWidth: initialData?.logoWidth || 160, 
-    logoHeight: initialData?.logoHeight || 40, 
+    logoHeight: initialData?.logoHeight || 44, 
     logoSpacing: initialData?.logoSpacing ?? 8, 
-    phones: parseArrayField(initialData?.phones, initialData?.phone, ""), 
-    emails: parseArrayField(initialData?.emails, initialData?.email, ""),
-    socials: initialData?.socials || { twitter: "", linkedin: "", facebook: "", instagram: "", whatsapp: "", youtube: "" }
+    phones: parseArrayField(initialData?.phones, initialData?.phone, "+250 788 450 120"), 
+    emails: parseArrayField(initialData?.emails, initialData?.email, "info@nganira.rw"),
+    socials: initialData?.socials || { ...DEFAULT_BRAND_SETTINGS.socials }
   });
-  
+
   React.useEffect(() => { 
     if (initialData) {
       setFormData({
-        siteName: initialData.siteName || "",
-        description: initialData.description || "",
+        siteName: initialData.siteName || initialData.companyName || DEFAULT_BRAND_SETTINGS.siteName,
+        companyName: initialData.companyName || initialData.siteName || DEFAULT_BRAND_SETTINGS.companyName,
+        tagline: initialData.tagline || DEFAULT_BRAND_SETTINGS.tagline,
+        description: initialData.description || DEFAULT_BRAND_SETTINGS.description,
+        primaryColor: initialData.primaryColor || DEFAULT_BRAND_SETTINGS.primaryColor,
+        secondaryColor: initialData.secondaryColor || DEFAULT_BRAND_SETTINGS.secondaryColor,
+        darkColor: initialData.darkColor || DEFAULT_BRAND_SETTINGS.darkColor,
         logoUrl: initialData.logoUrl || "",
         logoWidth: initialData.logoWidth || 160,
-        logoHeight: initialData.logoHeight || 40,
+        logoHeight: initialData.logoHeight || 44,
         logoSpacing: initialData.logoSpacing ?? 8,
-        phones: parseArrayField(initialData.phones, initialData.phone, ""),
-        emails: parseArrayField(initialData.emails, initialData.email, ""),
-        socials: initialData.socials || { twitter: "", linkedin: "", facebook: "", instagram: "", whatsapp: "", youtube: "" }
+        phones: parseArrayField(initialData.phones, initialData.phone, "+250 788 450 120"),
+        emails: parseArrayField(initialData.emails, initialData.email, "info@nganira.rw"),
+        socials: initialData.socials || { ...DEFAULT_BRAND_SETTINGS.socials }
       });
     }
   }, [initialData]);
@@ -1003,237 +1027,728 @@ function GeneralEditor({ initialData, onSave }: { initialData: any, onSave: (dat
     });
   };
 
+  const resetToBrandDefaults = () => {
+    if (confirm("Reset branding colors, logo, and tagline to default Nganira Company LTD values?")) {
+      setFormData(prev => ({
+        ...prev,
+        primaryColor: DEFAULT_BRAND_SETTINGS.primaryColor,
+        secondaryColor: DEFAULT_BRAND_SETTINGS.secondaryColor,
+        darkColor: DEFAULT_BRAND_SETTINGS.darkColor,
+        companyName: DEFAULT_BRAND_SETTINGS.companyName,
+        siteName: DEFAULT_BRAND_SETTINGS.siteName,
+        tagline: DEFAULT_BRAND_SETTINGS.tagline,
+      }));
+    }
+  };
+
+  const primaryPresets = [
+    { name: "Forest Green", hex: "#006400" },
+    { name: "Emerald", hex: "#059669" },
+    { name: "Teal Green", hex: "#0d9488" },
+    { name: "Royal Blue", hex: "#1d4ed8" },
+    { name: "Ocean Navy", hex: "#0369a1" },
+    { name: "Deep Burgundy", hex: "#831843" },
+  ];
+
+  const secondaryPresets = [
+    { name: "Slate Mauve", hex: "#636679" },
+    { name: "Cool Slate", hex: "#475569" },
+    { name: "Charcoal", hex: "#334155" },
+    { name: "Deep Navy", hex: "#1e293b" },
+    { name: "Pitch Dark", hex: "#18181b" },
+  ];
+
+  const darkPresets = [
+    { name: "Dark Surface", hex: "#26272e" },
+    { name: "Night Slate", hex: "#0f172a" },
+    { name: "Pure Black", hex: "#000000" },
+  ];
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const cleanPhones = formData.phones.map(p => p.trim()).filter(Boolean);
     const cleanEmails = formData.emails.map(em => em.trim()).filter(Boolean);
 
-    onSave({
+    const payload = {
       ...(initialData || {}),
       ...formData,
+      siteName: formData.companyName || formData.siteName || "NGANIRA COMPANY LTD",
+      companyName: formData.companyName || formData.siteName || "NGANIRA COMPANY LTD",
+      tagline: formData.tagline || "Waste Water Management",
       phones: cleanPhones.length > 0 ? cleanPhones : [formData.phones[0] || ""],
       phone: cleanPhones[0] || formData.phones[0] || "",
       emails: cleanEmails.length > 0 ? cleanEmails : [formData.emails[0] || ""],
       email: cleanEmails[0] || formData.emails[0] || ""
-    });
+    };
+
+    onSave(payload);
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-xl">Branding & Social Links</CardTitle>
-        <CardDescription className="text-xs">
-          Manage your organization name, logo, contact phone numbers, email addresses, and social media channels.
-        </CardDescription>
+    <Card className="border-border shadow-sm">
+      <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <Badge className="bg-primary text-white border-0 font-bold uppercase text-[9px] tracking-wider">
+              Live Customizer
+            </Badge>
+          </div>
+          <CardTitle className="text-xl font-bold font-headline flex items-center gap-2">
+            <Palette className="h-5 w-5 text-primary" /> Site Branding & Color Scheme
+          </CardTitle>
+          <CardDescription className="text-xs">
+            Instantly customize the primary brand color (Green), secondary color (Dark Mauve/Slate), logo, and tagline.
+          </CardDescription>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={resetToBrandDefaults}
+          className="gap-1.5 text-xs font-semibold shrink-0"
+        >
+          <RotateCcw className="h-3.5 w-3.5" /> Reset to Defaults
+        </Button>
       </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="space-y-1">
-              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Site Name</Label>
-              <Input className="h-9 text-xs" value={formData.siteName} onChange={e => setFormData({...formData, siteName: e.target.value})} />
-            </div>
-            <MediaPicker label="Company Logo" value={formData.logoUrl} onChange={(url) => setFormData({...formData, logoUrl: url})} />
-            <div className="space-y-1 md:col-span-2">
-              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Company Tagline / Brief Description</Label>
-              <Input className="h-9 text-xs" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="e.g. Professional waste management and sanitation company in Kigali, Rwanda" />
-            </div>
-          </div>
+      <CardContent className="pt-6">
+        <form onSubmit={handleSubmit} className="space-y-8">
           
-          <div className="grid grid-cols-3 gap-4">
-            <div className="space-y-1">
-              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Logo Width (px)</Label>
-              <Input type="number" className="h-9 text-xs" value={formData.logoWidth} onChange={e => setFormData({...formData, logoWidth: Number(e.target.value)})} />
+          {/* Section 1: Color Customization */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b">
+              <div>
+                <h3 className="text-sm font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full" style={{ backgroundColor: formData.primaryColor }} />
+                  1. Brand Colors Customization
+                </h3>
+                <p className="text-[11px] text-muted-foreground mt-0.5">
+                  Change the main color and secondary dark color. Changes apply across all buttons, badges, navigation, and accents.
+                </p>
+              </div>
             </div>
-            <div className="space-y-1">
-              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Logo Height (px)</Label>
-              <Input type="number" className="h-9 text-xs" value={formData.logoHeight} onChange={e => setFormData({...formData, logoHeight: Number(e.target.value)})} />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Logo Spacing (px)</Label>
-              <Input type="number" className="h-9 text-xs" value={formData.logoSpacing} onChange={e => setFormData({...formData, logoSpacing: Number(e.target.value)})} />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Primary Color Card */}
+              <div className="p-4 rounded-xl border bg-muted/10 space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
+                    Main Color (Green)
+                  </Label>
+                  <span 
+                    className="h-5 w-5 rounded-full border shadow-xs shrink-0" 
+                    style={{ backgroundColor: formData.primaryColor }} 
+                  />
+                </div>
+                <p className="text-[10px] text-muted-foreground">
+                  Controls buttons, active menus, badges, icons, and highlights.
+                </p>
+                
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={formData.primaryColor}
+                    onChange={(e) => setFormData({ ...formData, primaryColor: e.target.value })}
+                    className="h-9 w-12 rounded-lg cursor-pointer border border-input p-0.5 bg-background shrink-0"
+                    title="Choose primary color"
+                  />
+                  <Input
+                    className="h-9 text-xs font-mono uppercase"
+                    value={formData.primaryColor}
+                    onChange={(e) => setFormData({ ...formData, primaryColor: e.target.value })}
+                    placeholder="#006400"
+                  />
+                </div>
+
+                <div className="pt-1">
+                  <Label className="text-[9px] font-bold uppercase text-muted-foreground block mb-1.5">Quick Swatches</Label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {primaryPresets.map((preset) => (
+                      <button
+                        key={preset.hex}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, primaryColor: preset.hex })}
+                        className={`h-6 px-2 rounded-md text-[10px] font-bold text-white flex items-center gap-1 transition-all ${
+                          formData.primaryColor.toLowerCase() === preset.hex.toLowerCase()
+                            ? "ring-2 ring-primary ring-offset-1 scale-105"
+                            : "opacity-85 hover:opacity-100"
+                        }`}
+                        style={{ backgroundColor: preset.hex }}
+                        title={preset.name}
+                      >
+                        {formData.primaryColor.toLowerCase() === preset.hex.toLowerCase() && (
+                          <Check className="h-2.5 w-2.5" />
+                        )}
+                        {preset.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Secondary Color Card */}
+              <div className="p-4 rounded-xl border bg-muted/10 space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
+                    Secondary Color (Dark)
+                  </Label>
+                  <span 
+                    className="h-5 w-5 rounded-full border shadow-xs shrink-0" 
+                    style={{ backgroundColor: formData.secondaryColor }} 
+                  />
+                </div>
+                <p className="text-[10px] text-muted-foreground">
+                  Controls brand text headers, subtitle labels, and subtle dark tones.
+                </p>
+                
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={formData.secondaryColor}
+                    onChange={(e) => setFormData({ ...formData, secondaryColor: e.target.value })}
+                    className="h-9 w-12 rounded-lg cursor-pointer border border-input p-0.5 bg-background shrink-0"
+                    title="Choose secondary color"
+                  />
+                  <Input
+                    className="h-9 text-xs font-mono uppercase"
+                    value={formData.secondaryColor}
+                    onChange={(e) => setFormData({ ...formData, secondaryColor: e.target.value })}
+                    placeholder="#636679"
+                  />
+                </div>
+
+                <div className="pt-1">
+                  <Label className="text-[9px] font-bold uppercase text-muted-foreground block mb-1.5">Quick Swatches</Label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {secondaryPresets.map((preset) => (
+                      <button
+                        key={preset.hex}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, secondaryColor: preset.hex })}
+                        className={`h-6 px-2 rounded-md text-[10px] font-bold text-white flex items-center gap-1 transition-all ${
+                          formData.secondaryColor.toLowerCase() === preset.hex.toLowerCase()
+                            ? "ring-2 ring-primary ring-offset-1 scale-105"
+                            : "opacity-85 hover:opacity-100"
+                        }`}
+                        style={{ backgroundColor: preset.hex }}
+                        title={preset.name}
+                      >
+                        {formData.secondaryColor.toLowerCase() === preset.hex.toLowerCase() && (
+                          <Check className="h-2.5 w-2.5" />
+                        )}
+                        {preset.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Dark Surface Tone */}
+              <div className="p-4 rounded-xl border bg-muted/10 space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
+                    Footer & Surface Color
+                  </Label>
+                  <span 
+                    className="h-5 w-5 rounded-full border shadow-xs shrink-0" 
+                    style={{ backgroundColor: formData.darkColor }} 
+                  />
+                </div>
+                <p className="text-[10px] text-muted-foreground">
+                  Controls the website footer, dark modal dialogs, and deep card backgrounds.
+                </p>
+                
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={formData.darkColor}
+                    onChange={(e) => setFormData({ ...formData, darkColor: e.target.value })}
+                    className="h-9 w-12 rounded-lg cursor-pointer border border-input p-0.5 bg-background shrink-0"
+                    title="Choose dark tone color"
+                  />
+                  <Input
+                    className="h-9 text-xs font-mono uppercase"
+                    value={formData.darkColor}
+                    onChange={(e) => setFormData({ ...formData, darkColor: e.target.value })}
+                    placeholder="#26272e"
+                  />
+                </div>
+
+                <div className="pt-1">
+                  <Label className="text-[9px] font-bold uppercase text-muted-foreground block mb-1.5">Quick Swatches</Label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {darkPresets.map((preset) => (
+                      <button
+                        key={preset.hex}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, darkColor: preset.hex })}
+                        className={`h-6 px-2 rounded-md text-[10px] font-bold text-white flex items-center gap-1 transition-all ${
+                          formData.darkColor.toLowerCase() === preset.hex.toLowerCase()
+                            ? "ring-2 ring-primary ring-offset-1 scale-105"
+                            : "opacity-85 hover:opacity-100"
+                        }`}
+                        style={{ backgroundColor: preset.hex }}
+                        title={preset.name}
+                      >
+                        {formData.darkColor.toLowerCase() === preset.hex.toLowerCase() && (
+                          <Check className="h-2.5 w-2.5" />
+                        )}
+                        {preset.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Contact Numbers and Emails */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 rounded-xl border bg-muted/10">
-            {/* Phone Numbers Column */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between pb-2 border-b">
+          {/* Section 2: Logo, Company Name & Tagline */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b">
+              <div>
+                <h3 className="text-sm font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  2. Brand Identity, Logo & Tagline
+                </h3>
+                <p className="text-[11px] text-muted-foreground mt-0.5">
+                  Set the organization name, tagline, and custom logo image with fallback to the water droplet emblem.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="space-y-1">
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground">
+                  Company / Website Name
+                </Label>
+                <Input
+                  className="h-9 text-xs font-semibold"
+                  value={formData.companyName}
+                  onChange={(e) =>
+                    setFormData({ ...formData, companyName: e.target.value, siteName: e.target.value })
+                  }
+                  placeholder="e.g. NGANIRA COMPANY LTD"
+                  required
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground">
+                  Website Tagline
+                </Label>
+                <Input
+                  className="h-9 text-xs font-semibold"
+                  value={formData.tagline}
+                  onChange={(e) => setFormData({ ...formData, tagline: e.target.value })}
+                  placeholder="e.g. Waste Water Management"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2 md:col-span-2">
+                <div className="flex items-center justify-between">
+                  <Label className="text-[10px] font-bold uppercase text-muted-foreground">
+                    Website Logo (Image or Fallback Emblem)
+                  </Label>
+                  {formData.logoUrl && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setFormData({ ...formData, logoUrl: "" })}
+                      className="h-6 text-[10px] text-destructive hover:text-destructive gap-1"
+                    >
+                      <Trash2 className="h-3 w-3" /> Remove Custom Logo (Use Emblem)
+                    </Button>
+                  )}
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-xl border bg-muted/10 items-center">
+                  <div className="md:col-span-2">
+                    <MediaPicker
+                      label="Upload or Select Website Logo"
+                      value={formData.logoUrl}
+                      onChange={(url) => setFormData({ ...formData, logoUrl: url })}
+                    />
+                    <p className="text-[10px] text-muted-foreground mt-1.5">
+                      Recommended: Transparent PNG, SVG, or WebP. When no image is provided, the website uses the modern water droplet emblem.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col items-center justify-center p-3 border rounded-lg bg-background">
+                    <span className="text-[9px] font-bold uppercase text-muted-foreground mb-2">Live Logo Preview</span>
+                    {formData.logoUrl ? (
+                      <div className="h-12 w-auto max-w-full flex items-center justify-center p-1 border rounded bg-white shadow-xs">
+                        <img
+                          src={formData.logoUrl}
+                          alt="Logo Preview"
+                          className="h-10 w-auto max-w-[150px] object-contain"
+                        />
+                      </div>
+                    ) : (
+                      <div
+                        className="h-12 w-12 rounded-xl text-white flex items-center justify-center shadow-md shadow-primary/20"
+                        style={{ backgroundColor: formData.primaryColor }}
+                      >
+                        <Droplets className="h-6 w-6 text-white" />
+                      </div>
+                    )}
+                    <span className="text-[9px] text-muted-foreground mt-1.5">
+                      {formData.logoUrl ? "Custom Image Logo" : "Default Droplets Emblem"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-1 md:col-span-2">
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground">
+                  Organization Summary / Description (SEO & Footer)
+                </Label>
+                <Textarea
+                  rows={2}
+                  className="text-xs resize-none"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="e.g. Professional waste water management company operating in Kicukiro, Kigali, Rwanda."
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Section 3: Live Interactive Website Preview Mockup */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between pb-2 border-b">
+              <div>
+                <h3 className="text-sm font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
+                  <Eye className="h-4 w-4 text-primary" />
+                  3. Real-Time Website Simulation
+                </h3>
+                <p className="text-[11px] text-muted-foreground mt-0.5">
+                  Live preview of how your brand colors, logo, and typography render on the website.
+                </p>
+              </div>
+            </div>
+
+            <div className="border rounded-xl overflow-hidden shadow-sm bg-white">
+              {/* Simulated Header */}
+              <div className="p-4 bg-white border-b flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  {formData.logoUrl ? (
+                    <div className="h-11 w-auto max-w-[150px] flex items-center justify-center overflow-hidden rounded-lg">
+                      <img src={formData.logoUrl} alt="Logo" className="h-11 w-auto object-contain" />
+                    </div>
+                  ) : (
+                    <div
+                      className="h-11 w-11 rounded-xl text-white flex items-center justify-center shadow-md"
+                      style={{ backgroundColor: formData.primaryColor }}
+                    >
+                      <Droplets className="h-6 w-6 text-white" />
+                    </div>
+                  )}
+                  <div className="flex flex-col">
+                    <span
+                      className="font-extrabold text-[16px] tracking-tight"
+                      style={{ color: formData.secondaryColor }}
+                    >
+                      {formData.companyName || "NGANIRA COMPANY LTD"}
+                    </span>
+                    <span
+                      className="text-[10px] uppercase tracking-wider font-medium -mt-0.5"
+                      style={{ color: formData.secondaryColor, opacity: 0.75 }}
+                    >
+                      {formData.tagline || "Waste Water Management"}
+                    </span>
+                  </div>
+                </div>
+
                 <div className="flex items-center gap-2">
+                  {/* Simulated Active Nav Menu */}
+                  <span
+                    className="px-3 py-1.5 rounded-lg text-xs font-bold text-white shadow-xs"
+                    style={{ backgroundColor: formData.primaryColor }}
+                  >
+                    Home (Active)
+                  </span>
+                  <span
+                    className="px-3 py-1.5 rounded-lg text-xs font-semibold"
+                    style={{ color: formData.secondaryColor }}
+                  >
+                    Services
+                  </span>
+                  <span
+                    className="px-3 py-1.5 rounded-lg text-xs font-semibold"
+                    style={{ color: formData.secondaryColor }}
+                  >
+                    Publications
+                  </span>
+
+                  {/* Simulated CTA Button */}
+                  <button
+                    type="button"
+                    className="px-4 py-2 rounded-xl text-xs font-bold text-white uppercase tracking-wider shadow-sm transition-all"
+                    style={{ backgroundColor: formData.primaryColor }}
+                  >
+                    Book a Service
+                  </button>
+                </div>
+              </div>
+
+              {/* Simulated Content Body with Badges & Buttons */}
+              <div className="p-5 bg-slate-50 flex flex-wrap items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="px-2.5 py-0.5 rounded-full text-[10px] font-bold text-white uppercase tracking-wider shadow-xs"
+                      style={{ backgroundColor: formData.primaryColor }}
+                    >
+                      Active Menu
+                    </span>
+                    <span
+                      className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border"
+                      style={{
+                        backgroundColor: `${formData.primaryColor}15`,
+                        color: formData.primaryColor,
+                        borderColor: `${formData.primaryColor}40`,
+                      }}
+                    >
+                      Admin Badge
+                    </span>
+                  </div>
+                  <h4
+                    className="font-bold text-sm tracking-tight"
+                    style={{ color: formData.secondaryColor }}
+                  >
+                    Interactive Component Styling
+                  </h4>
+                  <p className="text-xs text-muted-foreground">
+                    Notice that text on active primary buttons and menus is always crisp white.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    className="px-4 py-2 rounded-xl text-xs font-bold text-white uppercase tracking-wider shadow-sm flex items-center gap-2"
+                    style={{ backgroundColor: formData.primaryColor }}
+                  >
+                    <Globe className="h-3.5 w-3.5 text-white" />
+                    Go to Public Portal
+                  </button>
+                </div>
+              </div>
+
+              {/* Simulated Footer Bar */}
+              <div
+                className="p-4 text-white flex flex-wrap items-center justify-between gap-3 text-xs"
+                style={{ backgroundColor: formData.darkColor }}
+              >
+                <div className="flex items-center gap-2">
+                  <span
+                    className="h-2 w-2 rounded-full"
+                    style={{ backgroundColor: formData.primaryColor }}
+                  />
+                  <span className="font-semibold text-white/90">
+                    © {new Date().getFullYear()} {formData.companyName || "Nganira Company LTD"}. All rights reserved.
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-white/70 text-[11px]">
+                  <span>{formData.tagline || "Waste Water Management"}</span>
+                  <span>•</span>
+                  <span>Kigali, Rwanda</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 4: Contact & Social Channels */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b">
+              <div>
+                <h3 className="text-sm font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
                   <Phone className="h-4 w-4 text-primary" />
-                  <Label className="text-xs font-bold uppercase tracking-wider">
-                    Phone Numbers
-                  </Label>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/20 text-black font-semibold">
-                    {formData.phones.length}
-                  </span>
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={addPhone}
-                  className="h-7 px-2.5 text-[10px] font-bold uppercase tracking-wider gap-1 border-primary/40 text-primary hover:bg-primary/10"
-                >
-                  <Plus className="h-3 w-3" /> Add Phone
-                </Button>
+                  4. Contact Numbers & Email Addresses
+                </h3>
+                <p className="text-[11px] text-muted-foreground mt-0.5">
+                  Manage phone numbers and email addresses displayed in the header, footer, and contact pages.
+                </p>
               </div>
-
-              <div className="space-y-2">
-                {formData.phones.map((p, idx) => (
-                  <div key={idx} className="flex items-center gap-1.5 bg-background p-2 rounded-lg border shadow-sm">
-                    <span className="text-[10px] font-mono text-muted-foreground w-6 text-center shrink-0">
-                      #{idx + 1}
-                    </span>
-                    <div className="relative flex-grow">
-                      <Input
-                        type="tel"
-                        className="h-8 text-xs pr-16"
-                        value={p}
-                        onChange={e => updatePhone(idx, e.target.value)}
-                        placeholder={idx === 0 ? "e.g. +250 788 303 628 (Primary)" : "e.g. +250 788 000 000"}
-                      />
-                      {idx === 0 && (
-                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-primary/20 text-black pointer-events-none">
-                          Primary
-                        </span>
-                      )}
-                    </div>
-                    {/* Reorder buttons */}
-                    <div className="flex flex-col shrink-0">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-4 w-5 text-muted-foreground hover:text-foreground disabled:opacity-20"
-                        disabled={idx === 0}
-                        onClick={() => movePhone(idx, 'up')}
-                        title="Move up"
-                      >
-                        <ChevronUp className="h-3 w-3" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-4 w-5 text-muted-foreground hover:text-foreground disabled:opacity-20"
-                        disabled={idx === formData.phones.length - 1}
-                        onClick={() => movePhone(idx, 'down')}
-                        title="Move down"
-                      >
-                        <ChevronDown className="h-3 w-3" />
-                      </Button>
-                    </div>
-                    {/* Delete button */}
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-muted-foreground hover:text-destructive shrink-0"
-                      disabled={formData.phones.length <= 1 && !p}
-                      onClick={() => removePhone(idx)}
-                      title="Remove phone"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-              <p className="text-[10px] text-muted-foreground">
-                Phone #1 is your primary contact number. All phone numbers will be available to visitors.
-              </p>
             </div>
 
-            {/* Email Addresses Column */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between pb-2 border-b">
-                <div className="flex items-center gap-2">
-                  <Mail className="h-4 w-4 text-primary" />
-                  <Label className="text-xs font-bold uppercase tracking-wider">
-                    Email Addresses
-                  </Label>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/20 text-black font-semibold">
-                    {formData.emails.length}
-                  </span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 rounded-xl border bg-muted/10">
+              {/* Phone Numbers Column */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b">
+                  <div className="flex items-center gap-2">
+                    <Phone className="h-4 w-4 text-primary" />
+                    <Label className="text-xs font-bold uppercase tracking-wider">
+                      Phone Numbers
+                    </Label>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary text-white font-semibold">
+                      {formData.phones.length}
+                    </span>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={addPhone}
+                    className="h-7 px-2.5 text-[10px] font-bold uppercase tracking-wider gap-1 border-primary/40 text-primary hover:bg-primary/10"
+                  >
+                    <Plus className="h-3 w-3" /> Add Phone
+                  </Button>
                 </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={addEmail}
-                  className="h-7 px-2.5 text-[10px] font-bold uppercase tracking-wider gap-1 border-primary/40 text-primary hover:bg-primary/10"
-                >
-                  <Plus className="h-3 w-3" /> Add Email
-                </Button>
+
+                <div className="space-y-2">
+                  {formData.phones.map((p, idx) => (
+                    <div key={idx} className="flex items-center gap-1.5 bg-background p-2 rounded-lg border shadow-sm">
+                      <span className="text-[10px] font-mono text-muted-foreground w-6 text-center shrink-0">
+                        #{idx + 1}
+                      </span>
+                      <div className="relative flex-grow">
+                        <Input
+                          type="tel"
+                          className="h-8 text-xs pr-16"
+                          value={p}
+                          onChange={e => updatePhone(idx, e.target.value)}
+                          placeholder={idx === 0 ? "e.g. +250 788 303 628 (Primary)" : "e.g. +250 788 000 000"}
+                        />
+                        {idx === 0 && (
+                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-primary text-white pointer-events-none">
+                            Primary
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex flex-col shrink-0">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-4 w-5 text-muted-foreground hover:text-foreground disabled:opacity-20"
+                          disabled={idx === 0}
+                          onClick={() => movePhone(idx, 'up')}
+                          title="Move up"
+                        >
+                          <ChevronUp className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-4 w-5 text-muted-foreground hover:text-foreground disabled:opacity-20"
+                          disabled={idx === formData.phones.length - 1}
+                          onClick={() => movePhone(idx, 'down')}
+                          title="Move down"
+                        >
+                          <ChevronDown className="h-3 w-3" />
+                        </Button>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive shrink-0"
+                        disabled={formData.phones.length <= 1 && !p}
+                        onClick={() => removePhone(idx)}
+                        title="Remove phone"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-[10px] text-muted-foreground">
+                  Phone #1 is your primary contact number.
+                </p>
               </div>
 
-              <div className="space-y-2">
-                {formData.emails.map((em, idx) => (
-                  <div key={idx} className="flex items-center gap-1.5 bg-background p-2 rounded-lg border shadow-sm">
-                    <span className="text-[10px] font-mono text-muted-foreground w-6 text-center shrink-0">
-                      #{idx + 1}
+              {/* Email Addresses Column */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b">
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-primary" />
+                    <Label className="text-xs font-bold uppercase tracking-wider">
+                      Email Addresses
+                    </Label>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary text-white font-semibold">
+                      {formData.emails.length}
                     </span>
-                    <div className="relative flex-grow">
-                      <Input
-                        type="email"
-                        className="h-8 text-xs pr-16"
-                        value={em}
-                        onChange={e => updateEmail(idx, e.target.value)}
-                        placeholder={idx === 0 ? "e.g. info@nganira.rw (Primary)" : "e.g. support@nganira.rw"}
-                      />
-                      {idx === 0 && (
-                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-primary/20 text-black pointer-events-none">
-                          Primary
-                        </span>
-                      )}
-                    </div>
-                    {/* Reorder buttons */}
-                    <div className="flex flex-col shrink-0">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-4 w-5 text-muted-foreground hover:text-foreground disabled:opacity-20"
-                        disabled={idx === 0}
-                        onClick={() => moveEmail(idx, 'up')}
-                        title="Move up"
-                      >
-                        <ChevronUp className="h-3 w-3" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-4 w-5 text-muted-foreground hover:text-foreground disabled:opacity-20"
-                        disabled={idx === formData.emails.length - 1}
-                        onClick={() => moveEmail(idx, 'down')}
-                        title="Move down"
-                      >
-                        <ChevronDown className="h-3 w-3" />
-                      </Button>
-                    </div>
-                    {/* Delete button */}
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-muted-foreground hover:text-destructive shrink-0"
-                      disabled={formData.emails.length <= 1 && !em}
-                      onClick={() => removeEmail(idx)}
-                      title="Remove email"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
                   </div>
-                ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={addEmail}
+                    className="h-7 px-2.5 text-[10px] font-bold uppercase tracking-wider gap-1 border-primary/40 text-primary hover:bg-primary/10"
+                  >
+                    <Plus className="h-3 w-3" /> Add Email
+                  </Button>
+                </div>
+
+                <div className="space-y-2">
+                  {formData.emails.map((em, idx) => (
+                    <div key={idx} className="flex items-center gap-1.5 bg-background p-2 rounded-lg border shadow-sm">
+                      <span className="text-[10px] font-mono text-muted-foreground w-6 text-center shrink-0">
+                        #{idx + 1}
+                      </span>
+                      <div className="relative flex-grow">
+                        <Input
+                          type="email"
+                          className="h-8 text-xs pr-16"
+                          value={em}
+                          onChange={e => updateEmail(idx, e.target.value)}
+                          placeholder={idx === 0 ? "e.g. info@nganira.rw (Primary)" : "e.g. support@nganira.rw"}
+                        />
+                        {idx === 0 && (
+                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-primary text-white pointer-events-none">
+                            Primary
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex flex-col shrink-0">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-4 w-5 text-muted-foreground hover:text-foreground disabled:opacity-20"
+                          disabled={idx === 0}
+                          onClick={() => moveEmail(idx, 'up')}
+                          title="Move up"
+                        >
+                          <ChevronUp className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-4 w-5 text-muted-foreground hover:text-foreground disabled:opacity-20"
+                          disabled={idx === formData.emails.length - 1}
+                          onClick={() => moveEmail(idx, 'down')}
+                          title="Move down"
+                        >
+                          <ChevronDown className="h-3 w-3" />
+                        </Button>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive shrink-0"
+                        disabled={formData.emails.length <= 1 && !em}
+                        onClick={() => removeEmail(idx)}
+                        title="Remove email"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-[10px] text-muted-foreground">
+                  Email #1 is your primary email address.
+                </p>
               </div>
-              <p className="text-[10px] text-muted-foreground">
-                Email #1 is your primary contact address. All email addresses will be displayed on the site.
-              </p>
             </div>
           </div>
 
+          {/* Section 5: Social Channels */}
           <div className="border-t pt-5">
             <Label className="text-sm font-bold mb-4 block">Social Media Links</Label>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1264,7 +1779,12 @@ function GeneralEditor({ initialData, onSave }: { initialData: any, onSave: (dat
             </div>
           </div>
 
-          <Button type="submit" className="gap-2 h-10 text-[10px] font-bold uppercase tracking-widest w-full bg-primary text-white hover:bg-primary/90"><Save className="h-4 w-4" /> Save Branding & Socials</Button>
+          <Button 
+            type="submit" 
+            className="gap-2 h-11 text-xs font-bold uppercase tracking-widest w-full bg-primary text-white hover:opacity-90 shadow-md"
+          >
+            <Save className="h-4 w-4 text-white" /> Save Site Branding & Color Scheme
+          </Button>
         </form>
       </CardContent>
     </Card>

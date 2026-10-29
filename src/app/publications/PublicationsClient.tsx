@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { Navbar } from "@/components/sections/Navbar";
 import { Footer } from "@/components/sections/Footer";
-import { useCollection, useFirestore } from "@/firebase";
-import { collection, query, orderBy } from "firebase/firestore";
+import { useCollection, useDoc, useFirestore } from "@/firebase";
+import { collection, doc, query, orderBy } from "firebase/firestore";
 import Link from "next/link";
 import {
   Loader2,
@@ -29,7 +29,7 @@ import {
   Publication,
   getPublicationUrl,
   getSocialShareLinks,
-  isCustomEmailPublication,
+  mergeAndFilterPublications,
   extractFirstImage,
   isLikelyBrandLogo,
 } from "@/lib/publications";
@@ -47,48 +47,103 @@ export default function PublicationsClient() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [apiPublications, setApiPublications] = useState<Publication[]>([]);
+  const [apiDeletedIds, setApiDeletedIds] = useState<string[]>([]);
+  const [apiLoading, setApiLoading] = useState<boolean>(true);
+  const prevFirestoreIdsRef = useRef<Set<string>>(new Set());
 
-  // Real-time Firestore subscription to publications
+  // Real-time Firestore subscription to publications & deletion metadata
   const publicationsQuery = useMemo(() => {
     if (!db) return null;
     return query(collection(db, "publications"), orderBy("publishedAt", "desc"));
   }, [db]);
 
-  const { data: rawPublications, loading, error: firestoreError } = useCollection(publicationsQuery);
+  const publicationsMetaRef = useMemo(
+    () => (db ? doc(db, "settings", "publications_meta") : null),
+    [db]
+  );
 
-  // Load custom emails from API if Firestore is empty or restricted
-  useEffect(() => {
-    if (!rawPublications || rawPublications.length === 0 || firestoreError) {
-      fetch("/api/publications")
-        .then((res) => res.json())
-        .then((data) => {
-          if (data?.success && Array.isArray(data.publications)) {
-            setApiPublications(data.publications);
-          }
-        })
-        .catch(() => {
+  const { data: rawPublications, loading } = useCollection(publicationsQuery);
+  const { data: publicationsMeta } = useDoc(publicationsMetaRef);
+
+  const refreshFromApi = useCallback(() => {
+    fetch("/api/publications", { cache: "no-store" })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.success && Array.isArray(data.publications)) {
+          setApiPublications(data.publications);
+        } else {
           setApiPublications([]);
-        });
+        }
+        if (Array.isArray(data?.deletedIds)) {
+          setApiDeletedIds(data.deletedIds);
+        }
+      })
+      .catch(() => {
+        setApiPublications([]);
+      })
+      .finally(() => {
+        setApiLoading(false);
+      });
+  }, []);
+
+  // Synchronize with authoritative server API & react immediately to live Firestore deletions
+  useEffect(() => {
+    if (Array.isArray(rawPublications)) {
+      const currentIds = new Set<string>(
+        rawPublications.map((d: any) => d?.id).filter(Boolean)
+      );
+      const removedIds: string[] = [];
+      prevFirestoreIdsRef.current.forEach((oldId) => {
+        if (!currentIds.has(oldId)) {
+          removedIds.push(oldId);
+        }
+      });
+      prevFirestoreIdsRef.current = currentIds;
+
+      if (removedIds.length > 0) {
+        const removedSet = new Set(removedIds);
+        setApiPublications((prev) => prev.filter((p) => !removedSet.has(p.id)));
+      }
     }
-  }, [rawPublications, firestoreError]);
 
-  const publications = useMemo<Publication[]>(() => {
-    const list =
-      rawPublications && rawPublications.length > 0
-        ? (rawPublications.map((docSnap: any) => ({
-            id: docSnap.id,
-            ...docSnap,
-          })) as Publication[])
-        : apiPublications;
+    refreshFromApi();
+  }, [rawPublications, refreshFromApi]);
 
-    // Exclusively include real custom emails, exclude all generated seed templates
-    return list.filter((p) => isCustomEmailPublication(p));
-  }, [rawPublications, apiPublications]);
+  // Also refresh when the browser tab regains focus so changes made in Admin tab reflect immediately
+  useEffect(() => {
+    const onFocus = () => refreshFromApi();
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, [refreshFromApi]);
 
-  // Filtered publications
-  const filteredPublications = useMemo(() => {
-    return publications.filter((pub) => !pub.status || pub.status === "published");
-  }, [publications]);
+  const combinedDeletedIds = useMemo<string[]>(() => {
+    const cloudDeleted = Array.isArray((publicationsMeta as any)?.deletedIds)
+      ? ((publicationsMeta as any).deletedIds as string[])
+      : [];
+    return Array.from(new Set([...apiDeletedIds, ...cloudDeleted].filter(Boolean)));
+  }, [apiDeletedIds, publicationsMeta]);
+
+  const deletedIdSet = useMemo(() => new Set(combinedDeletedIds), [combinedDeletedIds]);
+
+  // Authoritatively merged & filtered published items (exact reflection of Admin area)
+  const filteredPublications = useMemo<Publication[]>(() => {
+    const mappedFirestore = Array.isArray(rawPublications)
+      ? (rawPublications.map((docSnap: any) => ({
+          ...docSnap,
+          id: docSnap.id,
+        })) as Publication[])
+      : null;
+
+    return mergeAndFilterPublications({
+      firestorePublications: mappedFirestore,
+      apiPublications,
+      deletedIds: combinedDeletedIds,
+      includeAllStatuses: false,
+    });
+  }, [rawPublications, apiPublications, combinedDeletedIds]);
+
+  const isInitialLoading =
+    loading || (apiLoading && (!rawPublications || rawPublications.length === 0));
 
   const handleCopyLink = (pub: Publication) => {
     const origin = typeof window !== "undefined" ? window.location.origin : "https://nganira.rw";
@@ -131,7 +186,7 @@ export default function PublicationsClient() {
           </div>
 
           {/* Publications Cards Grid */}
-          {loading ? (
+          {isInitialLoading ? (
             <div className="py-20 flex flex-col items-center justify-center space-y-3">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
               <p className="text-xs uppercase tracking-widest text-muted-foreground font-bold">
@@ -211,10 +266,14 @@ export default function PublicationsClient() {
                       </p>
 
                       {/* Cross-linked newsletters preview badge */}
-                      {pub.linkedNewsletters && pub.linkedNewsletters.length > 0 && (
+                      {pub.linkedNewsletters &&
+                        pub.linkedNewsletters.filter((ln) => !deletedIdSet.has(ln.id)).length > 0 && (
                         <div className="pt-1 flex items-center gap-1.5 flex-wrap">
                           <span className="text-[10px] font-bold text-slate-500 uppercase">Related:</span>
-                          {pub.linkedNewsletters.slice(0, 2).map((ln) => (
+                          {pub.linkedNewsletters
+                            .filter((ln) => !deletedIdSet.has(ln.id))
+                            .slice(0, 2)
+                            .map((ln) => (
                             <span
                               key={ln.id}
                               className="text-[10px] font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded truncate max-w-[140px]"

@@ -1,13 +1,15 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { initializeFirebase } from "@/firebase/init";
+import { firebaseConfig } from "@/firebase/config";
 import {
   collection,
   getDocs,
   doc,
   setDoc,
   getDoc,
+  deleteDoc,
   query,
-  where,
   orderBy,
   limit,
 } from "firebase/firestore";
@@ -18,18 +20,22 @@ import {
 } from "@/lib/api-auth";
 import {
   Publication,
-  getPublicationSlug,
   getPublicationUrl,
   extractExcerptFromHtml,
   extractFirstImage,
-  isCustomEmailPublication,
-  getCustomDesignedNewsletters,
+  mergeAndFilterPublications,
 } from "@/lib/publications";
-import { compileBlocksToHtml, INITIAL_SANEX_BLOCKS } from "@/lib/email-template-compiler";
 import { slugify } from "@/lib/slug";
-import { getAllServerPublications, updateServerPublication } from "@/lib/server-publications-store";
+import {
+  getAllServerPublications,
+  updateServerPublication,
+  deleteServerPublication,
+  getDeletedPublicationIds,
+} from "@/lib/server-publications-store";
 
-// Authoritative publications API endpoint for SANEX
+export const dynamic = "force-dynamic";
+
+// Authoritative publications API endpoint
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -40,45 +46,47 @@ export async function GET(request: Request) {
 
     const { firestore } = initializeFirebase();
     const publicationsRef = firestore ? collection(firestore, "publications") : null;
-    // 1. Authoritative server publications store (always preserves custom email designs)
+    // 1. Authoritative server publications store & deleted IDs
     const serverPubs = getAllServerPublications();
+    const deletedIdSet = new Set<string>(getDeletedPublicationIds());
 
     let snapshotDocs: any[] = [];
     try {
       if (firestore && publicationsRef) {
-        const q = query(publicationsRef, orderBy("publishedAt", "desc"), limit(limitCount));
-        const snapshot = await getDocs(q);
+        const [snapshot, metaSnap] = await Promise.all([
+          getDocs(query(publicationsRef, orderBy("publishedAt", "desc"), limit(limitCount))),
+          getDoc(doc(firestore, "settings", "publications_meta")).catch(() => null),
+        ]);
         snapshotDocs = snapshot.docs;
+        if (metaSnap && metaSnap.exists()) {
+          const cloudDeleted = (metaSnap.data() as any)?.deletedIds;
+          if (Array.isArray(cloudDeleted)) {
+            cloudDeleted.forEach((id: string) => {
+              if (id) deletedIdSet.add(id);
+            });
+          }
+        }
       }
     } catch {
       // Gracefully fall back to serverPubs without logging alarms
     }
 
-
     const firestorePubs: Publication[] = snapshotDocs.map((docSnap) => {
       const data = docSnap.data();
       return {
-        id: docSnap.id,
         ...data,
+        id: docSnap.id,
       } as Publication;
     });
 
-    // Merge: serverPubs take precedence for active custom templates, append additional Firestore publications
-    const mergedMap = new Map<string, Publication>();
-    serverPubs.forEach((p) => {
-      if (p.id) mergedMap.set(p.id, p);
+    const allDeletedIds = Array.from(deletedIdSet);
+
+    let publications = mergeAndFilterPublications({
+      firestorePublications: firestorePubs,
+      apiPublications: serverPubs,
+      deletedIds: allDeletedIds,
+      includeAllStatuses: true,
     });
-    firestorePubs.forEach((p) => {
-      if (p.id && !mergedMap.has(p.id)) {
-        mergedMap.set(p.id, p);
-      }
-    });
-
-    let publications = Array.from(mergedMap.values());
-
-    // Exclusively include custom emails (properly designed newsletters), exclude all generated seed templates
-    publications = publications.filter((p) => isCustomEmailPublication(p));
-
 
     // In-memory filters for flexibility (supports partial search & category)
     if (status && status !== "all") {
@@ -100,19 +108,37 @@ export async function GET(request: Request) {
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      publications,
-      total: publications.length,
-    });
+    publications = publications.slice(0, limitCount);
+
+    return NextResponse.json(
+      {
+        success: true,
+        publications,
+        deletedIds: allDeletedIds,
+        total: publications.length,
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate",
+        },
+      }
+    );
   } catch (error: any) {
     console.warn("[api/publications GET] Warning:", error.message);
-    return NextResponse.json({
-      success: true,
-      publications: [],
-      total: 0,
-      warning: "Waiting for custom email sync.",
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        publications: [],
+        deletedIds: getDeletedPublicationIds(),
+        total: 0,
+        warning: "Waiting for custom email sync.",
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate",
+        },
+      }
+    );
   }
 }
 
@@ -228,6 +254,14 @@ export async function POST(request: Request) {
       console.warn("[api/publications POST] Firestore write warning:", fsErr?.message);
     }
 
+    try {
+      revalidatePath("/publications");
+      revalidatePath("/publications/[slug]", "page");
+      revalidatePath(`/publications/${finalSlug}`);
+    } catch {
+      // Ignore revalidate errors outside request lifecycle
+    }
+
     const host = request.headers.get("host") || "sanex.rw";
     const protocol = host.includes("localhost") ? "http" : "https";
     const origin = `${protocol}://${host}`;
@@ -236,6 +270,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       publication: savedPub,
+      deletedIds: getDeletedPublicationIds(),
       publicationUrl,
       slug: finalSlug,
     });
@@ -243,6 +278,124 @@ export async function POST(request: Request) {
     console.error("[api/publications POST] Error:", error);
     return NextResponse.json(
       { success: false, error: error.message || "Failed to save publication" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: Request) {
+  const ip = getClientIp(request);
+
+  // Rate limiting (max 30 delete requests per minute)
+  const rateLimit = checkRateLimit(`pub-delete:${ip}`, 30, 60000);
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      { success: false, error: "Rate limit exceeded. Please try again later." },
+      { status: 429 }
+    );
+  }
+
+  // Verify Admin authorization
+  const auth = await verifyAdminAuthorization(request);
+  if (!auth.authorized) {
+    return NextResponse.json(
+      { success: false, error: auth.error || "Administrative privileges required." },
+      { status: auth.statusCode || 401 }
+    );
+  }
+
+  try {
+    const { searchParams } = new URL(request.url);
+    const queryId = searchParams.get("id")?.trim();
+    const querySlug = searchParams.get("slug")?.trim();
+    const queryIds = searchParams
+      .get("ids")
+      ?.split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    let bodyTargets: string[] = [];
+    try {
+      const contentType = request.headers.get("content-type") || "";
+      if (contentType.includes("application/json")) {
+        const body = await request.json();
+        if (body?.id) bodyTargets.push(String(body.id).trim());
+        if (body?.slug) bodyTargets.push(String(body.slug).trim());
+        if (Array.isArray(body?.ids)) {
+          bodyTargets.push(...body.ids.map((x: any) => String(x || "").trim()).filter(Boolean));
+        }
+      }
+    } catch {
+      // Optional JSON body
+    }
+
+    const targets = Array.from(
+      new Set([
+        ...(queryId ? [queryId] : []),
+        ...(querySlug ? [querySlug] : []),
+        ...(queryIds || []),
+        ...bodyTargets,
+      ].filter(Boolean))
+    );
+
+    if (targets.length === 0) {
+      return NextResponse.json(
+        { success: false, error: "Publication id or slug is required for deletion." },
+        { status: 400 }
+      );
+    }
+
+    // 1. Delete from authoritative server disk store (.data/publications-store.json) & record tombstones
+    const result = deleteServerPublication(targets);
+
+    // 2. Delete from Firestore (via authenticated REST API if admin Bearer token was provided, plus SDK fallback)
+    const { firestore } = initializeFirebase();
+    await Promise.all(
+      result.deletedIds.map(async (targetId) => {
+        if (auth.idToken && firebaseConfig.projectId) {
+          try {
+            await fetch(
+              `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/(default)/documents/publications/${encodeURIComponent(targetId)}`,
+              {
+                method: "DELETE",
+                headers: {
+                  Authorization: `Bearer ${auth.idToken}`,
+                },
+              }
+            );
+          } catch {
+            // Client-side deleteDoc also executes in parallel
+          }
+        }
+
+        if (firestore) {
+          try {
+            await deleteDoc(doc(firestore, "publications", targetId));
+          } catch {
+            // Expected if server client SDK lacks user auth session
+          }
+        }
+      })
+    );
+
+    // 3. Revalidate Next.js public publication routes immediately
+    try {
+      revalidatePath("/publications");
+      revalidatePath("/publications/[slug]", "page");
+    } catch {
+      // Ignore revalidate errors outside request lifecycle
+    }
+
+    return NextResponse.json({
+      success: true,
+      deletedIds: result.deletedIds,
+      allDeletedIds: getDeletedPublicationIds(),
+      remainingCount: result.remainingCount,
+    });
+  } catch (error: any) {
+    console.error("[api/publications DELETE] Error:", error);
+    return NextResponse.json(
+      { success: false, error: error.message || "Failed to delete publication" },
       { status: 500 }
     );
   }

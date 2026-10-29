@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { getServerPublicationBySlug } from "@/lib/server-publications-store";
 import PublicationDetailClient from "./PublicationDetailClient";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 interface PageProps {
   params: Promise<{ slug: string }> | { slug: string };
 }

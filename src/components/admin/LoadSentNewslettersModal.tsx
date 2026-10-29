@@ -37,7 +37,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useFirestore } from "@/firebase";
+import { useFirestore, useUser } from "@/firebase";
 import { doc, setDoc, deleteDoc } from "firebase/firestore";
 import { slugify } from "@/lib/slug";
 import {
@@ -70,7 +70,16 @@ export function LoadSentNewslettersModal({
   onOpenLinkGeneratorForPub,
 }: LoadSentNewslettersModalProps) {
   const db = useFirestore();
+  const { user } = useUser();
   const { toast } = useToast();
+
+  const getAdminAuthHeaders = async (): Promise<Record<string, string>> => {
+    const token = user ? await user.getIdToken().catch(() => "") : "";
+    return {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+  };
 
   // Email templates hook (Cloud draft, saved templates, and local storage draft)
   const { cloudTemplate, savedTemplates, getLocalDraft } = useEmailTemplates();
@@ -92,6 +101,13 @@ export function LoadSentNewslettersModal({
     if (!db) return;
     setIsPurgingSeeds(true);
     try {
+      const headers = await getAdminAuthHeaders();
+      await fetch("/api/publications", {
+        method: "DELETE",
+        headers,
+        body: JSON.stringify({ ids: SEED_CAMPAIGN_IDS }),
+      }).catch(() => {});
+
       for (const id of SEED_CAMPAIGN_IDS) {
         try {
           await deleteDoc(doc(db, "publications", id));
@@ -191,6 +207,17 @@ export function LoadSentNewslettersModal({
       };
 
       try {
+        const headers = await getAdminAuthHeaders();
+        await fetch("/api/publications", {
+          method: "POST",
+          headers,
+          body: JSON.stringify(newPub),
+        });
+      } catch (apiErr: any) {
+        console.warn("API import sync warning:", apiErr?.message);
+      }
+
+      try {
         await setDoc(doc(db, "publications", pubId), newPub, { merge: true });
       } catch (writeErr: any) {
         console.warn("Firestore write error (serving locally):", writeErr?.message);
@@ -264,6 +291,17 @@ export function LoadSentNewslettersModal({
         linkedNewsletters: [],
         viewsCount: 0,
       };
+
+      try {
+        const headers = await getAdminAuthHeaders();
+        await fetch("/api/publications", {
+          method: "POST",
+          headers,
+          body: JSON.stringify(newPub),
+        });
+      } catch (apiErr: any) {
+        console.warn("Manual email API sync warning:", apiErr?.message);
+      }
 
       try {
         await setDoc(doc(db, "publications", pubId), newPub, { merge: true });

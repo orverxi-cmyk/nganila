@@ -1,16 +1,17 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { FirebaseClientProvider } from '@/firebase';
+import { BrandThemeProvider } from '@/components/providers/BrandThemeProvider';
 import { Toaster } from '@/components/ui/toaster';
 import Script from 'next/script';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://nganira.rw'),
   title: {
-    default: 'Nganira Company LTD | Waste Management & Sanitation in Kigali, Rwanda',
+    default: 'Nganira Company LTD | Waste Water Management in Kigali, Rwanda',
     template: '%s | Nganira Company LTD',
   },
-  description: 'Nganira Company LTD is a professional waste management and sanitation company operating in Kicukiro, Kigali, Rwanda.',
+  description: 'Nganira Company LTD is a professional waste water management company operating in Kicukiro, Kigali, Rwanda.',
   keywords: [
     'Nganira Company LTD',
     'Nganira',
@@ -34,21 +35,21 @@ export const metadata: Metadata = {
     locale: 'en_RW',
     url: 'https://nganira.rw',
     siteName: 'Nganira Company LTD',
-    title: 'Nganira Company LTD | Waste Management & Sanitation in Kigali, Rwanda',
+    title: 'Nganira Company LTD | Waste Water Management in Kigali, Rwanda',
     description: 'Professional liquid waste evacuation, vacuum tankers, and decentralized wastewater treatment in Kicukiro, Kigali.',
     images: [
       {
         url: 'https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1780321287848_B25A3099.jpg?alt=media',
         width: 1200,
         height: 630,
-        alt: 'Nganira Company LTD - Waste Management & Sanitation in Rwanda',
+        alt: 'Nganira Company LTD - Waste Water Management in Rwanda',
         type: 'image/jpeg',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Nganira Company LTD | Waste Management & Sanitation in Kigali, Rwanda',
+    title: 'Nganira Company LTD | Waste Water Management in Kigali, Rwanda',
     description: 'Professional liquid waste evacuation, vacuum tankers, and wastewater treatment in Kigali.',
     creator: '@nganira_rw',
     images: [
@@ -119,8 +120,10 @@ export default function RootLayout({
       </head>
       <body className="antialiased bg-background text-foreground">
         <FirebaseClientProvider>
-          {children}
-          <Toaster />
+          <BrandThemeProvider>
+            {children}
+            <Toaster />
+          </BrandThemeProvider>
         </FirebaseClientProvider>
         <Script id="register-sw" strategy="afterInteractive">
           {`

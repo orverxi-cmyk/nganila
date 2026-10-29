@@ -46,6 +46,22 @@ export function Navbar({ isAdmin }: NavbarProps = {}) {
     ? generalData.navLinks
     : defaultNavLinks;
 
+  const companyName = generalData?.companyName || generalData?.siteName || "NGANIRA COMPANY LTD";
+  const tagline = generalData?.tagline || "Waste Water Management";
+  const logoUrl = generalData?.logoUrl;
+
+  const nameParts = React.useMemo(() => {
+    const trimmed = (companyName || "").trim();
+    const firstSpace = trimmed.indexOf(" ");
+    if (firstSpace !== -1) {
+      return {
+        main: trimmed.substring(0, firstSpace),
+        suffix: trimmed.substring(firstSpace + 1)
+      };
+    }
+    return { main: trimmed, suffix: "" };
+  }, [companyName]);
+
   return (
     <header className="sticky top-0 z-50 w-full">
       {/* Main Navigation Bar */}
@@ -61,25 +77,37 @@ export function Navbar({ isAdmin }: NavbarProps = {}) {
           <div className="flex items-center justify-between">
             {/* Logo + Brand Name */}
             <Link href={isAdminPage ? "/admin" : "/"} className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#006400] text-white shadow-md shadow-[#006400]/20 shrink-0">
-                <Droplets className="h-6 w-6" />
-              </div>
+              {logoUrl ? (
+                <div className="relative flex h-11 items-center justify-center rounded-xl overflow-hidden shrink-0">
+                  <img
+                    src={logoUrl}
+                    alt={companyName}
+                    className="h-11 w-auto max-w-[150px] object-contain rounded-lg"
+                  />
+                </div>
+              ) : (
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-md shadow-primary/20 shrink-0">
+                  <Droplets className="h-6 w-6" />
+                </div>
+              )}
               <div className="flex flex-col">
                 <div className="flex items-center gap-1.5">
-                  <span className="font-extrabold text-[17px] tracking-tight text-[#636679]">
-                    NGANIRA
+                  <span className="font-extrabold text-[17px] tracking-tight text-[var(--brand-secondary,#636679)]">
+                    {nameParts.main}
                   </span>
-                  <span className="font-bold text-[13px] tracking-wider text-[#636679]/90 uppercase">
-                    COMPANY LTD
-                  </span>
+                  {nameParts.suffix && (
+                    <span className="font-bold text-[13px] tracking-wider text-[var(--brand-secondary,#636679)]/90 uppercase">
+                      {nameParts.suffix}
+                    </span>
+                  )}
                   {isAdminPage && (
-                    <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#006400]/15 text-[#006400] border border-[#006400]/30">
+                    <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary/15 text-primary border border-primary/30">
                       Admin
                     </span>
                   )}
                 </div>
-                <span className="text-[10px] uppercase tracking-wider text-[#636679]/70 font-medium -mt-0.5">
-                  Waste Management &amp; Sanitation · Kigali
+                <span className="text-[10px] uppercase tracking-wider text-[var(--brand-secondary,#636679)]/70 font-medium -mt-0.5">
+                  {tagline}
                 </span>
               </div>
             </Link>
@@ -89,7 +117,7 @@ export function Navbar({ isAdmin }: NavbarProps = {}) {
               <div className="flex items-center gap-3">
                 <Button
                   asChild
-                  className="bg-[#006400] hover:bg-[#005000] text-white font-bold uppercase tracking-wider text-[12px] h-10 px-4 md:px-5 gap-2 rounded-xl shadow-sm"
+                  className="bg-primary hover:opacity-90 text-white font-bold uppercase tracking-wider text-[12px] h-10 px-4 md:px-5 gap-2 rounded-xl shadow-sm"
                 >
                   <Link href="/">
                     <Globe className="h-4 w-4 text-white" />
@@ -113,8 +141,8 @@ export function Navbar({ isAdmin }: NavbarProps = {}) {
                         className={cn(
                           "relative px-3.5 py-2 text-[13px] font-semibold tracking-wide transition-all rounded-lg",
                           isActive
-                            ? "text-[#006400] bg-[#006400]/10 font-bold border border-[#006400]/25 shadow-xs"
-                            : "text-[#636679] hover:text-[#006400] hover:bg-[#006400]/5"
+                            ? "text-white bg-primary font-bold shadow-xs"
+                            : "text-[var(--brand-secondary,#636679)] hover:text-primary hover:bg-primary/10"
                         )}
                       >
                         {link.name}
@@ -126,10 +154,10 @@ export function Navbar({ isAdmin }: NavbarProps = {}) {
                     <UserNav />
                     <Button 
                       asChild 
-                      className="bg-[#006400] hover:bg-[#005000] text-white font-bold uppercase tracking-wider h-10 px-5 text-[12px] gap-2 rounded-xl shadow-md shadow-[#006400]/25 border border-[#006400] transition-all hover:scale-105"
+                      className="bg-primary hover:opacity-90 text-white font-bold uppercase tracking-wider h-10 px-5 text-[12px] gap-2 rounded-xl shadow-md shadow-primary/25 border border-primary transition-all hover:scale-105"
                     >
                       <Link href="/book">
-                        <Calendar className="h-4 w-4" /> Book a Service
+                        <Calendar className="h-4 w-4 text-white" /> Book a Service
                       </Link>
                     </Button>
                   </div>
@@ -139,7 +167,7 @@ export function Navbar({ isAdmin }: NavbarProps = {}) {
                 <div className="flex items-center gap-3 lg:hidden">
                   <UserNav />
                   <button
-                    className="p-2 text-[#636679] rounded-lg hover:bg-[#006400]/10 transition-colors"
+                    className="p-2 text-[var(--brand-secondary,#636679)] rounded-lg hover:bg-primary/10 transition-colors"
                     onClick={() => setIsOpen(!isOpen)}
                     aria-label="Toggle menu"
                   >
@@ -165,8 +193,8 @@ export function Navbar({ isAdmin }: NavbarProps = {}) {
                     className={cn(
                       "px-3.5 py-2.5 rounded-xl text-[14px] font-semibold transition-colors",
                       isActive
-                        ? "text-[#006400] bg-[#006400]/10 font-bold border border-[#006400]/25"
-                        : "text-[#636679] hover:text-[#006400] hover:bg-[#006400]/5"
+                        ? "text-white bg-primary font-bold shadow-xs"
+                        : "text-[var(--brand-secondary,#636679)] hover:text-primary hover:bg-primary/10"
                     )}
                   >
                     {link.name}
@@ -174,9 +202,9 @@ export function Navbar({ isAdmin }: NavbarProps = {}) {
                 );
               })}
               <div className="pt-3 mt-1 border-t border-slate-100">
-                <Button asChild className="w-full bg-[#006400] hover:bg-[#005000] text-white font-bold h-11 text-[13px] uppercase tracking-wider gap-2 rounded-xl shadow-md border border-[#006400]">
+                <Button asChild className="w-full bg-primary hover:opacity-90 text-white font-bold h-11 text-[13px] uppercase tracking-wider gap-2 rounded-xl shadow-md border border-primary">
                   <Link href="/book" onClick={() => setIsOpen(false)}>
-                    <Calendar className="h-4 w-4" /> Book a Service
+                    <Calendar className="h-4 w-4 text-white" /> Book a Service
                   </Link>
                 </Button>
               </div>

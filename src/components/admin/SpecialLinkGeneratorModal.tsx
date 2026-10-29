@@ -40,8 +40,8 @@ import {
   Send,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useFirestore } from "@/firebase";
-import { doc, updateDoc } from "firebase/firestore";
+import { useFirestore, useUser } from "@/firebase";
+import { doc, setDoc } from "firebase/firestore";
 import { slugify } from "@/lib/slug";
 import {
   Publication,
@@ -66,7 +66,16 @@ export function SpecialLinkGeneratorModal({
   onPublicationUpdated,
 }: SpecialLinkGeneratorModalProps) {
   const db = useFirestore();
+  const { user } = useUser();
   const { toast } = useToast();
+
+  const getAdminAuthHeaders = async (): Promise<Record<string, string>> => {
+    const token = user ? await user.getIdToken().catch(() => "") : "";
+    return {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+  };
 
   // Active selected publication
   const [selectedId, setSelectedId] = useState<string>("");
@@ -139,7 +148,7 @@ export function SpecialLinkGeneratorModal({
     }
   };
 
-  // Update slug in Firestore
+  // Update slug in server store & Firestore
   const handleSaveCustomSlug = async () => {
     if (!activePublication || !db) return;
     const clean = slugify(customSlugInput);
@@ -150,12 +159,33 @@ export function SpecialLinkGeneratorModal({
 
     setIsUpdatingSlug(true);
     try {
-      await updateDoc(doc(db, "publications", activePublication.id), {
-        slug: clean,
-        updatedAt: Date.now(),
-      });
-
       const updated = { ...activePublication, slug: clean, updatedAt: Date.now() };
+
+      try {
+        const headers = await getAdminAuthHeaders();
+        await fetch("/api/publications", {
+          method: "POST",
+          headers,
+          body: JSON.stringify(updated),
+        });
+      } catch {
+        // Fallback to Firestore
+      }
+
+      try {
+        await setDoc(
+          doc(db, "publications", activePublication.id),
+          {
+            ...updated,
+            slug: clean,
+            updatedAt: updated.updatedAt,
+          },
+          { merge: true }
+        );
+      } catch {
+        // Handled via server API store
+      }
+
       if (onPublicationUpdated) {
         onPublicationUpdated(updated);
       }
@@ -171,7 +201,7 @@ export function SpecialLinkGeneratorModal({
     }
   };
 
-  // Save cross-links in Firestore
+  // Save cross-links in server store & Firestore
   const handleSaveCrossLinks = async () => {
     if (!activePublication || !db) return;
 
@@ -191,16 +221,37 @@ export function SpecialLinkGeneratorModal({
         })
         .filter(Boolean);
 
-      await updateDoc(doc(db, "publications", activePublication.id), {
-        linkedNewsletters: resolvedLinked,
-        updatedAt: Date.now(),
-      });
-
       const updated = {
         ...activePublication,
         linkedNewsletters: resolvedLinked as any,
         updatedAt: Date.now(),
       };
+
+      try {
+        const headers = await getAdminAuthHeaders();
+        await fetch("/api/publications", {
+          method: "POST",
+          headers,
+          body: JSON.stringify(updated),
+        });
+      } catch {
+        // Fallback to Firestore
+      }
+
+      try {
+        await setDoc(
+          doc(db, "publications", activePublication.id),
+          {
+            ...updated,
+            linkedNewsletters: resolvedLinked,
+            updatedAt: updated.updatedAt,
+          },
+          { merge: true }
+        );
+      } catch {
+        // Handled via server API store
+      }
+
       if (onPublicationUpdated) {
         onPublicationUpdated(updated);
       }

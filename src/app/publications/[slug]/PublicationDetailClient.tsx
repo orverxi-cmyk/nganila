@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { Navbar } from "@/components/sections/Navbar";
 import { Footer } from "@/components/sections/Footer";
-import { useFirestore } from "@/firebase";
+import { useDoc, useFirestore } from "@/firebase";
 import {
   doc,
   getDoc,
@@ -42,9 +42,6 @@ import {
   getPublicationUrl,
   getSocialShareLinks,
   isCustomEmailPublication,
-  getCustomDesignedNewsletters,
-  extractFirstImage,
-  extractExcerptFromHtml,
 } from "@/lib/publications";
 
 /**
@@ -130,102 +127,99 @@ export default function PublicationDetailClient({
   const [publication, setPublication] = useState<Publication | null>(initialPublication || null);
   const [loading, setLoading] = useState(!initialPublication);
   const [copied, setCopied] = useState(false);
+  const [apiDeletedIds, setApiDeletedIds] = useState<string[]>([]);
+
+  const publicationsMetaRef = useMemo(
+    () => (db ? doc(db, "settings", "publications_meta") : null),
+    [db]
+  );
+  const { data: publicationsMeta } = useDoc(publicationsMetaRef);
+
+  const combinedDeletedSet = useMemo(() => {
+    const cloudDeleted = Array.isArray((publicationsMeta as any)?.deletedIds)
+      ? ((publicationsMeta as any).deletedIds as string[])
+      : [];
+    return new Set<string>([...apiDeletedIds, ...cloudDeleted].filter(Boolean));
+  }, [apiDeletedIds, publicationsMeta]);
+
+  const activePublication = useMemo(() => {
+    if (!publication) return null;
+    if (combinedDeletedSet.has(publication.id)) return null;
+    if (publication.status && publication.status !== "published") return null;
+    return publication;
+  }, [publication, combinedDeletedSet]);
 
   // Track page view once per session
-  useTrackView("publication", publication?.id, slugParam);
+  useTrackView("publication", activePublication?.id, slugParam);
 
   // Query other publications for "Related / Next Newsletters" (only real custom publications)
   const [recentPubs, setRecentPubs] = useState<Publication[]>([]);
 
-  // Safe multi-tier resolution: Local Baseline -> API -> Firestore
+  // Authoritative multi-tier resolution aligned strictly with Admin publications
   useEffect(() => {
     if (!slugParam) return;
     let isMounted = true;
 
     async function resolvePublication() {
-      // Tier 1: Check live API (/api/publications) which monitors the real sent and saved custom email designs
+      const localDeletedSet = new Set<string>();
+
+      // Tier 1: Check live API (/api/publications) with cache: no-store
       try {
-        const res = await fetch("/api/publications?limit=100");
+        const res = await fetch("/api/publications?limit=100", { cache: "no-store" });
         if (res.ok) {
           const data = await res.json();
-          const rawApiList: Publication[] = data.publications || [];
-          const apiList = rawApiList.filter((p) => isCustomEmailPublication(p));
-          if (apiList.length > 0) {
-            const matchedApi = apiList.find((p) => {
-              const pSlug = p.slug ? slugify(p.slug) : slugify(p.title || "");
-              return (
-                p.id === slugParam ||
-                pSlug === slugParam ||
-                slugify(p.title || "") === slugParam
-              );
+          if (Array.isArray(data?.deletedIds)) {
+            data.deletedIds.forEach((id: string) => {
+              if (id) localDeletedSet.add(id);
             });
-            if (matchedApi && isMounted) {
-              setPublication(matchedApi);
-              setRecentPubs(apiList.filter((p) => p.id !== matchedApi.id).slice(0, 6));
-              setLoading(false);
-              return;
-            }
             if (isMounted) {
-              setRecentPubs(apiList.slice(0, 6));
+              setApiDeletedIds(data.deletedIds);
             }
+          }
+
+          const rawApiList: Publication[] = data.publications || [];
+          const apiList = rawApiList.filter(
+            (p) =>
+              p &&
+              p.id &&
+              !localDeletedSet.has(p.id) &&
+              isCustomEmailPublication(p) &&
+              (!p.status || p.status === "published")
+          );
+
+          const matchedApi = apiList.find((p) => {
+            const pSlug = p.slug ? slugify(p.slug) : slugify(p.title || "");
+            return (
+              p.id === slugParam ||
+              pSlug === slugParam ||
+              slugify(p.title || "") === slugParam
+            );
+          });
+
+          if (matchedApi && isMounted) {
+            setPublication(matchedApi);
+            setRecentPubs(apiList.filter((p) => p.id !== matchedApi.id).slice(0, 6));
+            setLoading(false);
+            return;
+          }
+
+          if (isMounted) {
+            setRecentPubs(apiList.slice(0, 6));
           }
         }
       } catch {
-        // Silently proceed
+        // Silently proceed to Firestore check
       }
 
-      // Tier 1b: If not matched in publications list, check active email template endpoint
-      try {
-        const tplRes = await fetch("/api/email/template");
-        if (tplRes.ok) {
-          const tplData = await tplRes.json();
-          if (tplData?.template && tplData.template.message) {
-            const tpl = tplData.template;
-            const tplSlug = slugify(tpl.name || "sustainable-liquid-waste-management-clean-water-rwanda");
-            if (
-              slugParam === "sustainable-liquid-waste-management-clean-water-rwanda" ||
-              slugParam === "pub_custom_sanex_newsletter" ||
-              slugParam === tplSlug
-            ) {
-              const detectedCover =
-                extractFirstImage(tpl.message) ||
-                "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1779722491089_B25A3102.jpg?alt=media";
-              const tplPub: Publication = {
-                id: "pub_custom_sanex_newsletter",
-                slug: "sustainable-liquid-waste-management-clean-water-rwanda",
-                title: tpl.name || "SANEX Official Custom Newsletter",
-                subject: tpl.subject || tpl.name || "SANEX Official Custom Newsletter",
-                excerpt:
-                  extractExcerptFromHtml(tpl.message) ||
-                  "Sanex Company LTD is a Rwandan company specializing in liquid waste management, emptying services, and clean water delivery.",
-                content: tpl.message,
-                category: "Company Announcements",
-                author: "SANEX Communications",
-                publishedAt: tpl.updatedAt || Date.now(),
-                createdAt: tpl.updatedAt || Date.now(),
-                updatedAt: tpl.updatedAt || Date.now(),
-                recipientCount: 85,
-                status: "published",
-                isCustom: true,
-                coverImage: detectedCover,
-                thumbnailImg: detectedCover,
-                viewsCount: 25,
-              };
-              if (isMounted) {
-                setPublication(tplPub);
-                setLoading(false);
-                return;
-              }
-            }
-          }
-        }
-      } catch {
-        // Silently proceed to Firestore
-      }
-
-      // Tier 2: Direct Firestore check
+      // Tier 2: Direct Firestore check (respecting deleted IDs and published status)
       if (db) {
         try {
+          const isCandidateValid = (candidate: Publication) =>
+            Boolean(candidate?.id) &&
+            !localDeletedSet.has(candidate.id) &&
+            isCustomEmailPublication(candidate) &&
+            (!candidate.status || candidate.status === "published");
+
           const slugQuery = query(
             collection(db, "publications"),
             where("slug", "==", slugParam),
@@ -233,40 +227,38 @@ export default function PublicationDetailClient({
           );
           const slugSnap = await getDocs(slugQuery);
           if (!slugSnap.empty && isMounted) {
-            const docData = slugSnap.docs[0].data();
-            setPublication({ id: slugSnap.docs[0].id, ...docData } as Publication);
-            setLoading(false);
-            return;
+            const candidate = {
+              ...(slugSnap.docs[0].data() as any),
+              id: slugSnap.docs[0].id,
+            } as Publication;
+            if (isCandidateValid(candidate)) {
+              setPublication(candidate);
+              setLoading(false);
+              return;
+            }
           }
 
           const directRef = doc(db, "publications", slugParam);
           const directSnap = await getDoc(directRef);
           if (directSnap.exists() && isMounted) {
-            setPublication({ id: directSnap.id, ...directSnap.data() } as Publication);
-            setLoading(false);
-            return;
+            const candidate = {
+              ...(directSnap.data() as any),
+              id: directSnap.id,
+            } as Publication;
+            if (isCandidateValid(candidate)) {
+              setPublication(candidate);
+              setLoading(false);
+              return;
+            }
           }
         } catch {
           // Gracefully suppress permission errors
         }
       }
 
-      // Tier 3: Fallback to baseline only if nothing exists in database or API
-      const defaultCustoms = getCustomDesignedNewsletters();
-      const localMatch = defaultCustoms.find((p) => {
-        const pSlug = p.slug ? slugify(p.slug) : slugify(p.title || "");
-        return (
-          p.id === slugParam ||
-          pSlug === slugParam ||
-          slugify(p.title || "") === slugParam
-        );
-      });
-
-      if (localMatch && isMounted) {
-        setPublication(localMatch);
-      }
-
+      // Not found in either active API store or Firestore (e.g. deleted from Admin)
       if (isMounted) {
+        setPublication(null);
         setLoading(false);
       }
     }
@@ -279,26 +271,26 @@ export default function PublicationDetailClient({
 
   // 4. Update window title and canonicalize URL
   useEffect(() => {
-    if (publication) {
-      if (publication.title) {
-        document.title = `${publication.title} | Nganira Publications`;
+    if (activePublication) {
+      if (activePublication.title) {
+        document.title = `${activePublication.title} | Nganira Publications`;
       }
-      const canonicalSlug = getPublicationSlug(publication);
+      const canonicalSlug = getPublicationSlug(activePublication);
       if (canonicalSlug && slugParam !== canonicalSlug && typeof window !== "undefined") {
         window.history.replaceState(null, "", `/publications/${canonicalSlug}`);
       }
     }
-  }, [publication, slugParam]);
+  }, [activePublication, slugParam]);
 
   // Social sharing handlers
   const origin = typeof window !== "undefined" ? window.location.origin : "https://nganira.rw";
-  const canonicalUrl = publication
-    ? `${origin}${getPublicationUrl(publication)}`
+  const canonicalUrl = activePublication
+    ? `${origin}${getPublicationUrl(activePublication)}`
     : `https://nganira.rw/publications/${slugParam}`;
 
   const handleShare = (platform: "twitter" | "linkedin" | "facebook" | "whatsapp" | "native" | "copy") => {
-    if (!publication) return;
-    const title = publication.title || "Nganira Official Publication";
+    if (!activePublication) return;
+    const title = activePublication.title || "Nganira Official Publication";
 
     if (platform === "copy") {
       if (navigator.clipboard) {
@@ -312,13 +304,13 @@ export default function PublicationDetailClient({
     if (platform === "native" && navigator.share) {
       navigator.share({
         title,
-        text: publication.excerpt || title,
+        text: activePublication.excerpt || title,
         url: canonicalUrl,
       }).catch(() => {});
       return;
     }
 
-    const shareUrls = getSocialShareLinks(title, canonicalUrl, publication.excerpt);
+    const shareUrls = getSocialShareLinks(title, canonicalUrl, activePublication.excerpt);
     const targetUrl = (shareUrls as any)[platform];
     if (targetUrl) {
       window.open(targetUrl, "_blank", "width=600,height=480,scrollbars=yes");
@@ -342,7 +334,7 @@ export default function PublicationDetailClient({
     );
   }
 
-  if (!publication) {
+  if (!activePublication || !publication) {
     return (
       <div className="min-h-screen flex flex-col bg-slate-50">
         <Navbar />
@@ -391,11 +383,14 @@ export default function PublicationDetailClient({
     },
   };
 
-  // Compile linked newsletters (explicitly attached by admin + fallback to recent ones)
-  const linkedNewsletters = publication.linkedNewsletters?.length
-    ? publication.linkedNewsletters
+  // Compile linked newsletters (explicitly attached by admin + fallback to recent ones), excluding deleted items
+  const validExplicitLinked = (publication.linkedNewsletters || []).filter(
+    (item) => item && !combinedDeletedSet.has(item.id)
+  );
+  const linkedNewsletters = validExplicitLinked.length
+    ? validExplicitLinked
     : recentPubs
-        .filter((p) => p.id !== publication.id)
+        .filter((p) => p.id !== publication.id && !combinedDeletedSet.has(p.id))
         .slice(0, 3)
         .map((p) => ({
           id: p.id,

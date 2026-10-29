@@ -18,7 +18,8 @@ import {
   UserCheck,
   Mail,
   BookUser,
-  BookOpen
+  BookOpen,
+  Palette
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -51,7 +52,8 @@ export function AdminSidebar({ activeTab, onSelectTab, pendingRequestsCount }: A
 
   // Determine active item
   const currentTab = searchParams.get("tab");
-  const isContentActive = pathname.startsWith("/admin/content");
+  const isBrandingActive = pathname.startsWith("/admin/content") && currentTab === "general";
+  const isContentActive = pathname.startsWith("/admin/content") && !isBrandingActive;
   const isUsersActive = pathname.startsWith("/admin/users");
   const isBookingsActive = pathname.startsWith("/admin/bookings");
   const isClientsActive = pathname.startsWith("/admin/clients");
@@ -97,6 +99,28 @@ export function AdminSidebar({ activeTab, onSelectTab, pendingRequestsCount }: A
               </div>
             </div>
             {isContentActive && <ChevronRight className="h-4 w-4 shrink-0 text-white" />}
+          </Link>
+
+          {/* Branding & Customization */}
+          <Link
+            href="/admin/content?tab=general"
+            className={cn(
+              "w-full flex items-center justify-between p-3 rounded-xl font-bold text-xs transition-all text-left",
+              isBrandingActive
+                ? "bg-primary text-white shadow-sm"
+                : "hover:bg-muted text-foreground"
+            )}
+          >
+            <div className="flex items-center gap-3">
+              <Palette className={cn("h-4 w-4 shrink-0", isBrandingActive ? "text-white" : "text-primary")} />
+              <div>
+                <div className="font-bold">Branding & Colors</div>
+                <div className={cn("text-[10px] font-normal", isBrandingActive ? "text-white/80" : "text-muted-foreground")}>
+                  Colors, Logo & Tagline
+                </div>
+              </div>
+            </div>
+            {isBrandingActive && <ChevronRight className="h-4 w-4 shrink-0 text-white" />}
           </Link>
 
           {/* 2. Users (Second) */}

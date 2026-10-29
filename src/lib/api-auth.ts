@@ -78,6 +78,7 @@ const MASTER_ADMIN_EMAILS = [
 export interface AuthValidationResult {
   authorized: boolean;
   userEmail?: string;
+  idToken?: string;
   error?: string;
   statusCode?: number;
 }
@@ -141,9 +142,29 @@ export async function verifyAdminAuthorization(request: Request): Promise<AuthVa
         // ignore parse errors
       }
 
-      const isAdmin =
+      let isAdmin =
         customAttributes?.admin === true ||
         MASTER_ADMIN_EMAILS.includes(userEmail);
+
+      // Fallback check: verify if user document in Firestore has role === 'admin'
+      if (!isAdmin && user.localId && firebaseConfig.projectId) {
+        try {
+          const fsUserRes = await fetch(
+            `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/(default)/documents/users/${encodeURIComponent(user.localId)}`,
+            {
+              headers: { Authorization: `Bearer ${idToken}` },
+            }
+          );
+          if (fsUserRes.ok) {
+            const fsUserDoc = await fsUserRes.json();
+            if (fsUserDoc?.fields?.role?.stringValue === 'admin') {
+              isAdmin = true;
+            }
+          }
+        } catch {
+          // ignore Firestore REST fallback errors
+        }
+      }
 
       if (!isAdmin) {
         return {
@@ -154,7 +175,7 @@ export async function verifyAdminAuthorization(request: Request): Promise<AuthVa
         };
       }
 
-      return { authorized: true, userEmail };
+      return { authorized: true, userEmail, idToken };
     } catch (err: any) {
       console.error('[verifyAdminAuthorization] Error verifying ID token:', err.message);
       return { authorized: false, error: 'Authentication service unavailable', statusCode: 503 };

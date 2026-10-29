@@ -20,8 +20,10 @@ export function Footer() {
   const { data: generalData } = useDoc(React.useMemo(() => (db ? doc(db, "settings", "general") : null), [db]));
   const { data: servicesData } = useDoc(React.useMemo(() => (db ? doc(db, "settings", "services") : null), [db]));
 
-  const siteName = generalData?.siteName || "Nganira Company LTD";
-  const siteDescription = generalData?.description || generalData?.tagline || "";
+  const siteName = generalData?.companyName || generalData?.siteName || "Nganira Company LTD";
+  const siteTagline = generalData?.tagline || "Waste Water Management";
+  const siteDescription = generalData?.description || "";
+  const logoUrl = generalData?.logoUrl;
 
   const phones: string[] = React.useMemo(() => {
     if (Array.isArray(generalData?.phones) && generalData.phones.length > 0) {
@@ -132,15 +134,21 @@ export function Footer() {
       <div className="container mx-auto px-4 md:px-16 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12 text-left">
           
-          {/* Brand & ASSERWA Profile */}
+          {/* Brand Profile */}
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <div className="h-11 w-11 rounded-xl bg-[#006400] text-white flex items-center justify-center shadow-md shadow-[#006400]/30 shrink-0">
-                <Droplets className="h-6 w-6" />
-              </div>
+              {logoUrl ? (
+                <div className="relative flex h-11 items-center justify-center rounded-xl bg-white/10 p-1.5 overflow-hidden shrink-0">
+                  <img src={logoUrl} alt={siteName} className="h-10 w-auto max-w-[140px] object-contain rounded-lg" />
+                </div>
+              ) : (
+                <div className="h-11 w-11 rounded-xl bg-primary text-white flex items-center justify-center shadow-md shadow-primary/30 shrink-0">
+                  <Droplets className="h-6 w-6 text-white" />
+                </div>
+              )}
               <div>
                 <span className="font-extrabold text-base tracking-tight text-white block">{siteName}</span>
-                <span className="text-[11px] text-white/80 font-semibold tracking-wider uppercase block">Sanitation & Liquid Waste</span>
+                <span className="text-[11px] text-white/80 font-semibold tracking-wider uppercase block">{siteTagline}</span>
               </div>
             </div>
 

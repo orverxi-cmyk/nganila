@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'Nganira Company LTD',
     short_name: 'Nganira',
-    description: 'Professional Waste Management & Sanitation Company in Kicukiro, Kigali, Rwanda',
+    description: 'Professional Waste Water Management Company in Kicukiro, Kigali, Rwanda',
     start_url: '/',
     display: 'standalone',
     background_color: '#636679',

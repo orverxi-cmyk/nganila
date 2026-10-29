@@ -10,11 +10,12 @@ import {
   extractExcerptFromHtml,
   extractFirstImage,
   getCustomDesignedNewsletters,
+  isCustomEmailPublication,
   isLikelyBrandLogo,
 } from "@/lib/publications";
 import { slugify } from "@/lib/slug";
 import { initializeFirebase } from "@/firebase/init";
-import { doc, setDoc, updateDoc, increment } from "firebase/firestore";
+import { doc, setDoc, updateDoc, deleteDoc, increment } from "firebase/firestore";
 
 export interface StoredEmailTemplate {
   name: string;
@@ -30,6 +31,7 @@ export interface StoredEmailTemplate {
 export interface PublicationsStoreData {
   template: StoredEmailTemplate;
   publications: Publication[];
+  deletedPublicationIds?: string[];
   lastSavedAt: number;
   settings?: {
     showViewsOnFrontend?: boolean;
@@ -244,11 +246,89 @@ export function saveActiveServerEmailTemplate(templateData: {
 }
 
 /**
- * Returns all stored publications, ensuring the custom email publication is authoritative and up-to-date.
+ * Returns the list of explicitly deleted publication IDs so deleted items
+ * are never resurrected from secondary stores or caches.
+ */
+export function getDeletedPublicationIds(): string[] {
+  const store = getPublicationsStore();
+  return Array.isArray(store.deletedPublicationIds) ? store.deletedPublicationIds : [];
+}
+
+/**
+ * Returns all stored publications, excluding any explicitly deleted IDs.
  */
 export function getAllServerPublications(): Publication[] {
   const store = getPublicationsStore();
-  return store.publications;
+  const deletedSet = new Set(store.deletedPublicationIds || []);
+  return store.publications.filter((p) => p && p.id && !deletedSet.has(p.id));
+}
+
+/**
+ * Permanently deletes one or more publications from the server store (.data/publications-store.json)
+ * and records their IDs in deletedPublicationIds.
+ */
+export function deleteServerPublication(
+  idOrSlug: string | string[]
+): { deletedIds: string[]; remainingCount: number } {
+  const targets = (Array.isArray(idOrSlug) ? idOrSlug : [idOrSlug])
+    .map((t) => decodeURIComponent(String(t || "")).trim())
+    .filter(Boolean);
+
+  const store = getPublicationsStore();
+  if (targets.length === 0) {
+    return {
+      deletedIds: [],
+      remainingCount: store.publications.length,
+    };
+  }
+
+  const targetSet = new Set(targets);
+  const targetSlugs = new Set(targets.map((t) => slugify(t)).filter(Boolean));
+  const matchedIds = new Set<string>(targets);
+
+  const nextPublications = store.publications.filter((p) => {
+    if (!p) return false;
+    const pSlug = p.slug ? slugify(p.slug) : slugify(p.title || "");
+    const isMatch =
+      (p.id && targetSet.has(p.id)) ||
+      (p.slug && targetSet.has(p.slug)) ||
+      (pSlug && targetSlugs.has(pSlug));
+
+    if (isMatch) {
+      if (p.id) matchedIds.add(p.id);
+      return false;
+    }
+    return true;
+  });
+
+  const existingDeleted = Array.isArray(store.deletedPublicationIds)
+    ? store.deletedPublicationIds
+    : [];
+  const nextDeletedIds = Array.from(new Set([...existingDeleted, ...Array.from(matchedIds)]));
+  const now = Date.now();
+
+  persistPublicationsStore({
+    ...store,
+    publications: nextPublications,
+    deletedPublicationIds: nextDeletedIds,
+    lastSavedAt: now,
+  });
+
+  try {
+    const { firestore } = initializeFirebase();
+    if (firestore) {
+      matchedIds.forEach((id) => {
+        deleteDoc(doc(firestore, "publications", id)).catch(() => {});
+      });
+    }
+  } catch {
+    // Graceful fallback when server Firebase SDK lacks admin auth context
+  }
+
+  return {
+    deletedIds: Array.from(matchedIds),
+    remainingCount: nextPublications.length,
+  };
 }
 
 /**
@@ -291,9 +371,14 @@ export function recordServerPublication(pub: Partial<Publication>): Publication 
     updatedPubs.unshift(completePub);
   }
 
+  const nextDeletedIds = (store.deletedPublicationIds || []).filter(
+    (id) => id !== pubId && id !== completePub.id
+  );
+
   persistPublicationsStore({
     ...store,
     publications: updatedPubs,
+    deletedPublicationIds: nextDeletedIds,
     lastSavedAt: now,
   });
 
@@ -375,9 +460,15 @@ export function updateServerPublication(
     store.publications.unshift(resultPub);
   }
 
+  const nextDeletedIds = (store.deletedPublicationIds || []).filter(
+    (id) => id !== pubId && id !== resultPub.id
+  );
+
   persistPublicationsStore({
+    ...store,
     template: store.template,
     publications: store.publications,
+    deletedPublicationIds: nextDeletedIds,
     lastSavedAt: now,
   });
 
@@ -502,6 +593,7 @@ export function incrementServerArticleViews(idOrSlug: string): number {
 
 /**
  * Server-side resolver to retrieve a publication for Open Graph / Twitter Card preview metadata.
+ * Respects deletedPublicationIds and published status so deleted items never appear publicly.
  */
 export async function getServerPublicationBySlug(
   slugOrId: string
@@ -511,7 +603,37 @@ export async function getServerPublicationBySlug(
   const targetSlug = slugify(cleanTarget);
 
   const store = getPublicationsStore();
+  const deletedSet = new Set<string>(store.deletedPublicationIds || []);
+
+  // Sync any cloud-persisted deleted IDs from Firestore settings/publications_meta
+  try {
+    const { firestore } = initializeFirebase();
+    if (firestore) {
+      const { doc: fsDoc, getDoc: fsGetDoc } = await import("firebase/firestore");
+      const metaSnap = await fsGetDoc(fsDoc(firestore, "settings", "publications_meta"));
+      if (metaSnap.exists()) {
+        const cloudDeleted = (metaSnap.data() as any)?.deletedIds;
+        if (Array.isArray(cloudDeleted)) {
+          cloudDeleted.forEach((id: string) => {
+            if (id) deletedSet.add(id);
+          });
+        }
+      }
+    }
+  } catch {
+    // Proceed with local deletedSet
+  }
+
+  const isPubliclyVisible = (pub: Publication | undefined | null): pub is Publication => {
+    if (!pub || !pub.id) return false;
+    if (deletedSet.has(pub.id)) return false;
+    if (!isCustomEmailPublication(pub)) return false;
+    if (pub.status && pub.status !== "published") return false;
+    return true;
+  };
+
   const matched = store.publications.find((p) => {
+    if (!isPubliclyVisible(p)) return false;
     if (p.id === cleanTarget) return true;
     const pSlug = p.slug ? slugify(p.slug) : slugify(p.title || "");
     return pSlug === targetSlug || slugify(p.title || "") === targetSlug;
@@ -519,45 +641,35 @@ export async function getServerPublicationBySlug(
 
   if (matched) return matched;
 
-  // Fallback to active template if requesting the default custom newsletter
-  if (
-    cleanTarget === "sustainable-liquid-waste-management-clean-water-rwanda" ||
-    cleanTarget === "pub_custom_sanex_newsletter" ||
-    (store.template.name && slugify(store.template.name) === targetSlug)
-  ) {
-    const tpl = store.template;
-    return {
-      id: "pub_custom_sanex_newsletter",
-      slug: "sustainable-liquid-waste-management-clean-water-rwanda",
-      title: tpl.name || "SANEX Official Custom Newsletter",
-      subject: tpl.subject || tpl.name || "SANEX Official Custom Newsletter",
-      excerpt: extractExcerptFromHtml(tpl.message) || "Sanex Company LTD is a Rwandan company specializing in liquid waste management, emptying services, and clean water delivery.",
-      content: tpl.message,
-      category: "Company Announcements",
-      author: "SANEX Communications",
-      publishedAt: tpl.updatedAt || Date.now(),
-      createdAt: tpl.updatedAt || Date.now(),
-      updatedAt: tpl.updatedAt || Date.now(),
-      recipientCount: 85,
-      status: "published",
-      isCustom: true,
-      coverImage: tpl.coverImage || extractFirstImage(tpl.message) || "https://firebasestorage.googleapis.com/v0/b/nganila-f3948.firebasestorage.app/o/uploads%2F1779722491089_B25A3102.jpg?alt=media",
-    };
-  }
-
-  // Check Firestore if not found in memory store
+  // Check Firestore if not found in local store
   try {
     const { firestore } = initializeFirebase();
     if (firestore) {
-      const { collection: fsCollection, query: fsQuery, where: fsWhere, getDocs: fsGetDocs, limit: fsLimit, doc: fsDoc, getDoc: fsGetDoc } = await import("firebase/firestore");
-      const q = fsQuery(fsCollection(firestore, "publications"), fsWhere("slug", "==", cleanTarget), fsLimit(1));
+      const {
+        collection: fsCollection,
+        query: fsQuery,
+        where: fsWhere,
+        getDocs: fsGetDocs,
+        limit: fsLimit,
+        doc: fsDoc,
+        getDoc: fsGetDoc,
+      } = await import("firebase/firestore");
+
+      const q = fsQuery(
+        fsCollection(firestore, "publications"),
+        fsWhere("slug", "==", cleanTarget),
+        fsLimit(1)
+      );
       const snap = await fsGetDocs(q);
       if (!snap.empty) {
-        return { id: snap.docs[0].id, ...(snap.docs[0].data() as any) };
+        const candidate = { ...(snap.docs[0].data() as any), id: snap.docs[0].id } as Publication;
+        if (isPubliclyVisible(candidate)) return candidate;
       }
+
       const directDoc = await fsGetDoc(fsDoc(firestore, "publications", cleanTarget));
       if (directDoc.exists()) {
-        return { id: directDoc.id, ...(directDoc.data() as any) };
+        const candidate = { ...(directDoc.data() as any), id: directDoc.id } as Publication;
+        if (isPubliclyVisible(candidate)) return candidate;
       }
     }
   } catch {}

@@ -17,10 +17,10 @@ export default {
         headline: ['Inter', 'system-ui', 'Arial', 'sans-serif'],
       },
       colors: {
-        brandDark: '#636679',
-        brandLight: '#006400',
-        brandGreen: '#006400',
-        brandDarkGreen: '#005200',
+        brandDark: 'var(--brand-secondary, #636679)',
+        brandLight: 'var(--brand-primary, #006400)',
+        brandGreen: 'var(--brand-primary, #006400)',
+        brandDarkGreen: 'var(--brand-primary-dark, #005200)',
         brandSlate: {
           50: '#f6f6f8',
           100: '#ececf0',
